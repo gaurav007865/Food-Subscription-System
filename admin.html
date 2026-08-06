@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Control Center - TiffinHub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #FF6B35;
+      --primary-hover: #E85A26;
+      --secondary: #2EC4B6;
+      --dark: #1A1A24;
+      --bg: #FAF7F2;
+      --card: #FFFFFF;
+      --border: #E2E8F0;
+      --muted: #6C757D;
+      --success: #10B981;
+      --danger: #EF4444;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Plus Jakarta Sans', sans-serif; }
+    body { background-color: var(--bg); color: var(--dark); }
+
+    /* Login Screen */
+    .admin-login-wrapper {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1A1A24 0%, #2EC4B6 100%);
+    }
+    .login-box {
+      background: white;
+      padding: 2.5rem;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+    .login-box h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    .login-box p { color: var(--muted); font-size: 0.85rem; margin-bottom: 1.5rem; }
+
+    .input-field {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      margin-bottom: 1rem;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      outline: none;
+      font-size: 0.95rem;
+    }
+    .input-field:focus { border-color: var(--primary); }
+
+    .btn {
+      width: 100%;
+      padding: 0.85rem;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .btn:hover { background: var(--primary-hover); }
+
+    /* Main Dashboard Layout */
+    .dashboard { display: none; }
+    .dashboard.active { display: block; }
+
+    header {
+      background: var(--dark);
+      color: white;
+      padding: 1rem 5%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-brand { font-size: 1.4rem; font-weight: 800; }
+    .header-brand span { color: var(--primary); }
+
+    /* Navigation Bar Tabs */
+    .admin-tabs {
+      background: #252533;
+      padding: 0.5rem 5%;
+      display: flex;
+      gap: 1rem;
+      overflow-x: auto;
+    }
+    .admin-tab-btn {
+      background: transparent;
+      color: #A0AEC0;
+      border: none;
+      padding: 0.7rem 1.2rem;
+      font-weight: 700;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .admin-tab-btn.active, .admin-tab-btn:hover {
+      background: var(--primary);
+      color: white;
+    }
+
+    .container { padding: 2rem 5%; }
+
+    /* Tab Content Views */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Stat Cards / KPIs */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: var(--card);
+      padding: 1.5rem;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .stat-card p { color: var(--muted); font-weight: 600; font-size: 0.85rem; }
+    .stat-card h3 { font-size: 1.8rem; color: var(--dark); margin-top: 0.3rem; }
+    .stat-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      background: rgba(255,107,53,0.1);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+    }
+
+    /* Tables & Cards */
+    .section-card {
+      background: var(--card);
+      padding: 1.8rem;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);
+    }
+    .section-card h2 {
+      font-size: 1.3rem;
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+    th, td { padding: 0.85rem; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+    th { background: #F8FAFC; color: var(--muted); font-weight: 700; }
+
+    .status-badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: inline-block;
+    }
+    .badge-yes, .badge-paid, .badge-active { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+    .badge-no, .badge-cancelled { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+    .badge-pending { background: rgba(245, 158, 11, 0.15); color: #D97706; }
+
+    .action-btn {
+      padding: 5px 10px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.8rem;
+      transition: 0.2s;
+    }
+    .btn-toggle { background: #E2E8F0; color: var(--dark); }
+    .btn-delete { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+    .btn-delete:hover { background: var(--danger); color: white; }
+
+    select.status-select {
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-weight: 600;
+      background: white;
+      cursor: pointer;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--dark);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 10px;
+      display: none;
+      z-index: 1000;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+    }
+  </style>
+</head>
+<body>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- 1. ADMIN LOGIN SCREEN -->
+  <div id="login-screen" class="admin-login-wrapper">
+    <div class="login-box">
+      <h1>🍱 TiffinHub Control Center</h1>
+      <p>Secure Enterprise Admin Login</p>
+
+      <input type="email" id="admin-email" class="input-field" placeholder="Admin ID (e.g. admin@tiffinhub.com)" value="admin@tiffinhub.com">
+      <input type="password" id="admin-password" class="input-field" placeholder="Password" value="admin@123">
+
+      <button class="btn" onclick="loginAdmin()" id="admin-login-btn">Sign In to Control Center</button>
+    </div>
+  </div>
+
+  <!-- 2. ADMIN DASHBOARD SCREEN -->
+  <div id="dashboard-screen" class="dashboard">
+    <header>
+      <div class="header-brand">🍱 Tiffin<span>Hub</span> Enterprise Admin</div>
+      <div>
+        <span style="margin-right: 15px; color:#A0AEC0; font-size:0.9rem;" id="logged-admin-id">admin@tiffinhub.com</span>
+        <button onclick="logoutAdmin()" style="background:#EF4444; color:white; border:none; padding:6px 14px; border-radius:6px; cursor:pointer; font-weight:700;">Logout</button>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <div class="admin-tabs">
+      <button class="admin-tab-btn active" onclick="switchAdminTab('tab-overview', this)"><i class="fa-solid fa-chart-pie"></i> KPI Overview</button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('tab-orders', this)"><i class="fa-solid fa-truck-fast"></i> Live Orders</button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('tab-tiffins', this)"><i class="fa-solid fa-utensils"></i> Tiffin Catalog</button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('tab-subscriptions', this)"><i class="fa-solid fa-calendar-check"></i> Subscriptions</button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('tab-donations', this)"><i class="fa-solid fa-hand-holding-heart"></i> Food Donations</button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('tab-users', this)"><i class="fa-solid fa-users"></i> Users</button>
+    </div>
+
+    <div class="container">
+
+      <!-- TAB 1: OVERVIEW & KPIS -->
+      <div id="tab-overview" class="tab-content active">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div>
+              <p>Total Revenue</p>
+              <h3 id="stat-revenue">₹0</h3>
+            </div>
+            <div class="stat-icon" style="background:rgba(16,185,129,0.1); color:var(--success);"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+          </div>
+          <div class="stat-card">
+            <div>
+              <p>Total Orders</p>
+              <h3 id="stat-orders">0</h3>
+            </div>
+            <div class="stat-icon"><i class="fa-solid fa-bag-shopping"></i></div>
+          </div>
+          <div class="stat-card">
+            <div>
+              <p>Active Subscriptions</p>
+              <h3 id="stat-active-subs">0</h3>
+            </div>
+            <div class="stat-icon" style="background:rgba(46,196,182,0.1); color:var(--secondary);"><i class="fa-solid fa-repeat"></i></div>
+          </div>
+          <div class="stat-card">
+            <div>
+              <p>Registered Users</p>
+              <h3 id="stat-users">0</h3>
+            </div>
+            <div class="stat-icon" style="background:rgba(99,102,241,0.1); color:#6366F1;"><i class="fa-solid fa-user-group"></i></div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <h2>
+            <span><i class="fa-solid fa-clock-rotate-left" style="color:var(--primary);"></i> Recent Orders Summary</span>
+            <button class="action-btn btn-toggle" onclick="loadAdminData()"><i class="fa-solid fa-arrows-rotate"></i> Refresh</button>
+          </h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>User ID</th>
+                <th>Amount</th>
+                <th>Payment</th>
+                <th>Order Status</th>
+              </tr>
+            </thead>
+            <tbody id="overview-orders-tbody">
+              <tr><td colspan="5">Loading summary...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 2: LIVE ORDERS TRACKING -->
+      <div id="tab-orders" class="tab-content">
+        <div class="section-card">
+          <h2><i class="fa-solid fa-truck-fast" style="color:var(--primary);"></i> Manage Live Orders & Tracking</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>User ID</th>
+                <th>Amount</th>
+                <th>Payment</th>
+                <th>Current Status</th>
+                <th>Change Status</th>
+              </tr>
+            </thead>
+            <tbody id="orders-table-body">
+              <tr><td colspan="6">Loading Orders...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 3: TIFFIN CATALOG CRUD -->
+      <div id="tab-tiffins" class="tab-content">
+        <!-- Add New Tiffin -->
+        <div class="section-card">
+          <h2><i class="fa-solid fa-plus-circle" style="color:var(--secondary);"></i> Add New Tiffin Meal / Provider</h2>
+          <div class="form-grid">
+            <input type="text" id="tif-name" class="input-field" placeholder="Provider Name (e.g. Royal Punjabi Rasoi)">
+            <select id="tif-meal" class="input-field">
+              <option value="Veg">Veg</option>
+              <option value="Non-Veg">Non-Veg</option>
+              <option value="Jain Veg">Jain Veg</option>
+              <option value="Mixed">Mixed</option>
+            </select>
+            <input type="number" id="tif-price" class="input-field" placeholder="Price Per Meal (₹)">
+            <input type="text" id="tif-location" class="input-field" placeholder="City / Location (e.g. Gurgaon)">
+            <input type="text" id="tif-image" class="input-field" placeholder="Image URL (Optional)">
+          </div>
+          <button class="btn" style="width: auto; padding: 0.75rem 2rem;" onclick="addNewTiffin()">+ Publish Tiffin Item</button>
+        </div>
+
+        <!-- Manage Catalog -->
+        <div class="section-card">
+          <h2><i class="fa-solid fa-list-check" style="color:var(--primary);"></i> Existing Tiffin Providers</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Provider Name</th>
+                <th>Meal Type</th>
+                <th>Price</th>
+                <th>Location</th>
+                <th>Availability</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tiffins-table-body">
+              <tr><td colspan="7">Loading Tiffin Catalog...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 4: SUBSCRIPTIONS -->
+      <div id="tab-subscriptions" class="tab-content">
+        <div class="section-card">
+          <h2><i class="fa-solid fa-calendar-check" style="color:var(--secondary);"></i> Active & Past Subscriptions</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Sub ID</th>
+                <th>User ID</th>
+                <th>Tiffin ID</th>
+                <th>Plan Type</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Total Cost</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="subscriptions-table-body">
+              <tr><td colspan="8">Loading Subscriptions...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 5: FOOD DONATIONS -->
+      <div id="tab-donations" class="tab-content">
+        <div class="section-card">
+          <h2><i class="fa-solid fa-hand-holding-heart" style="color:#2EC4B6;"></i> NGO Food Donation Matching</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Donation ID</th>
+                <th>Donor</th>
+                <th>Food Details</th>
+                <th>Expiry Time</th>
+                <th>Assigned NGO</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="donations-table-body">
+              <tr><td colspan="6">Loading Donations...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 6: USERS -->
+      <div id="tab-users" class="tab-content">
+        <div class="section-card">
+          <h2><i class="fa-solid fa-users" style="color:#6366F1;"></i> Registered Users Database</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>User ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Joined Date</th>
+              </tr>
+            </thead>
+            <tbody id="users-table-body">
+              <tr><td colspan="5">Loading Users...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Paste NEW Apps Script Web App URL Here
+    const API_URL = "https://script.google.com/macros/s/AKfycbzhN138z_BuMSR0DgMuSeoo091vaqNmQN8dCZM_OJf09_uQHPbj3IdQpaoXlIxqsUjQMA/exec";
+
+// Persistent Login Check using localStorage
+let adminToken = localStorage.getItem('tiffin_admin_token') || null;
+let adminEmail = localStorage.getItem('tiffin_admin_email') || null;
+
+// Page Load par check karna ki session pehle se active hai ya nahi
+document.addEventListener('DOMContentLoaded', () => {
+  if (adminToken) {
+    showDashboard();
+  }
+});
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  if (!toast) return;
+  toast.innerText = msg;
+  toast.style.display = 'block';
+  setTimeout(() => toast.style.display = 'none', 3000);
+}
+
+// Admin Authentication with Persistent Storage
+async function loginAdmin() {
+  const email = document.getElementById('admin-email').value.trim();
+  const pass = document.getElementById('admin-password').value.trim();
+  const btn = document.getElementById('admin-login-btn');
+
+  if (!email || !pass) return alert("Please enter both ID and password!");
+
+  btn.innerText = "Authenticating...";
+
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'adminLogin', email, password: pass })
+    });
+    const result = await res.json();
+    btn.innerText = "Sign In to Control Center";
+
+    if (result.success) {
+      // Save permanently in localStorage (browser band hone par bhi login rahega)
+      localStorage.setItem('tiffin_admin_token', result.adminToken);
+      localStorage.setItem('tiffin_admin_email', result.email || email);
+      adminToken = result.adminToken;
+      adminEmail = result.email || email;
+
+      showToast("Welcome Admin!");
+      showDashboard();
+    } else {
+      alert(result.message);
+    }
+  } catch (e) {
+    btn.innerText = "Sign In to Control Center";
+    alert("Server connection failed!");
+  }
+}
+
+function showDashboard() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('dashboard-screen').classList.add('active');
+
+  const adminEmailElem = document.getElementById('logged-admin-id');
+  if (adminEmailElem && adminEmail) {
+    adminEmailElem.innerText = adminEmail;
+  }
+
+  loadAdminData();
+}
+
+// Explicit Admin Logout
+function logoutAdmin() {
+  localStorage.removeItem('tiffin_admin_token');
+  localStorage.removeItem('tiffin_admin_email');
+  adminToken = null;
+  adminEmail = null;
+  location.reload();
+}
+
+// Switch Admin Tabs
+function switchAdminTab(tabId, btn) {
+  document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+  document.querySelectorAll('.admin-tab-btn').forEach(tb => tb.classList.remove('active'));
+
+  document.getElementById(tabId).classList.add('active');
+  btn.classList.add('active');
+}
+
+// Load Admin Data & Populate UI
+async function loadAdminData() {
+  try {
+    showToast("Fetching latest data...");
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'getAdminData' })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      // Render KPIs
+      document.getElementById('stat-revenue').innerText = `₹${data.kpis.totalRevenue.toLocaleString()}`;
+      document.getElementById('stat-orders').innerText = data.kpis.totalOrders;
+      document.getElementById('stat-active-subs').innerText = data.kpis.activeSubs;
+      document.getElementById('stat-users').innerText = data.kpis.totalUsers;
+
+      // Render Overview Table
+      renderOverviewOrders(data.orders);
+
+      // Render Full Tables
+      renderOrders(data.orders);
+      renderTiffins(data.tiffins);
+      renderSubscriptions(data.subscriptions);
+      renderDonations(data.donations);
+      renderUsers(data.users);
+    }
+  } catch(e) {
+    showToast("Error loading data!");
+  }
+}
+
+function renderOverviewOrders(orders) {
+  const tbody = document.getElementById('overview-orders-tbody');
+  if (!orders || orders.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5">No recent orders.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = orders.slice(0, 5).map(ord => `
+    <tr>
+      <td><b>${ord.OrderID}</b></td>
+      <td>${ord.UserID}</td>
+      <td>₹${ord.Amount}</td>
+      <td><span class="status-badge badge-paid">${ord.PaymentStatus}</span></td>
+      <td><span class="status-badge badge-pending">${ord.OrderStatus}</span></td>
+    </tr>
+  `).join('');
+}
+
+function renderOrders(orders) {
+  const tbody = document.getElementById('orders-table-body');
+  if (!orders || orders.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6">No orders found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = orders.map(ord => `
+    <tr>
+      <td><b>${ord.OrderID}</b></td>
+      <td>${ord.UserID}</td>
+      <td>₹${ord.Amount}</td>
+      <td><span class="status-badge badge-paid">${ord.PaymentStatus}</span></td>
+      <td><b>${ord.OrderStatus}</b></td>
+      <td>
+        <select class="status-select" onchange="changeOrderStatus('${ord.OrderID}', this.value)">
+          <option value="Order Confirmed" ${ord.OrderStatus === 'Order Confirmed' ? 'selected':''}>Order Confirmed</option>
+          <option value="Preparing" ${ord.OrderStatus === 'Preparing' ? 'selected':''}>Preparing</option>
+          <option value="Out for Delivery" ${ord.OrderStatus === 'Out for Delivery' ? 'selected':''}>Out for Delivery</option>
+          <option value="Delivered" ${ord.OrderStatus === 'Delivered' ? 'selected':''}>Delivered</option>
+        </select>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function changeOrderStatus(orderId, newStatus) {
+  showToast("Updating Status...");
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'updateOrderStatus', orderId, newStatus })
+  });
+  const result = await res.json();
+  showToast(result.message);
+}
+
+function renderTiffins(tiffins) {
+  const tbody = document.getElementById('tiffins-table-body');
+  if (!tiffins || tiffins.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7">No tiffin providers added yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = tiffins.map(tif => `
+    <tr>
+      <td><b>${tif.TiffinID}</b></td>
+      <td>${tif.ProviderName}</td>
+      <td>${tif.MealType}</td>
+      <td>₹${tif.Price}</td>
+      <td>${tif.Location}</td>
+      <td>
+        <span class="status-badge ${tif.Available === 'Yes' ? 'badge-yes' : 'badge-no'}">
+          ${tif.Available === 'Yes' ? 'In Stock' : 'Out of Stock'}
+        </span>
+      </td>
+      <td>
+        <button class="action-btn btn-toggle" onclick="toggleTiffinStock('${tif.TiffinID}')">Toggle Stock</button>
+        <button class="action-btn btn-delete" onclick="deleteTiffinItem('${tif.TiffinID}')"><i class="fa-solid fa-trash"></i></button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function addNewTiffin() {
+  const providerName = document.getElementById('tif-name').value;
+  const mealType = document.getElementById('tif-meal').value;
+  const price = document.getElementById('tif-price').value;
+  const location = document.getElementById('tif-location').value;
+  const imageUrl = document.getElementById('tif-image').value;
+
+  if (!providerName || !price || !location) return alert("Please fill required fields!");
+
+  showToast("Publishing Tiffin...");
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'addTiffin', providerName, mealType, price, location, imageUrl })
+  });
+  const result = await res.json();
+  showToast(result.message);
+  
+  // Clear inputs
+  document.getElementById('tif-name').value = '';
+  document.getElementById('tif-price').value = '';
+  document.getElementById('tif-location').value = '';
+  
+  loadAdminData();
+}
+
+async function toggleTiffinStock(tiffinId) {
+  showToast("Toggling Stock...");
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'toggleTiffinAvailability', tiffinId })
+  });
+  const result = await res.json();
+  showToast(result.message);
+  loadAdminData();
+}
+
+async function deleteTiffinItem(tiffinId) {
+  if(!confirm("Are you sure you want to delete this tiffin provider?")) return;
+  showToast("Deleting Tiffin...");
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'deleteTiffin', tiffinId })
+  });
+  const result = await res.json();
+  showToast(result.message);
+  loadAdminData();
+}
+
+function renderSubscriptions(subs) {
+  const tbody = document.getElementById('subscriptions-table-body');
+  if (!subs || subs.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8">No active subscriptions.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = subs.map(s => `
+    <tr>
+      <td><b>${s.SubID}</b></td>
+      <td>${s.UserID}</td>
+      <td>${s.TiffinID}</td>
+      <td>${s.PlanType}</td>
+      <td>${s.StartDate || 'N/A'}</td>
+      <td>${s.EndDate || 'N/A'}</td>
+      <td>₹${s.TotalCost}</td>
+      <td><span class="status-badge badge-active">${s.Status}</span></td>
+    </tr>
+  `).join('');
+}
+
+function renderDonations(donations) {
+  const tbody = document.getElementById('donations-table-body');
+  if (!donations || donations.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6">No food donations listed.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = donations.map(don => `
+    <tr>
+      <td><b>${don.DonationID}</b></td>
+      <td>${don.DonorName}</td>
+      <td>${don.FoodDetails}</td>
+      <td>${don.ExpiryHours} Hours</td>
+      <td><input type="text" value="${don.NGOAssigned || 'Feeding India'}" id="ngo-${don.DonationID}" class="input-field" style="margin:0; padding:4px 8px; width:150px;"></td>
+      <td>
+        <button onclick="acceptDonation('${don.DonationID}')" class="btn" style="padding:5px 12px; font-size:0.8rem;">Match NGO</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function acceptDonation(donationId) {
+  const ngoName = document.getElementById(`ngo-${donationId}`).value;
+  showToast("Matching NGO...");
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'updateDonationStatus', donationId, ngoName, status: 'NGO Accepted' })
+  });
+  const result = await res.json();
+  showToast(result.message);
+  loadAdminData();
+}
+
+function renderUsers(users) {
+  const tbody = document.getElementById('users-table-body');
+  if (!users || users.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5">No registered users yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = users.map(u => `
+    <tr>
+      <td><b>${u.UserID}</b></td>
+      <td>${u.Name}</td>
+      <td>${u.Email}</td>
+      <td>${u.Phone || 'N/A'}</td>
+      <td>${u.CreatedAt ? new Date(u.CreatedAt).toLocaleDateString() : 'N/A'}</td>
+    </tr>
+  `).join('');
+}
+  </script>
+</body>
+</html>

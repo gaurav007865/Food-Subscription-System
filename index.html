@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tiffin Hub - Fresh Homemade Food & Subscription</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Header / Navigation -->
+  <header class="navbar">
+    <div class="logo">
+      <span class="icon">🍱</span>
+      <span class="brand-name">Tiffin<span>Hub</span></span>
+    </div>
+    <nav class="nav-links">
+      <a href="#" class="active"><i class="fa-solid fa-house"></i> Home</a>
+      <a href="#tiffins"><i class="fa-solid fa-utensils"></i> Explore Tiffins</a>
+      <a href="#donate"><i class="fa-solid fa-hand-holding-heart"></i> Donate Food</a>
+    </nav>
+    <div class="auth-buttons" id="nav-auth-section">
+      <button class="btn btn-outline" id="btn-open-login">Sign In</button>
+      <button class="btn btn-primary" id="btn-open-register">Get Started</button>
+    </div>
+  </header>
+
+  <!-- Hero Banner -->
+  <section class="hero">
+    <div class="hero-content">
+      <span class="badge">🔥 Hot & Fresh Homemade Food</span>
+      <h1>Delicious Tiffins Delivered To Your Doorstep</h1>
+      <p>Subscribe to daily, weekly, or monthly healthy meal plans from certified home chefs near you.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary btn-large" id="hero-explore-btn">Find Tiffins Near Me</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Authentication Modal -->
+  <div class="modal-overlay" id="auth-modal">
+    <div class="auth-card">
+      <button class="close-btn" id="close-modal">&times;</button>
+      
+      <!-- Tab Controls -->
+      <div class="auth-tabs">
+        <button class="tab-btn active" id="tab-login">Sign In</button>
+        <button class="tab-btn" id="tab-register">Register</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form" class="auth-form active">
+        <h2>Welcome Back!</h2>
+        <p class="subtitle">Log in to manage your tiffin orders and subscriptions.</p>
+
+        <div class="input-group">
+          <label><i class="fa-solid fa-envelope"></i> Email Address</label>
+          <input type="email" id="login-email" placeholder="example@mail.com" required>
+        </div>
+
+        <div class="input-group">
+          <label><i class="fa-solid fa-lock"></i> Password</label>
+          <input type="password" id="login-password" placeholder="••••••••" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full" id="login-btn">
+          <span class="btn-text">Log In</span>
+          <span class="loader hidden"></span>
+        </button>
+      </form>
+
+      <!-- Registration Form -->
+      <form id="register-form" class="auth-form">
+        <h2>Create Account</h2>
+        <p class="subtitle">Join TiffinHub to enjoy fresh daily meals.</p>
+
+        <div class="input-group">
+          <label><i class="fa-solid fa-user"></i> Full Name</label>
+          <input type="text" id="reg-name" placeholder="John Doe" required>
+        </div>
+
+        <div class="input-group">
+          <label><i class="fa-solid fa-envelope"></i> Email Address</label>
+          <input type="email" id="reg-email" placeholder="example@mail.com" required>
+        </div>
+
+        <div class="input-group">
+          <label><i class="fa-solid fa-phone"></i> Phone Number</label>
+          <input type="tel" id="reg-phone" placeholder="+91 9876543210" required>
+        </div>
+
+        <div class="input-group">
+          <label><i class="fa-solid fa-lock"></i> Password</label>
+          <input type="password" id="reg-password" placeholder="••••••••" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full" id="register-btn">
+          <span class="btn-text">Create Account</span>
+          <span class="loader hidden"></span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
