@@ -486,3 +486,408 @@ body {
     max-width: 100%;
   }
 }
+/* User Dashboard Layout */
+.user-dashboard-container {
+  padding: 3rem 6%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.user-welcome-card {
+  background: white;
+  padding: 1.8rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+  margin-bottom: 2rem;
+}
+
+.user-welcome-card h2 { font-size: 1.8rem; }
+.user-welcome-card p { color: var(--text-muted); }
+
+/* Active Subscription Banner */
+.active-sub-card {
+  background: linear-gradient(135deg, #2EC4B6 0%, #1A1A24 100%);
+  color: white;
+  padding: 2rem;
+  border-radius: var(--radius-lg);
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-md);
+  position: relative;
+}
+
+.sub-badge {
+  background: rgba(255, 255, 255, 0.2);
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  margin-bottom: 1.2rem;
+}
+
+.sub-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.5rem;
+}
+
+.sub-details-grid .label { font-size: 0.8rem; opacity: 0.8; }
+.status-pill { background: #FF6B35; padding: 4px 12px; border-radius: 12px; font-weight: 700; font-size: 0.85rem; }
+
+/* No Subscription Banner */
+.no-sub-banner {
+  background: #FFF3ED;
+  border: 1.5px solid rgba(255,107,53,0.3);
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  margin-bottom: 2rem;
+}
+
+.banner-content { display: flex; align-items: center; gap: 1rem; }
+.banner-icon { font-size: 2rem; color: var(--primary); }
+
+/* Filter Bar */
+.filter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.search-input {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: white;
+  padding: 0.7rem 1.2rem;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--border-color);
+  flex: 1;
+  min-width: 280px;
+}
+
+.search-input input { border: none; outline: none; width: 100%; font-size: 0.95rem; }
+
+.filter-pills { display: flex; gap: 0.5rem; }
+.pill-btn {
+  padding: 0.6rem 1.2rem;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  background: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.pill-btn.active, .pill-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+
+/* Tiffin Cards Grid */
+.tiffins-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.8rem;
+  margin-bottom: 2.5rem;
+}
+
+.tiffin-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.tiffin-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); }
+.tiffin-img { width: 100%; height: 160px; object-fit: cover; }
+.tiffin-body { padding: 1.2rem; }
+.tiffin-body h3 { font-size: 1.2rem; margin-bottom: 0.3rem; }
+.tiffin-meta { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; }
+
+/* Checkout Modal Plans */
+.plan-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; margin: 1.2rem 0; }
+.plan-box {
+  border: 1.5px solid var(--border-color);
+  padding: 0.8rem 0.5rem;
+  border-radius: var(--radius-md);
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+}
+.plan-box.active { border-color: var(--primary); background: rgba(255,107,53,0.05); }
+.save-tag { position: absolute; top: -8px; right: 5px; background: var(--secondary); color: white; font-size: 0.6rem; font-weight: 800; padding: 2px 6px; border-radius: 10px; }
+
+.checkout-summary { background: #F8FAFC; padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1rem; }
+.summary-row { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.3rem; }
+.summary-row.total { font-weight: 800; font-size: 1.1rem; color: var(--primary); }
+
+.user-history-card { background: white; padding: 1.8rem; border-radius: var(--radius-lg); border: 1px solid var(--border-color); }
+/* Explore Tiffins Section Styles */
+.tiffins-section {
+  padding: 4rem 6%;
+  background-color: var(--bg-color);
+}
+
+.section-header {
+  max-width: 650px;
+  margin: 0 auto 2.5rem;
+  text-align: center;
+}
+
+.section-header h2 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin: 0.5rem 0;
+  color: var(--text-dark);
+}
+
+.section-header p {
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+
+/* Filter Bar */
+.filter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.search-input {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: white;
+  padding: 0.8rem 1.2rem;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--border-color);
+  flex: 1;
+  min-width: 300px;
+  box-shadow: var(--shadow-sm);
+}
+
+.search-input i {
+  color: var(--text-muted);
+}
+
+.search-input input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 0.95rem;
+  background: transparent;
+}
+
+.filter-pills {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.pill-btn {
+  padding: 0.65rem 1.3rem;
+  border-radius: 30px;
+  border: 1.5px solid var(--border-color);
+  background: white;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-dark);
+}
+
+.pill-btn.active, .pill-btn:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.25);
+}
+
+/* Tiffin Cards Grid */
+.tiffins-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.tiffin-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.tiffin-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-md);
+}
+
+.tiffin-card-img-wrapper {
+  position: relative;
+  height: 180px;
+  overflow: hidden;
+}
+
+.tiffin-card-img-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.tiffin-card:hover .tiffin-card-img-wrapper img {
+  transform: scale(1.05);
+}
+
+.meal-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(26, 26, 36, 0.85);
+  backdrop-filter: blur(4px);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.rating-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: white;
+  color: var(--text-dark);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tiffin-card-body {
+  padding: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: space-between;
+}
+
+.tiffin-card-body h3 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-bottom: 0.4rem;
+}
+
+.location-info {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.card-footer-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.price-text {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+/* Subscription Modal Extensions */
+.checkout-card {
+  max-width: 480px;
+}
+
+.plan-selector {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.8rem;
+  margin: 1.5rem 0;
+}
+
+.plan-box {
+  border: 1.5px solid var(--border-color);
+  padding: 0.9rem 0.5rem;
+  border-radius: var(--radius-md);
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.plan-box.active {
+  border-color: var(--primary);
+  background: rgba(255, 107, 53, 0.06);
+}
+
+.plan-box h4 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.plan-box p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.save-tag {
+  position: absolute;
+  top: -9px;
+  right: 50%;
+  transform: translateX(50%);
+  background: var(--secondary);
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+.checkout-summary {
+  background: #F8FAFC;
+  padding: 1.2rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1.2rem;
+  border: 1px solid var(--border-color);
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  margin-bottom: 0.4rem;
+  color: var(--text-muted);
+}
+
+.summary-row.total {
+  font-weight: 800;
+  font-size: 1.15rem;
+  color: var(--primary);
+  margin-bottom: 0;
+}

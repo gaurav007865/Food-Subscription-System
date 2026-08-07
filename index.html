@@ -30,6 +30,82 @@
     </div>
   </header>
 
+  <!-- Explore Tiffins / All Mess Section -->
+<section id="tiffins" class="tiffins-section">
+  <div class="container">
+    
+    <!-- Section Title & Headline -->
+    <div class="section-header text-center">
+      <span class="badge">🍱 Fresh Homemade Meals</span>
+      <h2>Explore Nearby Tiffins & Mess Services</h2>
+      <p>Subscribe to wholesome daily meal plans from verified home chefs and tiffin services.</p>
+    </div>
+
+    <!-- Live Search & Filter Bar -->
+    <div class="filter-bar">
+      <div class="search-input">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="search-tiffin-input" placeholder="Search by Mess Name or Location (e.g. Gurgaon, Delhi)..." onkeyup="filterTiffins()">
+      </div>
+
+      <div class="filter-pills">
+        <button class="pill-btn active" onclick="filterByMeal('All', this)">All Meals</button>
+        <button class="pill-btn" onclick="filterByMeal('Veg', this)">🥦 Pure Veg</button>
+        <button class="pill-btn" onclick="filterByMeal('Non-Veg', this)">🍗 Non-Veg</button>
+        <button class="pill-btn" onclick="filterByMeal('Jain Veg', this)">🌱 Jain Veg</button>
+      </div>
+    </div>
+
+    <!-- Tiffin Provider Cards Grid -->
+    <div class="tiffins-grid" id="explore-tiffins-container">
+      <div class="text-center" style="grid-column: 1/-1; padding: 3rem;">
+        <div class="loader loader-dark"></div>
+        <p style="margin-top: 1rem; color: var(--text-muted);">Fetching available mess services...</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- Subscription Checkout Modal -->
+<div id="checkout-modal" class="modal-overlay">
+  <div class="auth-card checkout-card">
+    <button class="close-btn" onclick="closeCheckoutModal()">&times;</button>
+    <h2 id="modal-tiffin-title">Subscribe To Mess</h2>
+    <p class="subtitle" id="modal-tiffin-location">Select duration plan & confirm checkout</p>
+
+    <!-- Plan Selection -->
+    <div class="plan-selector">
+      <div class="plan-box active" onclick="selectPlan('Daily', 1, this)">
+        <h4>Daily Plan</h4>
+        <p id="price-daily">₹120 / day</p>
+      </div>
+      <div class="plan-box" onclick="selectPlan('Weekly', 7, this)">
+        <span class="save-tag">SAVE 10%</span>
+        <h4>Weekly Plan</h4>
+        <p id="price-weekly">₹750 / wk</p>
+      </div>
+      <div class="plan-box" onclick="selectPlan('Monthly', 30, this)">
+        <span class="save-tag">BEST VALUE</span>
+        <h4>Monthly Plan</h4>
+        <p id="price-monthly">₹3,000 / mo</p>
+      </div>
+    </div>
+
+    <!-- Cost Calculator Summary -->
+    <div class="checkout-summary">
+      <div class="summary-row"><span>Per Meal Price:</span> <span id="summary-unit-price">₹120</span></div>
+      <div class="summary-row"><span>Duration:</span> <span id="summary-duration">Daily (1 Day)</span></div>
+      <hr style="margin: 8px 0; border: 0; border-top: 1px solid var(--border-color);">
+      <div class="summary-row total"><span>Total Payable:</span> <span id="summary-total-price">₹120</span></div>
+    </div>
+
+    <button class="btn btn-primary btn-full" id="btn-confirm-pay" onclick="processSubscriptionPayment()">
+      <span class="btn-text">Pay & Activate Subscription</span>
+      <span class="loader hidden"></span>
+    </button>
+  </div>
+</div>
   <!-- Hero Banner -->
   <section class="hero">
     <div class="hero-content">
@@ -41,7 +117,123 @@
       </div>
     </div>
   </section>
+  <!-- User Dashboard Section -->
+<!-- User Dashboard Container -->
+<section id="user-dashboard" class="user-dashboard-container hidden">
+  
+  <!-- Welcome Greeting Header -->
+  <div class="user-welcome-card">
+    <div class="user-info">
+      <h2>Welcome back, <span id="user-display-name">Foodie</span>! 👋</h2>
+      <p id="sub-header-text">Check your active meals or choose a new tiffin plan below.</p>
+    </div>
+  </div>
 
+  <!-- STATE A: IF USER HAS ACTIVE SUBSCRIPTION -->
+  <div id="active-subscription-view" class="active-sub-card hidden">
+    <div class="sub-badge"><i class="fa-solid fa-circle-check"></i> ACTIVE SUBSCRIPTION</div>
+    <div class="sub-details-grid">
+      <div>
+        <p class="label">Mess / Tiffin Provider</p>
+        <h3 id="active-provider-name">Maa Ki Rasoi</h3>
+      </div>
+      <div>
+        <p class="label">Plan Type</p>
+        <h4 id="active-plan-type">Monthly Plan</h4>
+      </div>
+      <div>
+        <p class="label">Valid Until</p>
+        <h4 id="active-end-date">31 Aug 2026</h4>
+      </div>
+      <div>
+        <p class="label">Delivery Status</p>
+        <span class="status-pill" id="active-order-status">Preparing Lunch</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATE B: IF NO ACTIVE SUBSCRIPTION -> SHOW ALL MESS & TIFFIC SEARCH ENGINE -->
+  <div id="no-subscription-view" class="no-sub-section">
+    
+    <div class="no-sub-banner">
+      <div class="banner-content">
+        <i class="fa-solid fa-utensils banner-icon"></i>
+        <div>
+          <h3>You don't have an active Tiffin Plan yet!</h3>
+          <p>Explore nearby home-cooked mess providers and subscribe to Daily, Weekly, or Monthly plans.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter & Search Controls -->
+    <div class="filter-bar">
+      <div class="search-input">
+        <i class="fa-solid fa-location-dot"></i>
+        <input type="text" id="search-location" placeholder="Search by Location or Mess Name..." onkeyup="filterTiffins()">
+      </div>
+      <div class="filter-pills">
+        <button class="pill-btn active" onclick="filterByMeal('All', this)">All Meals</button>
+        <button class="pill-btn" onclick="filterByMeal('Veg', this)">🥦 Pure Veg</button>
+        <button class="pill-btn" onclick="filterByMeal('Non-Veg', this)">🍗 Non-Veg</button>
+        <button class="pill-btn" onclick="filterByMeal('Jain Veg', this)">🌱 Jain Veg</button>
+      </div>
+    </div>
+
+    <!-- Tiffin Provider Cards Grid -->
+    <div class="tiffins-grid" id="tiffins-cards-container">
+      <!-- Dynamic Tiffin Cards Will Load Here -->
+    </div>
+
+  </div>
+
+  <!-- Recent Orders List -->
+  <div class="user-history-card">
+    <h3><i class="fa-solid fa-clock-rotate-left"></i> My Recent Orders & Tracking</h3>
+    <div id="user-orders-list" class="orders-list">
+      <p class="text-muted">Loading orders...</p>
+    </div>
+  </div>
+
+</section>
+
+<!-- SUBSCRIPTION & CHECKOUT MODAL -->
+<div id="checkout-modal" class="modal-overlay">
+  <div class="auth-card checkout-card">
+    <button class="close-btn" onclick="closeCheckoutModal()">&times;</button>
+    <h2 id="modal-tiffin-title">Subscribe To Mess</h2>
+    <p class="subtitle" id="modal-tiffin-location">Select duration plan & confirm checkout</p>
+
+    <!-- Plan Selection -->
+    <div class="plan-selector">
+      <div class="plan-box active" onclick="selectPlan('Daily', 1, this)">
+        <h4>Daily Plan</h4>
+        <p id="price-daily">₹120 / day</p>
+      </div>
+      <div class="plan-box" onclick="selectPlan('Weekly', 7, this)">
+        <span class="save-tag">SAVE 10%</span>
+        <h4>Weekly Plan</h4>
+        <p id="price-weekly">₹750 / wk</p>
+      </div>
+      <div class="plan-box" onclick="selectPlan('Monthly', 30, this)">
+        <span class="save-tag">BEST VALUE</span>
+        <h4>Monthly Plan</h4>
+        <p id="price-monthly">₹3,000 / mo</p>
+      </div>
+    </div>
+
+    <div class="checkout-summary">
+      <div class="summary-row"><span>Per Meal Price:</span> <span id="summary-unit-price">₹120</span></div>
+      <div class="summary-row"><span>Duration:</span> <span id="summary-duration">1 Day</span></div>
+      <hr style="margin:8px 0; border:0; border-top:1px solid #E2E8F0;">
+      <div class="summary-row total"><span>Total Payable:</span> <span id="summary-total-price">₹120</span></div>
+    </div>
+
+    <button class="btn btn-primary btn-full" id="btn-confirm-pay" onclick="processSubscriptionPayment()">
+      <span class="btn-text">Pay & Activate Subscription</span>
+      <span class="loader hidden"></span>
+    </button>
+  </div>
+</div>
   <!-- Authentication Modal -->
   <div class="modal-overlay" id="auth-modal">
     <div class="auth-card">
