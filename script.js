@@ -1,5 +1,5 @@
 // Paste your Google Apps Script Web App URL here
-const API_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
+const API_URL = "https://script.google.com/macros/s/AKfycbzhN138z_BuMSR0DgMuSeoo091vaqNmQN8dCZM_OJf09_uQHPbj3IdQpaoXlIxqsUjQMA/exec";
 
 // DOM Elements
 const authModal = document.getElementById('auth-modal');
