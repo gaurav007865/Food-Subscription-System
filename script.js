@@ -1,7 +1,7 @@
-// Paste your Google Apps Script Web App URL here
+//This is Script connectivity
 const API_URL = "https://script.google.com/macros/s/AKfycbwsv4d09RiyRloHh-j9rxGt1gNlnQyqvVUXmCyzhZix63zsvhrdTje4ToMaFoySGz-U/exec";
 
-// DOM Elements
+// DOM Elements 
 const authModal = document.getElementById('auth-modal');
 const btnOpenLogin = document.getElementById('btn-open-login');
 const btnOpenRegister = document.getElementById('btn-open-register');
@@ -14,7 +14,7 @@ const registerForm = document.getElementById('register-form');
 // Persistent User State from LocalStorage
 let currentUser = JSON.parse(localStorage.getItem('tiffin_user_session')) || null;
 
-// Auto Check Session On Page Load
+// Auto Check Session On Page Load 
 document.addEventListener('DOMContentLoaded', () => {
   updateNavUI();
 });

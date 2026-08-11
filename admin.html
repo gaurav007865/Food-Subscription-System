@@ -383,7 +383,7 @@
         </div>
       </div>
 
-      <!-- TAB 5: DONATIONS -->
+      <!-- TAB 5: DONATIONS List-->
       <div id="tab-donations" class="tab-content">
         <div class="section-card">
           <h2><i class="fa-solid fa-hand-holding-heart" style="color:#2EC4B6;"></i> Food Donations Matcher</h2>
@@ -396,7 +396,7 @@
         </div>
       </div>
 
-      <!-- TAB 6: USERS -->
+      <!-- TAB 6: ALL USERS -->
       <div id="tab-users" class="tab-content">
         <div class="section-card">
           <div class="table-header-tools">
@@ -415,7 +415,7 @@
     </div>
   </div>
 
-  <!-- EDIT TIFFIN MODAL -->
+  <!-- EDIT TIFFIN MODAL Section-->
   <div id="edit-tiffin-modal" class="modal-overlay">
     <div class="modal-card">
       <h2 style="margin-bottom:1rem;">✏️ Edit Tiffin Provider</h2>
@@ -448,6 +448,7 @@
   </div>
 
   <script>
+    //Connectivity url
     const API_URL = "https://script.google.com/macros/s/AKfycbwsv4d09RiyRloHh-j9rxGt1gNlnQyqvVUXmCyzhZix63zsvhrdTje4ToMaFoySGz-U/exec";
 
     let adminToken = localStorage.getItem('tiffin_admin_token') || null;
@@ -518,7 +519,7 @@
       }
     }
 
-    // Chart.js Rendering
+    // Chart.js Rendering 
     function renderCharts(orders) {
       // 1. Revenue/Orders Trend Chart
       const ctx1 = document.getElementById('revenueChart').getContext('2d');
