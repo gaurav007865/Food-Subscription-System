@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -10,7 +10,7 @@
 </head>
 <body>
 
-  <!-- Toast Notification Container -->
+  <!--  Toast Notification Container -->
   <div id="toast-container" class="toast-container"></div>
 
   <!-- Header / Navigation section -->
@@ -67,45 +67,6 @@
   </div>
 </section>
 
-<!-- Subscription Checkout Modal -->
-<div id="checkout-modal" class="modal-overlay">
-  <div class="auth-card checkout-card">
-    <button class="close-btn" onclick="closeCheckoutModal()">&times;</button>
-    <h2 id="modal-tiffin-title">Subscribe To Mess</h2>
-    <p class="subtitle" id="modal-tiffin-location">Select duration plan & confirm checkout</p>
-
-    <!-- Plan Selection -->
-    <div class="plan-selector">
-      <div class="plan-box active" onclick="selectPlan('Daily', 1, this)">
-        <h4>Daily Plan</h4>
-        <p id="price-daily">₹120 / day</p>
-      </div>
-      <div class="plan-box" onclick="selectPlan('Weekly', 7, this)">
-        <span class="save-tag">SAVE 10%</span>
-        <h4>Weekly Plan</h4>
-        <p id="price-weekly">₹750 / wk</p>
-      </div>
-      <div class="plan-box" onclick="selectPlan('Monthly', 30, this)">
-        <span class="save-tag">BEST VALUE</span>
-        <h4>Monthly Plan</h4>
-        <p id="price-monthly">₹3,000 / mo</p>
-      </div>
-    </div>
-
-    <!-- Total Cost Calculator Summary -->
-    <div class="checkout-summary">
-      <div class="summary-row"><span>Per Meal Price:</span> <span id="summary-unit-price">₹120</span></div>
-      <div class="summary-row"><span>Duration:</span> <span id="summary-duration">Daily (1 Day)</span></div>
-      <hr style="margin: 8px 0; border: 0; border-top: 1px solid var(--border-color);">
-      <div class="summary-row total"><span>Total Payable:</span> <span id="summary-total-price">₹120</span></div>
-    </div>
-
-    <button class="btn btn-primary btn-full" id="btn-confirm-pay" onclick="processSubscriptionPayment()">
-      <span class="btn-text">Pay & Activate Subscription</span>
-      <span class="loader hidden"></span>
-    </button>
-  </div>
-</div>
   <!-- Hero Banner Section -->
   <section class="hero">
     <div class="hero-content">
@@ -117,8 +78,8 @@
       </div>
     </div>
   </section>
-  <!-- User Dashboard Section -->
-<!-- User Dashboard Container -->
+
+  <!-- User Dashboard Container -->
 <section id="user-dashboard" class="user-dashboard-container hidden">
   
   <!-- Welcome Greeting Header -->
@@ -126,6 +87,10 @@
     <div class="user-info">
       <h2>Welcome back, <span id="user-display-name">Foodie</span>! 👋</h2>
       <p id="sub-header-text">Check your active meals or choose a new tiffin plan below.</p>
+    </div>
+    <div class="reward-points-badge" id="reward-points-badge">
+      <i class="fa-solid fa-trophy"></i>
+      <span id="reward-points-value">0</span> Points
     </div>
   </div>
 
@@ -186,6 +151,27 @@
 
   </div>
 
+  <!-- ===================== DONATE FOOD SECTION (NEW) ===================== -->
+  <div id="donate" class="donate-food-card">
+    <div class="donate-food-header">
+      <div>
+        <h3><i class="fa-solid fa-hand-holding-heart" style="color:var(--secondary);"></i> Donate Surplus Food</h3>
+        <p class="text-muted">Got extra homemade food or tiffin? Donate it to someone who needs it and earn Reward Points.</p>
+      </div>
+      <button class="btn btn-secondary" id="btn-open-donate" onclick="openDonationModal()">
+        <i class="fa-solid fa-plus"></i> Donate Food
+      </button>
+    </div>
+  </div>
+
+  <!-- My Donations / Track Status -->
+  <div class="user-history-card" style="margin-top:1.5rem;">
+    <h3><i class="fa-solid fa-truck-fast"></i> My Donations & Status</h3>
+    <div id="user-donations-list" class="donations-list">
+      <p class="text-muted">Loading your donations...</p>
+    </div>
+  </div>
+
   <!-- Recent Orders List -->
   <div class="user-history-card">
     <h3><i class="fa-solid fa-clock-rotate-left"></i> My Recent Orders & Tracking</h3>
@@ -195,6 +181,60 @@
   </div>
 
 </section>
+
+<!-- ===================== DONATION MODAL (NEW) ===================== -->
+<div id="donation-modal" class="modal-overlay">
+  <div class="auth-card checkout-card">
+    <button class="close-btn" onclick="closeDonationModal()">&times;</button>
+    <h2><i class="fa-solid fa-hand-holding-heart" style="color:var(--secondary);"></i> Donate Food</h2>
+    <p class="subtitle">Fill in the details below. NGOs will be able to see and accept this donation.</p>
+
+    <form id="donation-form" onsubmit="submitDonation(event)">
+      <div class="input-group">
+        <label><i class="fa-solid fa-bowl-food"></i> Food Details</label>
+        <input type="text" id="donate-food-details" placeholder="e.g. 15 Dal-Rice tiffins, fresh" required>
+      </div>
+
+      <div class="input-group">
+        <label><i class="fa-solid fa-cubes-stacked"></i> Quantity (approx. servings)</label>
+        <input type="number" id="donate-quantity" min="1" placeholder="e.g. 15" required>
+      </div>
+
+      <div class="input-group">
+        <label><i class="fa-solid fa-location-dot"></i> Select Area (Where to Donate)</label>
+        <select id="donate-area" required>
+          <option value="">-- Select Area --</option>
+          <option value="Gurgaon">Gurgaon</option>
+          <option value="Delhi">Delhi</option>
+          <option value="Noida">Noida</option>
+          <option value="Pune">Pune</option>
+          <option value="Mumbai">Mumbai</option>
+          <option value="Pimpri-Chinchwad">Pimpri-Chinchwad</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label><i class="fa-solid fa-clock"></i> Food Good For (Expiry, in hours)</label>
+        <select id="donate-expiry" required>
+          <option value="2">2 Hours</option>
+          <option value="4" selected>4 Hours</option>
+          <option value="6">6 Hours</option>
+          <option value="12">12 Hours</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label><i class="fa-solid fa-map-pin"></i> Pickup Address</label>
+        <input type="text" id="donate-address" placeholder="House / Street / Landmark" required>
+      </div>
+
+      <button type="submit" class="btn btn-secondary btn-full" id="btn-submit-donation">
+        <span class="btn-text">Submit Donation Request</span>
+        <span class="loader hidden"></span>
+      </button>
+    </form>
+  </div>
+</div>
 
 <!-- SUBSCRIPTION & CHECKOUT MODAL -->
 <div id="checkout-modal" class="modal-overlay">
