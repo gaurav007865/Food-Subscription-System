@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Leaflet (free map library, uses OpenStreetMap - no API key needed) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
 
@@ -22,11 +24,11 @@
     <nav class="nav-links">
       <a href="#" class="active"><i class="fa-solid fa-house"></i> Home</a>
       <a href="#tiffins"><i class="fa-solid fa-utensils"></i> Explore Tiffins</a>
-      <a href="#donate"><i class="fa-solid fa-hand-holding-heart"></i> Donate Food</a>
+      <a href="#" onclick="handleNavDonateClick(event)"><i class="fa-solid fa-hand-holding-heart"></i> Donate Food</a>
     </nav>
     <div class="auth-buttons" id="nav-auth-section">
       <button class="btn btn-outline" id="btn-open-login">Sign In</button>
-      <button class="btn btn-primary" id="btn-open-register">Get Started</button>
+      <button class="btn btn-primary" id="btn-open-register">Subscribe</button>
     </div>
   </header>
 
@@ -120,7 +122,7 @@
   <!-- STATE B: IF NO ACTIVE SUBSCRIPTION -> SHOW ALL MESS & TIFFIC SEARCH ENGINE -->
   <div id="no-subscription-view" class="no-sub-section">
     
-    <div class="no-sub-banner">
+    <div class="no-sub-banner" id="no-sub-banner">
       <div class="banner-content">
         <i class="fa-solid fa-utensils banner-icon"></i>
         <div>
@@ -182,6 +184,35 @@
 
 </section>
 
+<!-- ===================== SUBSCRIBE PICKER MODAL (NEW) ===================== -->
+<div id="subscribe-picker-modal" class="modal-overlay">
+  <div class="auth-card">
+    <button class="close-btn" onclick="closeSubscribePickerModal()">&times;</button>
+    <h2><i class="fa-solid fa-list-check" style="color:var(--primary);"></i> Choose a Tiffin</h2>
+    <p class="subtitle">Pick a mess provider, then choose your plan (Daily / Weekly / Monthly)</p>
+    <div id="subscribe-picker-list" class="nearby-map-list"></div>
+  </div>
+</div>
+
+<!-- ===================== QUICK ORDER MODAL (NEW - the "+" button) ===================== -->
+<div id="quick-order-modal" class="modal-overlay">
+  <div class="auth-card">
+    <button class="close-btn" onclick="closeQuickOrderModal()">&times;</button>
+    <h2 id="quick-order-title">Order Tiffin</h2>
+    <p class="subtitle" id="quick-order-location">Single meal, pay & order now</p>
+
+    <div class="checkout-summary">
+      <div class="summary-row"><span>Price:</span> <span id="quick-order-price">₹0</span></div>
+      <div class="summary-row total"><span>Total Payable:</span> <span id="quick-order-total">₹0</span></div>
+    </div>
+
+    <button class="btn btn-primary btn-full" id="btn-confirm-quick-order" onclick="processQuickOrder()">
+      <span class="btn-text">Pay & Order Now</span>
+      <span class="loader hidden"></span>
+    </button>
+  </div>
+</div>
+
 <!-- ===================== DONATION MODAL (NEW) ===================== -->
 <div id="donation-modal" class="modal-overlay">
   <div class="auth-card checkout-card">
@@ -204,12 +235,18 @@
         <label><i class="fa-solid fa-location-dot"></i> Select Area (Where to Donate)</label>
         <select id="donate-area" required>
           <option value="">-- Select Area --</option>
-          <option value="Gurgaon">Gurgaon</option>
-          <option value="Delhi">Delhi</option>
-          <option value="Noida">Noida</option>
-          <option value="Pune">Pune</option>
-          <option value="Mumbai">Mumbai</option>
-          <option value="Pimpri-Chinchwad">Pimpri-Chinchwad</option>
+          <option value="Bansi Nagar">Bansi Nagar</option>
+          <option value="Lokmanya Nagar">Lokmanya Nagar</option>
+          <option value="Dharampeth">Dharampeth</option>
+          <option value="Sadar">Sadar</option>
+          <option value="Civil Lines">Civil Lines</option>
+          <option value="Sitabuldi">Sitabuldi</option>
+          <option value="Ramdaspeth">Ramdaspeth</option>
+          <option value="Trimurti Nagar">Trimurti Nagar</option>
+          <option value="Pratap Nagar">Pratap Nagar</option>
+          <option value="Manish Nagar">Manish Nagar</option>
+          <option value="Wardhaman Nagar">Wardhaman Nagar</option>
+          <option value="Hingna Road">Hingna Road</option>
         </select>
       </div>
 
@@ -339,6 +376,19 @@
     </div>
   </div>
 
+  <!-- ===================== NEARBY MAP MODAL (NEW) ===================== -->
+  <div id="map-modal" class="modal-overlay">
+    <div class="auth-card map-card">
+      <button class="close-btn" onclick="closeMapModal()">&times;</button>
+      <h2><i class="fa-solid fa-map-location-dot" style="color:var(--primary);"></i> Tiffins Near You</h2>
+      <p class="subtitle">Tap a pin or a card below to see details</p>
+      <div id="nearby-map"></div>
+      <div id="nearby-map-list" class="nearby-map-list"></div>
+    </div>
+  </div>
+
+  <!-- Leaflet JS (free map library, uses OpenStreetMap - no API key needed) -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
