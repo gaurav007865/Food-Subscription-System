@@ -19,6 +19,11 @@ let allTiffinsList = [];      // tiffins for "Explore" section (public, no login
 let globalTiffins = [];       // tiffins for logged-in dashboard subscribe flow
 let selectedTiffinForSub = null;
 let selectedPlan = { type: 'Daily', days: 1, multiplier: 1 };
+let selectedTiffinForQuickOrder = null; // for the new "+" quick order flow
+let selectedPaymentMethod = 'UPI'; // default selected
+let pendingSubscribeIntent = false;     // (kept for compatibility, no longer used to gate the picker)
+let pendingSubscriptionIntent = false;  // true when user tried to pay for a plan but wasn't logged in yet
+let pendingQuickOrderTiffinId = null;   // remembers which tiffin's "+" was clicked before login
 
 // ==========================================================================
 // PAGE LOAD
@@ -41,14 +46,20 @@ document.addEventListener('DOMContentLoaded', () => {
 // tiffin's own tif.Latitude / tif.Longitude values.
 // ==========================================================================
 
-// Approx coordinates per area name - stand-in until real per-provider coordinates exist
+// Approx coordinates per Nagpur locality - stand-in until real per-provider coordinates exist
 const DUMMY_AREA_COORDS = {
-  'Gurgaon': { lat: 28.4595, lng: 77.0266 },
-  'Delhi': { lat: 28.7041, lng: 77.1025 },
-  'Noida': { lat: 28.5355, lng: 77.3910 },
-  'Pune': { lat: 18.5204, lng: 73.8567 },
-  'Mumbai': { lat: 19.0760, lng: 72.8777 },
-  'Pimpri-Chinchwad': { lat: 18.6298, lng: 73.7997 }
+  'Bansi Nagar': { lat: 21.1352, lng: 79.0616 },
+  'Lokmanya Nagar': { lat: 21.1197, lng: 79.0517 },
+  'Dharampeth': { lat: 21.1394, lng: 79.0578 },
+  'Sadar': { lat: 21.1622, lng: 79.0771 },
+  'Civil Lines': { lat: 21.1580, lng: 79.0870 },
+  'Sitabuldi': { lat: 21.1490, lng: 79.0810 },
+  'Ramdaspeth': { lat: 21.1370, lng: 79.0790 },
+  'Trimurti Nagar': { lat: 21.1280, lng: 79.0390 },
+  'Pratap Nagar': { lat: 21.1330, lng: 79.0710 },
+  'Manish Nagar': { lat: 21.1050, lng: 79.0300 },
+  'Wardhaman Nagar': { lat: 21.1660, lng: 79.1210 },
+  'Hingna Road': { lat: 21.1050, lng: 78.9950 }
 };
 
 // Haversine formula - real-world distance (km) between two lat/lng points
@@ -84,18 +95,19 @@ function findNearestTiffins() {
 
       const sorted = [...allTiffinsList]
         .map(t => {
-          const coords = DUMMY_AREA_COORDS[t.Location] || DUMMY_AREA_COORDS['Delhi'];
+          const coords = DUMMY_AREA_COORDS[t.Location] || DUMMY_AREA_COORDS['Sitabuldi'];
           const distance = haversineDistanceKm(userLat, userLng, coords.lat, coords.lng);
-          return { ...t, distance };
+          return { ...t, distance, _coords: coords };
         })
         .sort((a, b) => a.distance - b.distance);
 
+      // Also update the normal grid behind the modal, so it's ready when they close the map
       renderExploreTiffins(sorted);
-      showToast("Showing tiffins nearest to you first (demo location data).", "success");
 
       heroExploreBtn.innerText = originalText;
       heroExploreBtn.disabled = false;
-      if (tiffinsSection) tiffinsSection.scrollIntoView({ behavior: 'smooth' });
+
+      openMapModal(userLat, userLng, sorted);
     },
     (error) => {
       heroExploreBtn.innerText = originalText;
@@ -106,10 +118,113 @@ function findNearestTiffins() {
   );
 }
 
+// ==========================================================================
+// NEARBY MAP MODAL (Leaflet + OpenStreetMap — free, no API key needed)
+// ==========================================================================
+let nearbyMap = null;         // holds the Leaflet map instance so we don't re-init it
+let nearbyMarkersLayer = null; // holds all markers so we can clear & redraw them
+
+function openMapModal(userLat, userLng, sortedTiffins) {
+  const modal = document.getElementById('map-modal');
+  modal.classList.add('active');
+
+  setTimeout(() => {
+    if (!nearbyMap) {
+      nearbyMap = L.map('nearby-map');
+    }
+    nearbyMap.setView([userLat, userLng], 12);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(nearbyMap);
+
+    if (nearbyMarkersLayer) nearbyMap.removeLayer(nearbyMarkersLayer);
+    nearbyMarkersLayer = L.layerGroup().addTo(nearbyMap);
+
+    L.circleMarker([userLat, userLng], {
+      radius: 9, color: '#1D4ED8', fillColor: '#3B82F6', fillOpacity: 0.9, weight: 2
+    }).addTo(nearbyMarkersLayer).bindPopup('<strong>📍 You are here</strong>');
+
+    const bounds = [[userLat, userLng]];
+    const top = sortedTiffins.slice(0, 12);
+
+    top.forEach(tif => {
+      const coords = tif._coords;
+      const marker = L.circleMarker([coords.lat, coords.lng], {
+        radius: 9, color: '#E85A26', fillColor: '#FF6B35', fillOpacity: 0.9, weight: 2
+      }).addTo(nearbyMarkersLayer);
+
+      marker.bindPopup(`
+        <div style="min-width:160px; font-family:'Plus Jakarta Sans', sans-serif;">
+          <strong>${tif.ProviderName}</strong><br>
+          <span style="font-size:0.85rem; color:#6C757D;">${tif.MealType} • ${tif.distance.toFixed(1)} km away</span><br>
+          <span style="font-weight:800; color:#FF6B35;">₹${tif.Price} / meal</span><br>
+          <button onclick="closeMapModal(); openSubscriptionModal('${tif.TiffinID}')"
+            style="margin-top:6px; padding:5px 10px; background:#FF6B35; color:white; border:none; border-radius:6px; font-weight:700; cursor:pointer; font-size:0.8rem;">
+            Subscribe
+          </button>
+        </div>
+      `);
+
+      bounds.push([coords.lat, coords.lng]);
+    });
+
+    nearbyMap.fitBounds(bounds, { padding: [40, 40] });
+    setTimeout(() => nearbyMap.invalidateSize(), 200);
+
+    renderNearbyMapList(top, userLat, userLng);
+  }, 100);
+}
+
+function renderNearbyMapList(tiffins, userLat, userLng) {
+  const list = document.getElementById('nearby-map-list');
+  if (!list) return;
+
+  if (!tiffins || tiffins.length === 0) {
+    list.innerHTML = `<p class="text-muted">No nearby tiffins found.</p>`;
+    return;
+  }
+
+  list.innerHTML = tiffins.map(tif => `
+    <div class="nearby-map-item" onclick="focusMapMarker(${tif._coords.lat}, ${tif._coords.lng})">
+      <div>
+        <strong>${tif.ProviderName}</strong>
+        <div style="font-size:0.8rem; color:var(--text-muted);">${tif.Location} • ${tif.distance.toFixed(1)} km away</div>
+      </div>
+      <span class="price-text" style="font-size:1rem;">₹${tif.Price}</span>
+    </div>
+  `).join('');
+}
+
+function focusMapMarker(lat, lng) {
+  if (nearbyMap) nearbyMap.setView([lat, lng], 15);
+}
+
+function closeMapModal() {
+  const modal = document.getElementById('map-modal');
+  modal.classList.remove('active');
+}
+
 // Modal Toggles (Auth)
 if (btnOpenLogin) btnOpenLogin.addEventListener('click', () => openModal('login'));
-if (btnOpenRegister) btnOpenRegister.addEventListener('click', () => openModal('register'));
 if (btnCloseModal) btnCloseModal.addEventListener('click', closeModal);
+
+// NEW: navbar "Subscribe" button (was "Get Started") - starts the subscribe journey
+const btnNavSubscribe = document.getElementById('btn-open-register');
+if (btnNavSubscribe) btnNavSubscribe.addEventListener('click', handleNavSubscribeClick);
+
+function handleNavSubscribeClick() {
+  const source = (globalTiffins && globalTiffins.length) ? globalTiffins : allTiffinsList;
+  if (!source || source.length === 0) return;
+  openSubscriptionModal(source[0].TiffinID);
+}
+
+// NEW: navbar "Donate Food" link - opens the donation popup directly (works regardless of subscription)
+function handleNavDonateClick(e) {
+  e.preventDefault();
+  openDonationModal();
+}
 
 function openModal(type) {
   authModal.classList.add('active');
@@ -235,6 +350,25 @@ if (loginForm) {
         localStorage.setItem('tiffin_user_session', JSON.stringify(currentUser));
         updateNavUI();
         closeModal();
+
+        // If they clicked navbar "Subscribe" before logging in, continue that journey now
+        if (pendingSubscribeIntent) {
+          pendingSubscribeIntent = false;
+          setTimeout(() => openSubscribePickerModal(), 300);
+        }
+
+        // If they tried to pay for a plan before logging in, finish that payment now
+        if (pendingSubscriptionIntent) {
+          pendingSubscriptionIntent = false;
+          setTimeout(() => processSubscriptionPayment(), 300);
+        }
+
+        // If they clicked a card's "+" before logging in, continue straight to that payment popup
+        if (pendingQuickOrderTiffinId) {
+          const tiffinIdToOrder = pendingQuickOrderTiffinId;
+          pendingQuickOrderTiffinId = null;
+          setTimeout(() => openQuickOrderModal(tiffinIdToOrder), 300);
+        }
       } else {
         showToast(result.message, 'error');
       }
@@ -287,31 +421,33 @@ async function loadUserDashboard() {
     const data = await res.json();
 
     if (data.success) {
-      globalTiffins = data.availableTiffins || [];
+      // Fallback: if the dashboard's own tiffin list comes back empty (e.g. a
+      // casing mismatch on the "Available" column in the Sheet), fall back to
+      // the already-fetched public list so the section never looks blank.
+      globalTiffins = (data.availableTiffins && data.availableTiffins.length)
+        ? data.availableTiffins
+        : allTiffinsList;
 
-      // Reward Points
       const points = data.rewardPoints || 0;
       const pointsEl = document.getElementById('reward-points-value');
       if (pointsEl) pointsEl.innerText = points;
 
-      // Active Subscription
       if (data.activeSubscription) {
         document.getElementById('active-subscription-view').classList.remove('hidden');
-        document.getElementById('no-subscription-view').classList.add('hidden');
-
         document.getElementById('active-provider-name').innerText = data.activeSubscription.TiffinID;
         document.getElementById('active-plan-type').innerText = `${data.activeSubscription.PlanType} Plan`;
         document.getElementById('active-end-date').innerText = data.activeSubscription.EndDate || 'Active';
+        document.getElementById('no-sub-banner').classList.add('hidden'); // hide only the "no plan yet" message
       } else {
         document.getElementById('active-subscription-view').classList.add('hidden');
-        document.getElementById('no-subscription-view').classList.remove('hidden');
-        renderTiffinCards(globalTiffins);
+        document.getElementById('no-sub-banner').classList.remove('hidden');
       }
 
-      // Orders
-      renderUserOrders(data.orders || []);
+      // Tiffin browsing + "+" ordering is always available, subscribed or not
+      document.getElementById('no-subscription-view').classList.remove('hidden');
+      renderTiffinCards(globalTiffins);
 
-      // Donations (NEW)
+      renderUserOrders(data.orders || []);
       renderUserDonations(data.donations || []);
     }
   } catch (err) {
@@ -342,7 +478,7 @@ function renderUserOrders(orders) {
 }
 
 // ==========================================================================
-// DONATION MODULE (NEW)
+// DONATION MODULE
 // ==========================================================================
 
 function openDonationModal() {
@@ -399,7 +535,7 @@ async function submitDonation(e) {
     if (result.success) {
       showToast("🎉 Donation request submitted! Status: Pending", "success");
       closeDonationModal();
-      loadUserDashboard(); // refresh donations list + reward points
+      loadUserDashboard();
     } else {
       showToast(result.message || "Could not submit donation.", "error");
     }
@@ -486,7 +622,9 @@ function renderExploreTiffins(tiffins) {
             <span class="price-text">₹${tif.Price}</span>
             <span style="font-size:0.8rem; color:var(--text-muted);">/ meal</span>
           </div>
-          <button class="btn btn-primary" onclick="openSubscriptionModal('${tif.TiffinID}')">Subscribe</button>
+          <button class="btn btn-primary btn-add-rect" onclick="openQuickOrderModal('${tif.TiffinID}')">
+            Add <i class="fa-solid fa-plus"></i>
+          </button>
         </div>
       </div>
     </div>
@@ -544,7 +682,9 @@ function renderTiffinCards(tiffins) {
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <div><span style="font-size:1.3rem; font-weight:800; color:var(--primary);">₹${tif.Price}</span> / meal</div>
-          <button class="btn btn-primary" onclick="openSubscriptionModal('${tif.TiffinID}')">Subscribe</button>
+          <button class="btn btn-primary btn-add-rect" onclick="openQuickOrderModal('${tif.TiffinID}')">
+            Add <i class="fa-solid fa-plus"></i>
+          </button>
         </div>
       </div>
     </div>
@@ -552,15 +692,105 @@ function renderTiffinCards(tiffins) {
 }
 
 // ==========================================================================
-// SUBSCRIPTION / CHECKOUT
+// SUBSCRIBE PICKER (opened from navbar "Subscribe" button)
 // ==========================================================================
-function openSubscriptionModal(tiffinId) {
+function openSubscribePickerModal() {
+  const source = (globalTiffins && globalTiffins.length) ? globalTiffins : allTiffinsList;
+  const list = document.getElementById('subscribe-picker-list');
+
+  if (!source || source.length === 0) {
+    list.innerHTML = `<p class="text-muted">No tiffins available right now.</p>`;
+  } else {
+    list.innerHTML = source.map(t => `
+      <div class="nearby-map-item" onclick="closeSubscribePickerModal(); openSubscriptionModal('${t.TiffinID}')">
+        <div>
+          <strong>${t.ProviderName}</strong>
+          <div style="font-size:0.8rem; color:var(--text-muted);">${t.Location} • ${t.MealType}</div>
+        </div>
+        <span class="price-text" style="font-size:1rem;">₹${t.Price}</span>
+      </div>
+    `).join('');
+  }
+
+  document.getElementById('subscribe-picker-modal').classList.add('active');
+}
+
+function closeSubscribePickerModal() {
+  document.getElementById('subscribe-picker-modal').classList.remove('active');
+}
+
+// ==========================================================================
+// QUICK ORDER (the "+" button on each card)
+// FIXED: now remembers which tiffin was clicked if login is required first,
+// and automatically re-opens this same popup right after login succeeds.
+// ==========================================================================
+function openQuickOrderModal(tiffinId) {
   if (!currentUser) {
-    showToast("Please Sign In to subscribe to a meal plan!", "info");
+    pendingQuickOrderTiffinId = tiffinId; // remember intent so we auto-continue right after login
+    showToast("Please Sign In to order!", "info");
     openModal('login');
     return;
   }
 
+  const source = (globalTiffins && globalTiffins.length) ? globalTiffins : allTiffinsList;
+  selectedTiffinForQuickOrder = source.find(t => t.TiffinID === tiffinId);
+  if (!selectedTiffinForQuickOrder) return;
+
+  document.getElementById('quick-order-title').innerText = `Order: ${selectedTiffinForQuickOrder.ProviderName}`;
+  document.getElementById('quick-order-location').innerText = `${selectedTiffinForQuickOrder.Location} • ${selectedTiffinForQuickOrder.MealType}`;
+  document.getElementById('quick-order-price').innerText = `₹${selectedTiffinForQuickOrder.Price}`;
+  document.getElementById('quick-order-total').innerText = `₹${selectedTiffinForQuickOrder.Price}`;
+
+  document.getElementById('quick-order-modal').classList.add('active');
+}
+
+function closeQuickOrderModal() {
+  document.getElementById('quick-order-modal').classList.remove('active');
+}
+
+function selectPaymentMethod(method, element) {
+  selectedPaymentMethod = method;
+  document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('active'));
+  element.classList.add('active');
+}
+
+async function processQuickOrder() {
+  if (!currentUser || !selectedTiffinForQuickOrder) return;
+
+  const btn = document.getElementById('btn-confirm-quick-order');
+  toggleBtnLoading(btn, true);
+
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'placeOrder',
+        userId: currentUser.userId,
+        tiffinId: selectedTiffinForQuickOrder.TiffinID,
+        amount: selectedTiffinForQuickOrder.Price,
+        paymentMethod: selectedPaymentMethod
+      })
+    });
+    const result = await res.json();
+    toggleBtnLoading(btn, false);
+
+    if (result.success) {
+      showToast("🎉 Order placed successfully!", "success");
+      closeQuickOrderModal();
+      if (currentUser) loadUserDashboard();
+    } else {
+      showToast(result.message, "error");
+    }
+  } catch (err) {
+    toggleBtnLoading(btn, false);
+    showToast("Order failed! Please try again.", "error");
+  }
+}
+
+// ==========================================================================
+// SUBSCRIPTION / CHECKOUT (unchanged)
+// ==========================================================================
+function openSubscriptionModal(tiffinId) {
   const source = globalTiffins.length ? globalTiffins : allTiffinsList;
   selectedTiffinForSub = source.find(t => t.TiffinID === tiffinId);
   if (!selectedTiffinForSub) return;
@@ -606,7 +836,14 @@ function closeCheckoutModal() {
 }
 
 async function processSubscriptionPayment() {
-  if (!currentUser || !selectedTiffinForSub) return;
+  if (!selectedTiffinForSub) return;
+
+  if (!currentUser) {
+    pendingSubscriptionIntent = true; // remember so we auto-continue payment right after login
+    showToast("For Payment first login/register.", "info");
+    openModal('login');
+    return;
+  }
 
   const btn = document.getElementById('btn-confirm-pay');
   toggleBtnLoading(btn, true);
