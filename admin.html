@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -25,15 +25,41 @@
     * { margin:0; padding:0; box-sizing:border-box; font-family:'Plus Jakarta Sans', sans-serif; }
     body { background-color: var(--bg); color: var(--dark); }
 
-    /* Login Screen */
+    /* Login Screen — Centered card, blurred background image */
     .admin-login-wrapper {
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #1A1A24 0%, #2EC4B6 100%);
+      position: relative;
+      overflow: hidden;
+      background: #1A1A24;
+    }
+    /* Background image now lives in HTML as an <img class="login-bg-image">
+       instead of a base64 CSS background — see markup below */
+    .login-bg-image {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      filter: blur(4px);
+      transform: scale(1.1);
+      opacity: 0.65;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .admin-login-wrapper::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(20,20,30,0.55) 0%, rgba(20,20,30,0.45) 100%);
+      z-index: 0;
     }
     .login-box {
+      position: relative;
+      z-index: 1;
       background: white;
       padding: 2.5rem;
       border-radius: 20px;
@@ -73,6 +99,7 @@
     .btn:hover { background: var(--primary-hover); }
     .btn-secondary { background: var(--secondary); }
     .btn-secondary:hover { background: #26A398; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
     /* Dashboard Layout */
     .dashboard { display: none; }
@@ -162,7 +189,7 @@
       border: 1px solid var(--border);
       margin-bottom: 2rem;
     }
-    
+
     .table-header-tools {
       display: flex;
       justify-content: space-between;
@@ -237,15 +264,65 @@
 
   <div id="toast" class="toast"></div>
 
-  <!-- 1. LOGIN SCREEN -->
+  <!-- 1. LOGIN / SIGNUP SCREEN -->
   <div id="login-screen" class="admin-login-wrapper">
+
+    <!-- Background image moved here from CSS. Replace the src below
+         with your own image path (e.g. "images/login-bg.jpg") or keep base64. -->
+    <img src="Tiffen.jpg" alt="" class="login-bg-image">
+
     <div class="login-box">
       <h1>🍱 Enterprise Admin</h1>
-      <p>Control Center v3.0 Login</p>
-      <input type="email" id="admin-email" class="input-field" value="admin@tiffinhub.com">
-      <input type="password" id="admin-password" class="input-field" value="admin@123">
-      <button class="btn" style="width:100%" onclick="loginAdmin()" id="admin-login-btn">Sign In</button>
+      <p id="auth-subtitle">Control Center v3.0 Login</p>
+
+      <!-- Toggle Tabs -->
+      <div style="display:flex; background:#F1F5F9; border-radius:10px; padding:4px; margin-bottom:1.2rem;">
+        <button id="tab-login-btn" onclick="switchAuthMode('login')"
+          style="flex:1; padding:8px; border:none; border-radius:8px; background:var(--primary); color:white; font-weight:700; cursor:pointer;">
+          Login
+        </button>
+        <button id="tab-signup-btn" onclick="switchAuthMode('signup')"
+          style="flex:1; padding:8px; border:none; border-radius:8px; background:transparent; color:var(--muted); font-weight:700; cursor:pointer;">
+          Sign Up
+        </button>
+      </div>
+
+      <!-- LOGIN FORM (existing admin) -->
+      <div id="login-form-fields">
+        <input type="email" id="admin-email" class="input-field" value="admin@tiffinhub.com">
+        <div style="position:relative;">
+          <input type="password" id="admin-password" class="input-field" style="padding-right:2.6rem;" value="admin@123">
+          <i class="fa-solid fa-eye" id="toggle-password-icon" onclick="togglePasswordVisibility()" style="position:absolute; right:14px; top:50%; transform:translateY(-70%); cursor:pointer; color:var(--muted);"></i>
+        </div>
+        <label style="display:flex; align-items:center; gap:8px; margin:-4px 0 14px; font-size:0.85rem; color:var(--muted); cursor:pointer; text-align:left;">
+          <input type="checkbox" id="admin-remember-me" style="width:16px; height:16px; cursor:pointer;">
+          Remember me
+        </label>
+        <p id="login-error-msg" style="color:#EF4444; font-size:0.82rem; font-weight:600; margin:-6px 0 12px; display:none;">
+          <i class="fa-solid fa-circle-exclamation"></i> <span id="login-error-text"></span>
+        </p>
+        <button class="btn" style="width:100%" onclick="loginAdmin()" id="admin-login-btn">Login</button>
+      </div>
+
+      <!-- SIGNUP FORM (new admin) -->
+      <div id="signup-form-fields" style="display:none;">
+        <input type="text" id="signup-name" class="input-field" placeholder="Full Name">
+        <input type="email" id="signup-email" class="input-field" placeholder="Email">
+        <div style="position:relative;">
+          <input type="password" id="signup-password" class="input-field" style="padding-right:2.6rem;" placeholder="Create Password">
+          <i class="fa-solid fa-eye" id="toggle-signup-password-icon" onclick="toggleSignupPasswordVisibility()" style="position:absolute; right:14px; top:50%; transform:translateY(-70%); cursor:pointer; color:var(--muted);"></i>
+        </div>
+        <input type="password" id="signup-confirm-password" class="input-field" placeholder="Confirm Password">
+        <p id="signup-error-msg" style="color:#EF4444; font-size:0.82rem; font-weight:600; margin:-6px 0 12px; display:none;">
+          <i class="fa-solid fa-circle-exclamation"></i> <span id="signup-error-text"></span>
+        </p>
+        <p id="signup-success-msg" style="color:#10B981; font-size:0.82rem; font-weight:600; margin:-6px 0 12px; display:none;">
+          <i class="fa-solid fa-circle-check"></i> <span id="signup-success-text"></span>
+        </p>
+        <button class="btn" style="width:100%" onclick="signupAdmin()" id="admin-signup-btn">Create Account</button>
+      </div>
     </div>
+
   </div>
 
   <!-- 2. DASHBOARD SCREEN -->
@@ -451,8 +528,8 @@
     //Connectivity url
     const API_URL = "https://script.google.com/macros/s/AKfycbwsv4d09RiyRloHh-j9rxGt1gNlnQyqvVUXmCyzhZix63zsvhrdTje4ToMaFoySGz-U/exec";
 
-    let adminToken = localStorage.getItem('tiffin_admin_token') || null;
-    let adminEmail = localStorage.getItem('tiffin_admin_email') || null;
+     let adminToken = localStorage.getItem('tiffin_admin_token') || sessionStorage.getItem('tiffin_admin_token') || null;
+    let adminEmail = localStorage.getItem('tiffin_admin_email') || sessionStorage.getItem('tiffin_admin_email') || null;
     let globalTiffinsData = [];
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -465,22 +542,119 @@
       setTimeout(() => toast.style.display = 'none', 3000);
     }
 
+    // Fixed admin credentials (temporary, until signup/backend auth is wired up)
+    const FIXED_ADMIN_EMAIL = "admin@tiffinhub.com";
+    const FIXED_ADMIN_PASSWORD = "admin@123";
+
     async function loginAdmin() {
       const email = document.getElementById('admin-email').value.trim();
       const pass = document.getElementById('admin-password').value.trim();
-      if (!email || !pass) return alert("Please fill fields!");
+      const btn = document.getElementById('admin-login-btn');
 
-      const res = await fetch(API_URL, {
-        method: 'POST', body: JSON.stringify({ action: 'adminLogin', email, password: pass })
-      });
-      const result = await res.json();
-      if (result.success) {
-        localStorage.setItem('tiffin_admin_token', result.adminToken);
-        localStorage.setItem('tiffin_admin_email', result.email || email);
-        showDashboard();
-      } else alert(result.message);
+      hideLoginError();
+
+      if (!email || !pass) {
+        showLoginError("Please enter both email and password.");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = "Logging in...";
+
+      // Simple local check against the one fixed admin account
+      setTimeout(() => {
+        if (email === FIXED_ADMIN_EMAIL && pass === FIXED_ADMIN_PASSWORD) {
+          const rememberMe = document.getElementById('admin-remember-me').checked;
+          const storage = rememberMe ? localStorage : sessionStorage;
+          storage.setItem('tiffin_admin_token', 'local_admin_token');
+          storage.setItem('tiffin_admin_email', email);
+          showDashboard();
+        } else {
+          showLoginError("Invalid email or password.");
+        }
+        btn.disabled = false;
+        btn.innerText = "Login";
+      }, 400);
     }
 
+    function showLoginError(msg) {
+      const errorBox = document.getElementById('login-error-msg');
+      document.getElementById('login-error-text').innerText = msg;
+      errorBox.style.display = 'block';
+    }
+
+     function hideLoginError() {
+      document.getElementById('login-error-msg').style.display = 'none';
+    }
+
+    function switchAuthMode(mode) {
+      const loginBtn = document.getElementById('tab-login-btn');
+      const signupBtn = document.getElementById('tab-signup-btn');
+      const loginFields = document.getElementById('login-form-fields');
+      const signupFields = document.getElementById('signup-form-fields');
+      const subtitle = document.getElementById('auth-subtitle');
+
+      hideLoginError();
+      hideSignupMessages();
+
+      if (mode === 'login') {
+        loginBtn.style.background = 'var(--primary)'; loginBtn.style.color = 'white';
+        signupBtn.style.background = 'transparent'; signupBtn.style.color = 'var(--muted)';
+        loginFields.style.display = 'block';
+        signupFields.style.display = 'none';
+        subtitle.innerText = 'Control Center v3.0 Login';
+      } else {
+        signupBtn.style.background = 'var(--primary)'; signupBtn.style.color = 'white';
+        loginBtn.style.background = 'transparent'; loginBtn.style.color = 'var(--muted)';
+        signupFields.style.display = 'block';
+        loginFields.style.display = 'none';
+        subtitle.innerText = 'Create your Admin Account';
+      }
+    }
+
+    function toggleSignupPasswordVisibility() {
+      const pwdField = document.getElementById('signup-password');
+      const icon = document.getElementById('toggle-signup-password-icon');
+      if (pwdField.type === 'password') {
+        pwdField.type = 'text'; icon.classList.replace('fa-eye', 'fa-eye-slash');
+      } else {
+        pwdField.type = 'password'; icon.classList.replace('fa-eye-slash', 'fa-eye');
+      }
+    }
+
+    // NOTE: Sign Up is UI-only for now (no backend save yet).
+    // It just shows a message telling the person to use the fixed login credentials.
+    // Backend account-creation will be wired up later.
+    async function signupAdmin() {
+      showSignupError("Sign up isn't connected yet. Please use the Login tab with the provided admin email & password.");
+    }
+
+    function showSignupError(msg) {
+      document.getElementById('signup-error-text').innerText = msg;
+      document.getElementById('signup-error-msg').style.display = 'block';
+    }
+    function showSignupSuccess(msg) {
+      document.getElementById('signup-success-text').innerText = msg;
+      document.getElementById('signup-success-msg').style.display = 'block';
+    }
+    function hideSignupMessages() {
+      document.getElementById('signup-error-msg').style.display = 'none';
+      document.getElementById('signup-success-msg').style.display = 'none';
+    }
+
+    function togglePasswordVisibility() {
+      const pwdField = document.getElementById('admin-password');
+      const icon = document.getElementById('toggle-password-icon');
+      if (pwdField.type === 'password') {
+        pwdField.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+      } else {
+        pwdField.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+      }
+    }
     function showDashboard() {
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('dashboard-screen').classList.add('active');
@@ -488,7 +662,9 @@
     }
 
     function logoutAdmin() {
-      localStorage.clear(); location.reload();
+      localStorage.clear();
+      sessionStorage.clear();
+      location.reload();
     }
 
     function switchAdminTab(tabId, btn) {
@@ -519,7 +695,7 @@
       }
     }
 
-    // Chart.js Rendering 
+    // Chart.js Rendering
     function renderCharts(orders) {
       // 1. Revenue/Orders Trend Chart
       const ctx1 = document.getElementById('revenueChart').getContext('2d');
