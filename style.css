@@ -1,6 +1,6 @@
-<<<<<<<<< Temporary merge branch 1
+/* <<<<<<<<< Temporary merge branch 1 */
 /* Styling & Variables */
-=========
+/* ========= */
  /* ==========================================================================
    TiffinHub - Modern Warm Food Design System
    Primary: #FF6B35 (Terracotta Orange)
@@ -9,7 +9,7 @@
    Dark: #1A1A24 (Espresso Charcoal)
    ========================================================================== */
 
->>>>>>>>> Temporary merge branch 2
+/* >>>>>>>>> Temporary merge branch 2 */
 :root {
   --primary: #FF6B35;
   --primary-hover: #E85A26;
@@ -20,10 +20,10 @@
   --text-muted: #6C757D;
   --border-color: #E2E8F0;
   --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-<<<<<<<<< Temporary merge branch 1
+/* <<<<<<<<< Temporary merge branch 1 */
   --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   --radius: 12px;
-=========
+/* ========= */
   --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
   --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 
@@ -31,7 +31,7 @@
   --radius-md: 12px;
   --radius-lg: 20px;
   --radius-full: 9999px;
->>>>>>>>> Temporary merge branch 2
+/* >>>>>>>>> Temporary merge branch 2 */
 }
 
 * {
@@ -46,10 +46,10 @@ body {
   color: var(--text-dark);
 }
 
-<<<<<<<<< Temporary merge branch 1
+/* <<<<<<<<< Temporary merge branch 1 */
 /* Navbar */
-=========
->>>>>>>>> Temporary merge branch 2
+/* =========
+>>>>>>>>> Temporary merge branch 2 */
 .navbar {
   display: flex;
   justify-content: space-between;
@@ -73,15 +73,15 @@ body {
 
 .brand-name span { color: var(--primary); }
 
-<<<<<<<<< Temporary merge branch 1
+/* <<<<<<<<< Temporary merge branch 1 */
 .nav-links {
   display: flex;
   gap: 2rem;
   align-items: center;
 }
-=========
+/* ========= */
 .nav-links { display: flex; gap: 2rem; align-items: center; }
->>>>>>>>> Temporary merge branch 2
+/* >>>>>>>>> Temporary merge branch 2 */
 
 .nav-links a {
   text-decoration: none;
@@ -90,7 +90,7 @@ body {
   transition: 0.3s;
 }
 
-<<<<<<<<< Temporary merge branch 1
+/* <<<<<<<<< Temporary merge branch 1 */
 .nav-links a.active, .nav-links a:hover {
   color: var(--primary);
 }
@@ -102,12 +102,12 @@ body {
 }
 
 /* Buttons */
-=========
+/* ========= */
 .nav-links a.active, .nav-links a:hover { color: var(--primary); }
 
 .auth-buttons { display: flex; align-items: center; gap: 1rem; }
 
->>>>>>>>> Temporary merge branch 2
+/* >>>>>>>>> Temporary merge branch 2 */
 .btn {
   padding: 0.65rem 1.4rem;
   border-radius: var(--radius);
@@ -129,9 +129,9 @@ body {
 }
 .btn-primary:hover {
   background-color: var(--primary-hover);
-<<<<<<<<< Temporary merge branch 1
-}
-=========
+/* <<<<<<<<< Temporary merge branch 1 */
+
+/* ========= */
   box-shadow: 0 6px 20px rgba(255, 107, 53, 0.45);
 }
 
@@ -141,7 +141,7 @@ body {
   box-shadow: 0 4px 14px rgba(46, 196, 182, 0.35);
 }
 .btn-secondary:hover { background-color: var(--secondary-hover); }
->>>>>>>>> Temporary merge branch 2
+/* >>>>>>>>> Temporary merge branch 2 */
 
 .btn-outline {
   background: transparent;
@@ -159,29 +159,29 @@ body {
   padding: 0.85rem;
 }
 
-<<<<<<<<< Temporary merge branch 1
+/* <<<<<<<<< Temporary merge branch 1 */
 .btn-large {
   padding: 1rem 2.2rem;
   font-size: 1.1rem;
 }
 
 /* Hero Section */
-=========
->>>>>>>>> Temporary merge branch 2
+/* =========
+>>>>>>>>> Temporary merge branch 2 */
 .hero {
   padding: 5rem 5%;
   text-align: center;
   background: radial-gradient(circle at top, rgba(255,107,53,0.1) 0%, rgba(250,247,242,1) 70%);
 }
-<<<<<<<<< Temporary merge branch 1
+/* <<<<<<<<< Temporary merge branch 1 */
 
 .hero-content {
   max-width: 760px;
   margin: 0 auto;
 }
-=========
+/* ========= */
 .hero-content { max-width: 760px; margin: 0 auto; }
->>>>>>>>> Temporary merge branch 2
+/* >>>>>>>>> Temporary merge branch 2 */
 
 .badge {
   background: rgba(255,107,53,0.15);
@@ -200,7 +200,7 @@ body {
 .hero p { color: var(--text-muted); font-size: 1.15rem; margin-bottom: 2.2rem; font-weight: 500; }
 .hero-actions { display: flex; justify-content: center; gap: 1rem; }
 
-<<<<<<<<< Temporary merge branch 1
+/* <<<<<<<<< Temporary merge branch 1 */
 .hero p {
   color: var(--text-muted);
   font-size: 1.15rem;
@@ -225,13 +225,13 @@ body {
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(6px);
-=========
+/* ========= */}
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; width: 100%; height: 100%;
   background: rgba(26, 26, 36, 0.6);
   backdrop-filter: blur(8px);
->>>>>>>>> Temporary merge branch 2
+/* >>>>>>>>> Temporary merge branch 2 */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -255,7 +255,7 @@ body {
   border-radius: 20px;
   box-shadow: var(--shadow-lg);
   position: relative;
-<<<<<<<<< Temporary merge branch 1
+/* <<<<<<<<< Temporary merge branch 1 */
   transform: translateY(20px);
   transition: 0.3s ease;
 }
@@ -402,7 +402,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
-=========
+/* ========= */
   transform: translateY(20px) scale(0.96);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   max-height: 90vh;
@@ -470,10 +470,10 @@ body {
 .toast-container {
   position: fixed; bottom: 24px; right: 24px; z-index: 2000;
   display: flex; flex-direction: column; gap: 12px; pointer-events: none;
->>>>>>>>> Temporary merge branch 2
+/* >>>>>>>>> Temporary merge branch 2 */
 }
 .toast {
-<<<<<<<<< Temporary merge branch 1
+/* <<<<<<<<< Temporary merge branch 1 */
   padding: 12px 20px;
   border-radius: 10px;
   background: var(--text-dark);
@@ -482,21 +482,21 @@ body {
   font-weight: 600;
   box-shadow: var(--shadow-lg);
   animation: slideIn 0.3s ease;
-=========
+/* ========= */
   pointer-events: auto; padding: 14px 22px; border-radius: var(--radius-md);
   background: var(--text-dark); color: #FFFFFF; font-size: 0.92rem; font-weight: 600;
   box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 10px;
   animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-width: 360px;
->>>>>>>>> Temporary merge branch 2
+/* >>>>>>>>> Temporary merge branch 2 */
 }
 .toast.success { background: var(--secondary); }
-<<<<<<<<< Temporary merge branch 1
+/* <<<<<<<<< Temporary merge branch 1 */
 .toast.error { background: #E63946; }
 
 @keyframes slideIn {
   from { transform: translateX(100%); }
   to { transform: translateX(0); }
-=========
+/* ========= */}
 .toast.error { background: var(--danger); }
 .toast.info { background: var(--primary); }
 @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
@@ -722,9 +722,9 @@ body {
     flex-direction: column;
     align-items: flex-start;
   }
+}
   .donate-food-header {
     flex-direction: column;
     align-items: flex-start;
   }
->>>>>>>>> Temporary merge branch 2
-}
+/* >>>>>>>>> Temporary merge branch 2 */
