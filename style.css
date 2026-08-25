@@ -697,3 +697,55 @@ body {
     flex-direction: column;
     align-items: flex-start;
   }
+
+  .view-menu-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--secondary);
+  cursor: pointer;
+  margin: 4px 0 8px;
+}
+.view-menu-link:hover { text-decoration: underline; }
+
+.menu-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin-top: 1rem;
+  max-height: 320px;
+  overflow-y: auto;
+}
+.menu-item-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0.7rem 1rem;
+  background: #FAFAFA;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+.menu-item-row i { color: var(--secondary); }
+
+/* Fix: --success and --danger were referenced but never defined */
+:root {
+  --success: #10B981;
+  --danger: #EF4444;
+}
+
+.area-status-badge { margin-top: 0.6rem; }
+.area-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+.area-badge-needed { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+.area-badge-not-needed { background: rgba(239, 68, 68, 0.15); color: var(--danger); }

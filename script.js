@@ -1,4 +1,4 @@
- //This is Script connectivity
+//This is Script connectivity
 const API_URL = "https://script.google.com/macros/s/AKfycbwsv4d09RiyRloHh-j9rxGt1gNlnQyqvVUXmCyzhZix63zsvhrdTje4ToMaFoySGz-U/exec";
 
 // DOM Elements
@@ -24,6 +24,7 @@ let selectedPaymentMethod = 'UPI'; // default selected
 let pendingSubscribeIntent = false;     // (kept for compatibility, no longer used to gate the picker)
 let pendingSubscriptionIntent = false;  // true when user tried to pay for a plan but wasn't logged in yet
 let pendingQuickOrderTiffinId = null;   // remembers which tiffin's "+" was clicked before login
+let areaStatusList = [];      // NEW: [{Area, Status}] - which areas currently need food donations
 
 // ==========================================================================
 // PAGE LOAD
@@ -488,11 +489,45 @@ function openDonationModal() {
     return;
   }
   document.getElementById('donation-form').reset();
+  const statusEl = document.getElementById('area-need-status');
+  if (statusEl) statusEl.innerHTML = ''; // NEW: clear old area badge each time modal opens
   document.getElementById('donation-modal').classList.add('active');
 }
 
 function closeDonationModal() {
   document.getElementById('donation-modal').classList.remove('active');
+}
+
+// NEW: shows a "Needed" / "Not Needed" badge under the area dropdown based on AreaStatus sheet data
+function updateAreaNeedStatus() {
+  const areaSelect = document.getElementById('donate-area');
+  const statusEl = document.getElementById('area-need-status');
+  if (!areaSelect || !statusEl) return;
+
+  const selectedArea = areaSelect.value;
+  if (!selectedArea) {
+    statusEl.innerHTML = '';
+    return;
+  }
+
+  const match = areaStatusList.find(a =>
+    (a.Area || '').toString().trim().toLowerCase() === selectedArea.trim().toLowerCase()
+  );
+
+  // Default to "Needed" if admin hasn't set a status for this area yet
+  const isNeeded = match ? (match.Status || '').toString().trim().toLowerCase() === 'needed' : true;
+
+  if (isNeeded) {
+    statusEl.innerHTML = `
+      <span class="area-badge area-badge-needed">
+        <i class="fa-solid fa-circle-check"></i> Needed — Food is needed in this area
+      </span>`;
+  } else {
+    statusEl.innerHTML = `
+      <span class="area-badge area-badge-not-needed">
+        <i class="fa-solid fa-circle-xmark"></i> Not Needed — Food is not needed in this area
+      </span>`;
+  }
 }
 
 async function submitDonation(e) {
@@ -576,6 +611,40 @@ function renderUserDonations(donations) {
 }
 
 // ==========================================================================
+// TODAY'S MENU MODAL
+// ==========================================================================
+function openMenuModal(tiffinId) {
+  const source = (currentUser && globalTiffins.length) ? globalTiffins : allTiffinsList;
+  const tif = source.find(t => t.TiffinID === tiffinId);
+  if (!tif) return;
+
+  document.getElementById('menu-modal-title').innerHTML =
+    `<i class="fa-solid fa-utensils" style="color:var(--primary);"></i> ${tif.ProviderName} — Today's Menu`;
+  document.getElementById('menu-modal-location').innerText = `${tif.Location} • ${tif.MealType}`;
+
+  const menuList = document.getElementById('menu-modal-list');
+  const menuText = (tif.TodayMenu || '').trim();
+
+  if (!menuText) {
+    menuList.innerHTML = `<p class="text-muted">Menu not updated yet for today. Please check back later.</p>`;
+  } else {
+    const items = menuText.split(',').map(i => i.trim()).filter(Boolean);
+    menuList.innerHTML = items.map(item => `
+      <div class="menu-item-row">
+        <i class="fa-solid fa-bowl-food"></i>
+        <span>${item}</span>
+      </div>
+    `).join('');
+  }
+
+  document.getElementById('menu-modal').classList.add('active');
+}
+
+function closeMenuModal() {
+  document.getElementById('menu-modal').classList.remove('active');
+}
+
+// ==========================================================================
 // EXPLORE TIFFINS (Public section, no login required)
 // ==========================================================================
 async function fetchExploreTiffins() {
@@ -589,6 +658,7 @@ async function fetchExploreTiffins() {
 
     if (data.success && data.tiffins) {
       allTiffinsList = data.tiffins.filter(t => t.Available === 'Yes' || t.Available === 'yes');
+      areaStatusList = data.areaStatus || []; // NEW: capture area need/not-needed data
       renderExploreTiffins(allTiffinsList);
     } else {
       container.innerHTML = `<p class="text-muted" style="grid-column: 1/-1; text-align: center;">No mess services available right now.</p>`;
@@ -616,6 +686,9 @@ function renderExploreTiffins(tiffins) {
         <div>
           <h3>${tif.ProviderName}</h3>
           <p class="location-info"><i class="fa-solid fa-location-dot" style="color:var(--primary);"></i> ${tif.Location}</p>
+          <span class="view-menu-link" onclick="openMenuModal('${tif.TiffinID}')">
+            <i class="fa-solid fa-list-ul"></i> View Today's Menu
+          </span>
         </div>
         <div class="card-footer-action">
           <div>
@@ -675,6 +748,9 @@ function renderTiffinCards(tiffins) {
       <img src="${tif.ImageURL || 'https://images.unsplash.com/photo-1546833999-b9f581a1996d'}" class="tiffin-img" alt="${tif.ProviderName}">
       <div class="tiffin-body">
         <h3>${tif.ProviderName}</h3>
+        <span class="view-menu-link" onclick="openMenuModal('${tif.TiffinID}')">
+          <i class="fa-solid fa-list-ul"></i> View Today's Menu
+        </span>
         <div class="tiffin-meta">
           <span><i class="fa-solid fa-utensils"></i> ${tif.MealType}</span>
           <span><i class="fa-solid fa-star" style="color:#F59E0B"></i> ${tif.Rating || '4.8'}</span>

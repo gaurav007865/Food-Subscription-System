@@ -213,6 +213,16 @@
   </div>
 </div>
 
+<!-- ===================== TODAY'S MENU MODAL (NEW) ===================== -->
+<div id="menu-modal" class="modal-overlay">
+  <div class="auth-card">
+    <button class="close-btn" onclick="closeMenuModal()">&times;</button>
+    <h2 id="menu-modal-title"><i class="fa-solid fa-utensils" style="color:var(--primary);"></i> Today's Menu</h2>
+    <p class="subtitle" id="menu-modal-location">Location • Meal Type</p>
+    <div id="menu-modal-list" class="menu-items-list"></div>
+  </div>
+</div>
+
 <!-- ===================== DONATION MODAL (NEW) ===================== -->
 <div id="donation-modal" class="modal-overlay">
   <div class="auth-card checkout-card">
@@ -231,24 +241,25 @@
         <input type="number" id="donate-quantity" min="1" placeholder="e.g. 15" required>
       </div>
 
-      <div class="input-group">
-        <label><i class="fa-solid fa-location-dot"></i> Select Area (Where to Donate)</label>
-        <select id="donate-area" required>
-          <option value="">-- Select Area --</option>
-          <option value="Bansi Nagar">Bansi Nagar</option>
-          <option value="Lokmanya Nagar">Lokmanya Nagar</option>
-          <option value="Dharampeth">Dharampeth</option>
-          <option value="Sadar">Sadar</option>
-          <option value="Civil Lines">Civil Lines</option>
-          <option value="Sitabuldi">Sitabuldi</option>
-          <option value="Ramdaspeth">Ramdaspeth</option>
-          <option value="Trimurti Nagar">Trimurti Nagar</option>
-          <option value="Pratap Nagar">Pratap Nagar</option>
-          <option value="Manish Nagar">Manish Nagar</option>
-          <option value="Wardhaman Nagar">Wardhaman Nagar</option>
-          <option value="Hingna Road">Hingna Road</option>
-        </select>
-      </div>
+<div class="input-group">
+  <label><i class="fa-solid fa-location-dot"></i> Select Area (Where to Donate)</label>
+  <select id="donate-area" required onchange="updateAreaNeedStatus()">
+    <option value="">-- Select Area --</option>
+    <option value="Bansi Nagar">Bansi Nagar</option>
+    <option value="Lokmanya Nagar">Lokmanya Nagar</option>
+    <option value="Dharampeth">Dharampeth</option>
+    <option value="Sadar">Sadar</option>
+    <option value="Civil Lines">Civil Lines</option>
+    <option value="Sitabuldi">Sitabuldi</option>
+    <option value="Ramdaspeth">Ramdaspeth</option>
+    <option value="Trimurti Nagar">Trimurti Nagar</option>
+    <option value="Pratap Nagar">Pratap Nagar</option>
+    <option value="Manish Nagar">Manish Nagar</option>
+    <option value="Wardhaman Nagar">Wardhaman Nagar</option>
+    <option value="Hingna Road">Hingna Road</option>
+  </select>
+  <div id="area-need-status" class="area-status-badge"></div>
+</div>
 
       <div class="input-group">
         <label><i class="fa-solid fa-clock"></i> Food Good For (Expiry, in hours)</label>
