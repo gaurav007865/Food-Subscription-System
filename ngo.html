@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NGO Portal - TiffinHub Donations</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --primary: #FF6B35;
+      --primary-hover: #E85A26;
+      --secondary: #2EC4B6;
+      --dark: #1A1A24;
+      --bg: #FAF7F2;
+      --card: #FFFFFF;
+      --border: #E2E8F0;
+      --muted: #6C757D;
+      --success: #10B981;
+      --danger: #EF4444;
+      --warning: #F59E0B;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Plus Jakarta Sans', sans-serif; }
+    body { background-color: var(--bg); color: var(--dark); }
+
+    /* Login Screen */
+    .ngo-login-wrapper {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #2EC4B6 0%, #1A1A24 100%);
+    }
+    .login-box {
+      background: white;
+      padding: 2.5rem;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+    .login-box h1 { font-size: 1.7rem; margin-bottom: 0.4rem; }
+    .login-box p { color: var(--muted); font-size: 0.85rem; margin-bottom: 1.5rem; }
+
+    .time-window-note {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1.5px solid rgba(245, 158, 11, 0.4);
+      color: #B45309;
+      padding: 0.7rem 1rem;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 1.3rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-align: left;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      margin-bottom: 1rem;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      outline: none;
+      font-size: 0.95rem;
+    }
+    .input-field:focus { border-color: var(--secondary); }
+
+    .btn {
+      padding: 0.8rem 1.4rem;
+      background: var(--secondary);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .btn:hover { background: #26A398; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-primary { background: var(--primary); }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-sm { padding: 6px 12px; font-size: 0.82rem; }
+
+    #login-error-msg {
+      color: var(--danger); font-size: 0.85rem; font-weight: 600;
+      margin: -6px 0 12px; display: none; text-align: left;
+    }
+
+    /* Dashboard */
+    .dashboard { display: none; }
+    .dashboard.active { display: block; }
+
+    header {
+      background: var(--dark);
+      color: white;
+      padding: 1rem 5%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-brand { font-size: 1.4rem; font-weight: 800; }
+    .header-brand span { color: var(--secondary); }
+
+    .container { padding: 2rem 5%; max-width: 1100px; margin: 0 auto; }
+
+    .section-card {
+      background: var(--card);
+      padding: 1.8rem;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      margin-bottom: 2rem;
+    }
+    .section-card h2 { font-size: 1.3rem; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 8px; }
+
+    .donation-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 0.8rem;
+      background: #FAFAFA;
+    }
+    .donation-row input[type="checkbox"] {
+      width: 20px; height: 20px; margin-top: 4px; cursor: pointer; accent-color: var(--secondary);
+    }
+    .donation-row-main { flex: 1; }
+    .donation-row-main strong { font-size: 1rem; }
+    .donation-meta {
+      display: flex; gap: 1.2rem; flex-wrap: wrap; margin-top: 0.5rem;
+      font-size: 0.82rem; color: var(--muted);
+    }
+    .donation-meta i { color: var(--secondary); margin-right: 4px; }
+
+    .status-badge {
+      padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; white-space: nowrap;
+    }
+    .badge-pending { background: rgba(245, 158, 11, 0.15); color: #D97706; }
+    .badge-accepted { background: rgba(46, 196, 182, 0.15); color: var(--secondary); }
+    .badge-reached { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+
+    .action-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1rem; flex-wrap: wrap; gap: 10px;
+    }
+    .select-all-label {
+      display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.9rem; cursor: pointer;
+    }
+
+    .empty-msg { color: var(--muted); text-align: center; padding: 2rem; }
+
+    .toast {
+      position: fixed; bottom: 20px; right: 20px;
+      background: var(--dark); color: white;
+      padding: 12px 20px; border-radius: 10px;
+      display: none; z-index: 2000; font-weight: 600;
+    }
+
+    @media (max-width: 600px) {
+      .donation-row { flex-direction: column; }
+      .donation-meta { flex-direction: column; gap: 0.3rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- 1. NGO LOGIN SCREEN -->
+  <div id="login-screen" class="ngo-login-wrapper">
+    <div class="login-box">
+      <h1>🤝 NGO Portal</h1>
+      <p>Login to view & accept food donations</p>
+
+      <div class="time-window-note">
+        <i class="fa-solid fa-clock"></i>
+        <span>NGO Login is available only between <strong>8:00 PM – 10:00 PM</strong> daily.</span>
+      </div>
+
+      <input type="email" id="ngo-email" class="input-field" placeholder="NGO Email">
+      <input type="password" id="ngo-password" class="input-field" placeholder="Password">
+
+      <p id="login-error-msg"><i class="fa-solid fa-circle-exclamation"></i> <span id="login-error-text"></span></p>
+
+      <button class="btn" style="width:100%" onclick="loginNGO()" id="ngo-login-btn">Login</button>
+    </div>
+  </div>
+
+  <!-- 2. NGO DASHBOARD -->
+  <div id="dashboard-screen" class="dashboard">
+    <header>
+      <div class="header-brand">🤝 <span>NGO</span> Portal</div>
+      <div>
+        <span style="margin-right: 15px; color:#A0AEC0;" id="logged-ngo-name">NGO</span>
+        <button onclick="logoutNGO()" style="background:#EF4444; color:white; border:none; padding:6px 14px; border-radius:6px; cursor:pointer; font-weight:700;">Logout</button>
+      </div>
+    </header>
+
+    <div class="container">
+
+      <!-- AVAILABLE DONATIONS -->
+      <div class="section-card">
+        <h2><i class="fa-solid fa-hand-holding-heart" style="color:var(--primary);"></i> Available Donations</h2>
+
+        <div class="action-bar">
+          <label class="select-all-label">
+            <input type="checkbox" id="select-all-checkbox" onchange="toggleSelectAll(this)">
+            Select All
+          </label>
+          <button class="btn btn-primary" id="btn-accept-selected" onclick="acceptSelectedDonations()">
+            <i class="fa-solid fa-check-double"></i> Accept Selected
+          </button>
+        </div>
+
+        <div id="available-donations-list">
+          <p class="empty-msg">Loading available donations...</p>
+        </div>
+      </div>
+
+      <!-- MY ACCEPTED DONATIONS -->
+      <div class="section-card">
+        <h2><i class="fa-solid fa-truck-fast" style="color:var(--secondary);"></i> My Accepted Donations</h2>
+        <div id="accepted-donations-list">
+          <p class="empty-msg">Loading...</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzPY_UYN0rY6ev4AycsqPQAugdQG-pSTNGOqwf2iHcVjC3R16cPF6XQtBS86jW6Xu6A0A/exec";
+
+    let currentNGO = JSON.parse(sessionStorage.getItem('tiffin_ngo_session')) || null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (currentNGO) showDashboard();
+    });
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.innerText = msg; toast.style.display = 'block';
+      setTimeout(() => toast.style.display = 'none', 3000);
+    }
+
+    function showLoginError(msg) {
+      document.getElementById('login-error-text').innerText = msg;
+      document.getElementById('login-error-msg').style.display = 'block';
+    }
+    function hideLoginError() {
+      document.getElementById('login-error-msg').style.display = 'none';
+    }
+
+    async function loginNGO() {
+      const email = document.getElementById('ngo-email').value.trim();
+      const password = document.getElementById('ngo-password').value.trim();
+      const btn = document.getElementById('ngo-login-btn');
+
+      hideLoginError();
+      if (!email || !password) {
+        showLoginError("Please enter both email and password.");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = "Logging in...";
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'ngoLogin', email, password })
+        });
+        const result = await res.json();
+
+        if (result.success) {
+          currentNGO = result.ngo;
+          sessionStorage.setItem('tiffin_ngo_session', JSON.stringify(currentNGO));
+          showDashboard();
+        } else {
+          showLoginError(result.message);
+        }
+      } catch (err) {
+        showLoginError("Server connection error!");
+      }
+
+      btn.disabled = false;
+      btn.innerText = "Login";
+    }
+
+    function logoutNGO() {
+      sessionStorage.removeItem('tiffin_ngo_session');
+      currentNGO = null;
+      location.reload();
+    }
+
+    function showDashboard() {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('dashboard-screen').classList.add('active');
+      document.getElementById('logged-ngo-name').innerText = currentNGO.name;
+      loadAvailableDonations();
+      loadAcceptedDonations();
+    }
+
+    // ==========================================================================
+    // AVAILABLE DONATIONS (Pending pickup)
+    // ==========================================================================
+    async function loadAvailableDonations() {
+      const container = document.getElementById('available-donations-list');
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'getAvailableDonations' })
+        });
+        const data = await res.json();
+
+        if (data.success && data.donations && data.donations.length > 0) {
+          container.innerHTML = data.donations.map(d => `
+            <div class="donation-row">
+              <input type="checkbox" class="donation-checkbox" value="${d.DonationID}">
+              <div class="donation-row-main">
+                <strong>#${d.DonationID}</strong> — ${d.FoodDetails}
+                <div class="donation-meta">
+                  <span><i class="fa-solid fa-user"></i> ${d.DonorName}</span>
+                  <span><i class="fa-solid fa-location-dot"></i> ${d.Area || 'N/A'}</span>
+                  <span><i class="fa-solid fa-map-pin"></i> ${d.Address || 'N/A'}</span>
+                  <span><i class="fa-solid fa-clock"></i> Expires in ${d.ExpiryHours || '-'}h</span>
+                </div>
+              </div>
+              <span class="status-badge badge-pending">Pending</span>
+            </div>
+          `).join('');
+        } else {
+          container.innerHTML = `<p class="empty-msg">No pending donations right now. Check back later!</p>`;
+        }
+      } catch (err) {
+        container.innerHTML = `<p class="empty-msg" style="color:var(--danger);">Failed to load donations.</p>`;
+      }
+    }
+
+    function toggleSelectAll(checkbox) {
+      document.querySelectorAll('.donation-checkbox').forEach(cb => cb.checked = checkbox.checked);
+    }
+
+    async function acceptSelectedDonations() {
+      const selected = Array.from(document.querySelectorAll('.donation-checkbox:checked')).map(cb => cb.value);
+
+      if (selected.length === 0) {
+        showToast("Please select at least one donation to accept.");
+        return;
+      }
+
+      const btn = document.getElementById('btn-accept-selected');
+      btn.disabled = true;
+      btn.innerText = "Accepting...";
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'acceptDonation', donationIds: selected, ngoName: currentNGO.name })
+        });
+        const result = await res.json();
+        showToast(result.message);
+
+        if (result.success) {
+          loadAvailableDonations();
+          loadAcceptedDonations();
+          document.getElementById('select-all-checkbox').checked = false;
+        }
+      } catch (err) {
+        showToast("Failed to accept donations!");
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Accept Selected';
+    }
+
+    // ==========================================================================
+    // MY ACCEPTED DONATIONS (Track & mark as reached)
+    // ==========================================================================
+    async function loadAcceptedDonations() {
+      const container = document.getElementById('accepted-donations-list');
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'getNGOAcceptedDonations', ngoName: currentNGO.name })
+        });
+        const data = await res.json();
+
+        if (data.success && data.donations && data.donations.length > 0) {
+          container.innerHTML = data.donations.map(d => {
+            const status = (d.Status || 'Accepted').trim();
+            const badgeClass = status.toLowerCase() === 'reached' ? 'badge-reached' : 'badge-accepted';
+            const showReachedBtn = status.toLowerCase() !== 'reached';
+
+            return `
+              <div class="donation-row">
+                <div class="donation-row-main">
+                  <strong>#${d.DonationID}</strong> — ${d.FoodDetails}
+                  <div class="donation-meta">
+                    <span><i class="fa-solid fa-user"></i> ${d.DonorName}</span>
+                    <span><i class="fa-solid fa-location-dot"></i> ${d.Area || 'N/A'}</span>
+                    <span><i class="fa-solid fa-map-pin"></i> ${d.Address || 'N/A'}</span>
+                  </div>
+                </div>
+                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
+                  <span class="status-badge ${badgeClass}">${status}</span>
+                  ${showReachedBtn ? `<button class="btn btn-sm" onclick="markAsReached('${d.DonationID}')">Mark as Reached</button>` : ''}
+                </div>
+              </div>
+            `;
+          }).join('');
+        } else {
+          container.innerHTML = `<p class="empty-msg">You haven't accepted any donations yet.</p>`;
+        }
+      } catch (err) {
+        container.innerHTML = `<p class="empty-msg" style="color:var(--danger);">Failed to load your donations.</p>`;
+      }
+    }
+
+    async function markAsReached(donationId) {
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'updateCollectionStatus', donationId, newStatus: 'Reached' })
+        });
+        const result = await res.json();
+        showToast(result.message);
+        if (result.success) loadAcceptedDonations();
+      } catch (err) {
+        showToast("Failed to update status!");
+      }
+    }
+  </script>
+</body>
+</html>

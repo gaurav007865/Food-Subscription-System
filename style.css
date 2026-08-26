@@ -749,3 +749,4 @@ body {
 }
 .area-badge-needed { background: rgba(16, 185, 129, 0.15); color: var(--success); }
 .area-badge-not-needed { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+
