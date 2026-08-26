@@ -355,35 +355,86 @@
       </form>
 
       <!-- Registration Form -->
-      <form id="register-form" class="auth-form">
-        <h2>Create Account</h2>
-        <p class="subtitle">Join TiffinHub to enjoy fresh daily meals.</p>
+     <!-- Registration Form -->
+<form id="register-form" class="auth-form">
+  <h2>Create Account</h2>
+  <p class="subtitle">Join TiffinHub to enjoy fresh daily meals or partner with us as an NGO.</p>
 
-        <div class="input-group">
-          <label><i class="fa-solid fa-user"></i> Full Name</label>
-          <input type="text" id="reg-name" placeholder="John Doe" required>
-        </div>
+  <!-- NEW: Register Type Toggle -->
+  <div class="reg-type-toggle">
+    <button type="button" class="reg-type-btn active" id="reg-type-user-btn" onclick="switchRegisterType('user')">
+      <i class="fa-solid fa-user"></i> Individual User
+    </button>
+    <button type="button" class="reg-type-btn" id="reg-type-ngo-btn" onclick="switchRegisterType('ngo')">
+      <i class="fa-solid fa-hand-holding-heart"></i> NGO / Organization
+    </button>
+  </div>
 
-        <div class="input-group">
-          <label><i class="fa-solid fa-envelope"></i> Email Address</label>
-          <input type="email" id="reg-email" placeholder="example@mail.com" required>
-        </div>
+  <!-- USER REGISTRATION FIELDS -->
+  <div id="user-register-fields">
+    <div class="input-group">
+      <label><i class="fa-solid fa-user"></i> Full Name</label>
+      <input type="text" id="reg-name" placeholder="John Doe">
+    </div>
 
-        <div class="input-group">
-          <label><i class="fa-solid fa-phone"></i> Phone Number</label>
-          <input type="tel" id="reg-phone" placeholder="+91 9876543210" required>
-        </div>
+    <div class="input-group">
+      <label><i class="fa-solid fa-envelope"></i> Email Address</label>
+      <input type="email" id="reg-email" placeholder="example@mail.com">
+    </div>
 
-        <div class="input-group">
-          <label><i class="fa-solid fa-lock"></i> Password</label>
-          <input type="password" id="reg-password" placeholder="••••••••" required>
-        </div>
+    <div class="input-group">
+      <label><i class="fa-solid fa-phone"></i> Phone Number</label>
+      <input type="tel" id="reg-phone" placeholder="+91 9876543210">
+    </div>
 
-        <button type="submit" class="btn btn-primary btn-full" id="register-btn">
-          <span class="btn-text">Create Account</span>
-          <span class="loader hidden"></span>
-        </button>
-      </form>
+    <div class="input-group">
+      <label><i class="fa-solid fa-location-dot"></i> Address</label>
+      <input type="text" id="reg-address" placeholder="House / Street / Area / City">
+    </div>
+
+    <div class="input-group">
+      <label><i class="fa-solid fa-lock"></i> Password</label>
+      <input type="password" id="reg-password" placeholder="••••••••">
+    </div>
+  </div>
+
+  <!-- NGO REGISTRATION FIELDS -->
+  <div id="ngo-register-fields" class="hidden">
+    <div class="input-group">
+      <label><i class="fa-solid fa-building"></i> NGO / Organization Name</label>
+      <input type="text" id="reg-ngo-name" placeholder="Feeding India">
+    </div>
+
+    <div class="input-group">
+      <label><i class="fa-solid fa-envelope"></i> Email Address</label>
+      <input type="email" id="reg-ngo-email" placeholder="contact@ngo.org">
+    </div>
+
+    <div class="input-group">
+      <label><i class="fa-solid fa-phone"></i> Phone Number</label>
+      <input type="tel" id="reg-ngo-phone" placeholder="+91 9876543210">
+    </div>
+
+    <div class="input-group">
+      <label><i class="fa-solid fa-location-dot"></i> Address</label>
+      <input type="text" id="reg-ngo-address" placeholder="Office / Street / Area / City">
+    </div>
+
+    <div class="input-group">
+      <label><i class="fa-solid fa-lock"></i> Password</label>
+      <input type="password" id="reg-ngo-password" placeholder="••••••••">
+    </div>
+
+    <p style="font-size:0.8rem; color:var(--text-muted); margin-top:-0.6rem; margin-bottom:1.2rem;">
+      <i class="fa-solid fa-circle-info"></i> NGO login is available only 9:00 PM – 10:00 PM daily, via the NGO Portal.
+    </p>
+  </div>
+
+  <button type="submit" class="btn btn-primary btn-full" id="register-btn">
+    <span class="btn-text">Create Account</span>
+    <span class="loader hidden"></span>
+  </button>
+</form>
     </div>
   </div>
 

@@ -254,6 +254,29 @@ function switchTab(type) {
   }
 }
 
+// NEW: toggles between User and NGO registration fields
+let currentRegisterType = 'user';
+
+function switchRegisterType(type) {
+  currentRegisterType = type;
+  const userBtn = document.getElementById('reg-type-user-btn');
+  const ngoBtn = document.getElementById('reg-type-ngo-btn');
+  const userFields = document.getElementById('user-register-fields');
+  const ngoFields = document.getElementById('ngo-register-fields');
+
+  if (type === 'user') {
+    userBtn.classList.add('active');
+    ngoBtn.classList.remove('active');
+    userFields.classList.remove('hidden');
+    ngoFields.classList.add('hidden');
+  } else {
+    ngoBtn.classList.add('active');
+    userBtn.classList.remove('active');
+    ngoFields.classList.remove('hidden');
+    userFields.classList.add('hidden');
+  }
+}
+
 // Toast Helper
 function showToast(message, type = 'info') {
   const container = document.getElementById('toast-container');
@@ -294,30 +317,57 @@ function toggleBtnLoading(button, isLoading) {
 if (registerForm) {
   registerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const name = document.getElementById('reg-name').value;
-    const email = document.getElementById('reg-email').value;
-    const phone = document.getElementById('reg-phone').value;
-    const password = document.getElementById('reg-password').value;
-
     const submitBtn = document.getElementById('register-btn');
     toggleBtnLoading(submitBtn, true);
 
-    const hashedPassword = await hashPassword(password);
-
     try {
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        body: JSON.stringify({ action: 'register', name, email, phone, password: hashedPassword })
-      });
-      const result = await res.json();
-      toggleBtnLoading(submitBtn, false);
+      if (currentRegisterType === 'user') {
+        // -------- INDIVIDUAL USER REGISTRATION --------
+        const name = document.getElementById('reg-name').value;
+        const email = document.getElementById('reg-email').value;
+        const phone = document.getElementById('reg-phone').value;
+        const address = document.getElementById('reg-address').value;
+        const password = document.getElementById('reg-password').value;
+        const hashedPassword = await hashPassword(password);
 
-      if (result.success) {
-        showToast('Account created successfully! Please login.', 'success');
-        switchTab('login');
-        registerForm.reset();
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'register', name, email, phone, address, password: hashedPassword })
+        });
+        const result = await res.json();
+        toggleBtnLoading(submitBtn, false);
+
+        if (result.success) {
+          showToast('Account created successfully! Please login.', 'success');
+          switchTab('login');
+          registerForm.reset();
+        } else {
+          showToast(result.message, 'error');
+        }
+
       } else {
-        showToast(result.message, 'error');
+        // -------- NGO REGISTRATION --------
+        const ngoName = document.getElementById('reg-ngo-name').value;
+        const email = document.getElementById('reg-ngo-email').value;
+        const phone = document.getElementById('reg-ngo-phone').value;
+        const address = document.getElementById('reg-ngo-address').value;
+        const password = document.getElementById('reg-ngo-password').value; // NOTE: not hashed - matches plain-text NGO login on ngo.html
+
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'registerNGO', ngoName, email, phone, address, password })
+        });
+        const result = await res.json();
+        toggleBtnLoading(submitBtn, false);
+
+        if (result.success) {
+          showToast('NGO Registered! Login via NGO Portal between 9-10 PM.', 'success');
+          switchTab('login');
+          registerForm.reset();
+          switchRegisterType('user'); // reset toggle back to default for next time
+        } else {
+          showToast(result.message, 'error');
+        }
       }
     } catch (err) {
       toggleBtnLoading(submitBtn, false);
