@@ -319,40 +319,52 @@ if (registerForm) {
     toggleBtnLoading(submitBtn, true);
 
     try {
-      if (currentRegisterType === 'user') {
-        // -------- INDIVIDUAL USER REGISTRATION --------
-        const name = document.getElementById('reg-name').value;
-        const email = document.getElementById('reg-email').value;
-        const phone = document.getElementById('reg-phone').value;
-        const address = document.getElementById('reg-address').value;
-        const password = document.getElementById('reg-password').value;
-        const hashedPassword = await hashPassword(password);
+    if (currentRegisterType === 'user') {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const phone = document.getElementById('reg-phone').value.trim();
+  const address = document.getElementById('reg-address').value.trim();
+  const aadharNo = document.getElementById('reg-aadhar').value.trim();
+  const password = document.getElementById('reg-password').value;
 
-        const res = await fetch(API_URL, {
-          method: 'POST',
-          body: JSON.stringify({ action: 'register', name, email, phone, address, password: hashedPassword })
-        });
-        const result = await res.json();
-        toggleBtnLoading(submitBtn, false);
+  if (!name || !email || !address || !aadharNo || !password) {
+    showToast("Please fill in all required fields.", "error");
+    toggleBtnLoading(submitBtn, false);
+    return;
+  }
+  if (!/^\d{12}$/.test(aadharNo)) {
+    showToast("Please enter a valid 12-digit Aadhar number.", "error");
+    toggleBtnLoading(submitBtn, false);
+    return;
+  }
 
-        if (result.success) {
-          showToast('Account created successfully! Please login.', 'success');
-          switchTab('login');
-          registerForm.reset();
-        } else {
-          showToast(result.message, 'error');
-        }
+  const hashedPassword = await hashPassword(password);
 
-      } else {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'register', name, email, phone, address, aadharNo, password: hashedPassword })
+  });
+  const result = await res.json();
+  toggleBtnLoading(submitBtn, false);
+
+  if (result.success) {
+    showToast('Account created successfully! Please login.', 'success');
+    switchTab('login');
+    registerForm.reset();
+  } else {
+    showToast(result.message, 'error');
+  }
+} else {
         // -------- NGO REGISTRATION (no password - admin sets it after verification) --------
         const ngoName = document.getElementById('reg-ngo-name').value;
         const email = document.getElementById('reg-ngo-email').value;
         const phone = document.getElementById('reg-ngo-phone').value;
         const address = document.getElementById('reg-ngo-address').value;
+        const password = document.getElementById('reg-ngo-password').value; // NOTE: not hashed - matches plain-text NGO login on ngo.html
 
         const res = await fetch(API_URL, {
           method: 'POST',
-          body: JSON.stringify({ action: 'registerNGO', ngoName, email, phone, address })
+          body: JSON.stringify({ action: 'registerNGO', ngoName, email, phone, address, password })
         });
         const result = await res.json();
         toggleBtnLoading(submitBtn, false);
