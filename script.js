@@ -1,5 +1,5 @@
 //This is Script connectivity
-const API_URL = "https://script.google.com/macros/s/AKfycbwsv4d09RiyRloHh-j9rxGt1gNlnQyqvVUXmCyzhZix63zsvhrdTje4ToMaFoySGz-U/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxmldYUsIdyXSPWitZfGIFhupfwwFCcgCCs9Qr8xfyopeoreefuf-PbGI1blTW7nW2B8Q/exec";
 
 // DOM Elements
 const authModal = document.getElementById('auth-modal');
@@ -351,11 +351,10 @@ if (registerForm) {
         const email = document.getElementById('reg-ngo-email').value;
         const phone = document.getElementById('reg-ngo-phone').value;
         const address = document.getElementById('reg-ngo-address').value;
-        const password = document.getElementById('reg-ngo-password').value; // NOTE: not hashed - matches plain-text NGO login on ngo.html
-
+ 
         const res = await fetch(API_URL, {
           method: 'POST',
-          body: JSON.stringify({ action: 'registerNGO', ngoName, email, phone, address, password })
+          body: JSON.stringify({ action: 'registerNGO', ngoName, email, phone, address})
         });
         const result = await res.json();
         toggleBtnLoading(submitBtn, false);

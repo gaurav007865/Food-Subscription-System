@@ -18,7 +18,7 @@
       --bg: #FAF7F2;
       --card: #FFFFFF;
       --border: #E2E8F0;
-      --muted: #6C757D;
+      --muted: #6C757D; 
       --success: #10B981;
       --danger: #EF4444;
     }
@@ -258,6 +258,47 @@
       padding: 12px 20px; border-radius: 10px;
       display: none; z-index: 2000;
     }
+    /* NGO Accept/Reject Toggle Switch */
+.ngo-toggle-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ngo-toggle-switch {
+  position: relative;
+  width: 46px;
+  height: 24px;
+  background: #E2E8F0;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: 0.3s;
+  border: none;
+}
+.ngo-toggle-switch.active {
+  background: var(--success);
+}
+.ngo-toggle-switch::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  transition: 0.3s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.ngo-toggle-switch.active::before {
+  left: 25px;
+}
+.ngo-toggle-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  min-width: 55px;
+}
+.ngo-toggle-label.status-accepted { color: var(--success); }
+.ngo-toggle-label.status-pending { color: #D97706; }
   </style>
 </head>
 <body>
@@ -336,6 +377,7 @@
     </header>
 
     <div class="admin-tabs">
+      <button class="admin-tab-btn" onclick="switchAdminTab('tab-ngo', this)"><i class="fa-solid fa-hand-holding-heart"></i> NGO Registrations</button>
       <button class="admin-tab-btn active" onclick="switchAdminTab('tab-overview', this)"><i class="fa-solid fa-chart-line"></i> Analytics & KPIs</button>
       <button class="admin-tab-btn" onclick="switchAdminTab('tab-orders', this)"><i class="fa-solid fa-truck-fast"></i> Live Orders</button>
       <button class="admin-tab-btn" onclick="switchAdminTab('tab-tiffins', this)"><i class="fa-solid fa-utensils"></i> Tiffin Catalog</button>
@@ -345,7 +387,30 @@
     </div>
 
     <div class="container">
-
+<!-- TAB: NGO REGISTRATIONS -->
+<div id="tab-ngo" class="tab-content">
+  <div class="section-card">
+    <div class="table-header-tools">
+      <h2><i class="fa-solid fa-hand-holding-heart" style="color:#2EC4B6;"></i> NGO Registration Requests</h2>
+      <input type="text" class="search-box" placeholder="🔍 Search NGO Name / Email..." onkeyup="filterTable('ngo-table-body', this.value)">
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>NGO ID</th>
+          <th>NGO Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Status</th>
+          <th>Accept Request</th>
+        </tr>
+      </thead>
+      <tbody id="ngo-table-body">
+        <tr><td colspan="6">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
       <!-- TAB 1: ANALYTICS & KPIS -->
       <div id="tab-overview" class="tab-content active">
         <div class="stats-grid">
@@ -692,6 +757,7 @@
         renderSubscriptions(data.subscriptions);
         renderDonations(data.donations);
         renderUsers(data.users);
+        renderNGOs(data.ngoList || []);
       }
     }
 
@@ -851,6 +917,37 @@
       document.getElementById('users-table-body').innerHTML = users.map(u => `
         <tr><td><b>${u.UserID}</b></td><td>${u.Name}</td><td>${u.Email}</td><td>${u.Phone || 'N/A'}</td><td>${u.CreatedAt ? new Date(u.CreatedAt).toLocaleDateString() : 'N/A'}</td></tr>
       `).join('');
+    }
+        function renderNGOs(ngoList) {
+      const tbody = document.getElementById('ngo-table-body');
+      if (!ngoList || ngoList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6">No NGO registrations yet.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = ngoList.map(ngo => {
+        const status = (ngo.Status || 'Pending').toString().trim();
+        const isAccepted = status.toLowerCase() === 'approved';
+        return `
+        <tr>
+          <td><b>${ngo.NGOID}</b></td>
+          <td>${ngo.NGOName}</td>
+          <td>${ngo.Email}</td>
+          <td>${ngo.Phone || 'N/A'}</td>
+          <td><span class="status-badge ${isAccepted ? 'badge-yes' : 'badge-pending'}">${status}</span></td>
+          <td>
+            <div class="ngo-toggle-wrap">
+              <button class="ngo-toggle-switch ${isAccepted ? 'active' : ''}" onclick="toggleNGOStatus('${ngo.NGOID}', '${ngo.Email}', '${ngo.NGOName}', ${isAccepted})"></button>
+              <span class="ngo-toggle-label ${isAccepted ? 'status-accepted' : 'status-pending'}">${isAccepted ? 'Accepted' : 'Pending'}</span>
+            </div>
+          </td>
+        </tr>
+      `;
+      }).join('');
+    }
+
+    async function toggleNGOStatus(ngoId, email, ngoName, currentlyAccepted) {
+      showToast(currentlyAccepted ? "Rejecting NGO..." : "Accepting NGO...");
+      // Step 4 mein yahan actual backend call add karenge
     }
   </script>
 </body>
