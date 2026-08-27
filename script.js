@@ -1,5 +1,3 @@
-//This is Script connectivity
-const API_URL = "https://script.google.com/macros/s/AKfycbwsv4d09RiyRloHh-j9rxGt1gNlnQyqvVUXmCyzhZix63zsvhrdTje4ToMaFoySGz-U/exec";
 
 // DOM Elements
 const authModal = document.getElementById('auth-modal');
@@ -346,22 +344,21 @@ if (registerForm) {
         }
 
       } else {
-        // -------- NGO REGISTRATION --------
+        // -------- NGO REGISTRATION (no password - admin sets it after verification) --------
         const ngoName = document.getElementById('reg-ngo-name').value;
         const email = document.getElementById('reg-ngo-email').value;
         const phone = document.getElementById('reg-ngo-phone').value;
         const address = document.getElementById('reg-ngo-address').value;
-        const password = document.getElementById('reg-ngo-password').value; // NOTE: not hashed - matches plain-text NGO login on ngo.html
 
         const res = await fetch(API_URL, {
           method: 'POST',
-          body: JSON.stringify({ action: 'registerNGO', ngoName, email, phone, address, password })
+          body: JSON.stringify({ action: 'registerNGO', ngoName, email, phone, address })
         });
         const result = await res.json();
         toggleBtnLoading(submitBtn, false);
 
         if (result.success) {
-          showToast('NGO Registered! Login via NGO Portal between 9-10 PM.', 'success');
+          showToast('NGO registration submitted! Our team will verify and share login access.', 'success');
           switchTab('login');
           registerForm.reset();
           switchRegisterType('user'); // reset toggle back to default for next time
