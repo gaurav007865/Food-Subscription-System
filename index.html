@@ -398,8 +398,8 @@
     </div>
   </div>
 
-  <!-- NGO REGISTRATION FIELDS -->
   <div id="ngo-register-fields" class="hidden">
+  <div id="ngo-basic-fields">
     <div class="input-group">
       <label><i class="fa-solid fa-building"></i> NGO / Organization Name</label>
       <input type="text" id="reg-ngo-name" placeholder="Feeding India">
@@ -420,12 +420,28 @@
       <input type="text" id="reg-ngo-address" placeholder="Office / Street / Area / City">
     </div>
 
+    <div class="input-group">
+      <label><i class="fa-solid fa-user"></i> Name of NGO Owner</label>
+      <input type="text" id="reg-ngo-owner-name" placeholder="Owner's Full Name">
+    </div>
+
+    <div class="input-group">
+      <label><i class="fa-solid fa-id-card"></i> Aadhar ID (NGO Owner)</label>
+      <input type="text" id="reg-ngo-aadhar" placeholder="XXXX-XXXX-XXXX" maxlength="12">
+    </div>
+
+    <div class="input-group">
+      <label><i class="fa-solid fa-people-group"></i> How Many Members in Your NGO</label>
+      <input type="number" id="reg-ngo-members" min="1" placeholder="e.g. 2">
+    </div>
+  </div>
+
+  <!-- Member details ek-ek karke yahan render honge -->
+  <div id="ngo-member-step-container" class="hidden"></div>
+</div>
+
      
 
-    <p style="font-size:0.8rem; color:var(--text-muted); margin-top:-0.6rem; margin-bottom:1.2rem;">
-      <i class="fa-solid fa-circle-info"></i> NGO login is available only 9:00 PM – 10:00 PM daily, via the NGO Portal.
-    </p>
-  </div>
 
   <button type="submit" class="btn btn-primary btn-full" id="register-btn">
     <span class="btn-text">Send Request</span>

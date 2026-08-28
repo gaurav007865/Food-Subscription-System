@@ -35,8 +35,6 @@
       overflow: hidden;
       background: #1A1A24;
     }
-    /* Background image now lives in HTML as an <img class="login-bg-image">
-       instead of a base64 CSS background — see markup below */
     .login-bg-image {
       position: absolute;
       inset: 0;
@@ -308,8 +306,6 @@
   <!-- 1. LOGIN / SIGNUP SCREEN -->
   <div id="login-screen" class="admin-login-wrapper">
 
-    <!-- Background image moved here from CSS. Replace the src below
-         with your own image path (e.g. "images/login-bg.jpg") or keep base64. -->
     <img src="Tiffen.jpg" alt="" class="login-bg-image">
 
     <div class="login-box">
@@ -399,14 +395,19 @@
         <tr>
           <th>NGO ID</th>
           <th>NGO Name</th>
+          <th>Owner Name</th>
           <th>Email</th>
           <th>Phone</th>
+          <th>Address</th>
+          <th>Aadhar ID</th>
+          <th>Members Count</th>
           <th>Status</th>
           <th>Accept Request</th>
+          <th>Members</th>
         </tr>
       </thead>
       <tbody id="ngo-table-body">
-        <tr><td colspan="6">Loading...</td></tr>
+        <tr><td colspan="11">Loading...</td></tr>
       </tbody>
     </table>
   </div>
@@ -557,6 +558,15 @@
     </div>
   </div>
 
+  <!-- VIEW NGO MEMBERS MODAL -->
+  <div id="ngo-members-modal" class="modal-overlay">
+    <div class="modal-card" style="max-width:700px; max-height:80vh; overflow-y:auto;">
+      <h2 style="margin-bottom:1rem;" id="ngo-members-modal-title">👥 NGO Members</h2>
+      <div id="ngo-members-list"></div>
+      <button class="btn" style="width:100%; margin-top:1rem; background:#E2E8F0; color:var(--dark);" onclick="closeNGOMembersModal()">Close</button>
+    </div>
+  </div>
+
   <!-- EDIT TIFFIN MODAL Section-->
   <div id="edit-tiffin-modal" class="modal-overlay">
     <div class="modal-card">
@@ -591,11 +601,13 @@
 
   <script>
     //Connectivity url
-    const API_URL = "https://script.google.com/macros/s/AKfycbwsv4d09RiyRloHh-j9rxGt1gNlnQyqvVUXmCyzhZix63zsvhrdTje4ToMaFoySGz-U/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbw-BFM76pop4O7zMaNhVt88JSq8PXvb0Ollbqk71Vc4Fg9yGoBkbnsMBng1VQj6CmljXA/exec";
+
 
      let adminToken = localStorage.getItem('tiffin_admin_token') || sessionStorage.getItem('tiffin_admin_token') || null;
     let adminEmail = localStorage.getItem('tiffin_admin_email') || sessionStorage.getItem('tiffin_admin_email') || null;
     let globalTiffinsData = [];
+    let globalNGOMembersData = [];
 
     document.addEventListener('DOMContentLoaded', () => {
       if (adminToken) showDashboard();
@@ -688,8 +700,6 @@
     }
 
     // NOTE: Sign Up is UI-only for now (no backend save yet).
-    // It just shows a message telling the person to use the fixed login credentials.
-    // Backend account-creation will be wired up later.
     async function signupAdmin() {
       showSignupError("Sign up isn't connected yet. Please use the Login tab with the provided admin email & password.");
     }
@@ -757,6 +767,7 @@
         renderSubscriptions(data.subscriptions);
         renderDonations(data.donations);
         renderUsers(data.users);
+        globalNGOMembersData = data.ngoMembers || [];
         renderNGOs(data.ngoList || []);
       }
     }
@@ -918,10 +929,14 @@
         <tr><td><b>${u.UserID}</b></td><td>${u.Name}</td><td>${u.Email}</td><td>${u.Phone || 'N/A'}</td><td>${u.CreatedAt ? new Date(u.CreatedAt).toLocaleDateString() : 'N/A'}</td></tr>
       `).join('');
     }
-        function renderNGOs(ngoList) {
+
+    // FIXED: NGO Name <td> was missing before — that was shifting every
+    // column left by one. Row now matches the 11-column header exactly:
+    // NGO ID | NGO Name | Owner Name | Email | Phone | Address | Aadhar ID | Members Count | Status | Accept Request | Members
+    function renderNGOs(ngoList) {
       const tbody = document.getElementById('ngo-table-body');
       if (!ngoList || ngoList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6">No NGO registrations yet.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="11">No NGO registrations yet.</td></tr>`;
         return;
       }
       tbody.innerHTML = ngoList.map(ngo => {
@@ -931,23 +946,85 @@
         <tr>
           <td><b>${ngo.NGOID}</b></td>
           <td>${ngo.NGOName}</td>
+          <td>${ngo["Owner-Name"] || 'N/A'}</td>
           <td>${ngo.Email}</td>
           <td>${ngo.Phone || 'N/A'}</td>
+          <td>${ngo.Address || 'N/A'}</td>
+          <td>${ngo["Aadhar ID"] || 'N/A'}</td>
+          <td>${ngo.MemberCount || 0}</td>
           <td><span class="status-badge ${isAccepted ? 'badge-yes' : 'badge-pending'}">${status}</span></td>
           <td>
             <div class="ngo-toggle-wrap">
-              <button class="ngo-toggle-switch ${isAccepted ? 'active' : ''}" onclick="toggleNGOStatus('${ngo.NGOID}', '${ngo.Email}', '${ngo.NGOName}', ${isAccepted})"></button>
+              <button class="ngo-toggle-switch ${isAccepted ? 'active' : ''}" onclick="toggleNGOStatus('${ngo.NGOID}', ${isAccepted}, this)"></button>
               <span class="ngo-toggle-label ${isAccepted ? 'status-accepted' : 'status-pending'}">${isAccepted ? 'Accepted' : 'Pending'}</span>
             </div>
+          </td>
+          <td>
+            <button class="action-btn btn-edit" onclick="openNGOMembersModal('${ngo.NGOID}', '${ngo.NGOName}')"><i class="fa-solid fa-users"></i> View</button>
           </td>
         </tr>
       `;
       }).join('');
     }
 
-    async function toggleNGOStatus(ngoId, email, ngoName, currentlyAccepted) {
+    // Accept/Reject toggle - flips Status between "Approved" and "Rejected" in the NGO sheet.
+    // Optimistic UI: button slides/turns green instantly on click, then syncs with backend.
+    async function toggleNGOStatus(ngoId, currentlyAccepted, btnEl) {
+      const newStatus = currentlyAccepted ? "Rejected" : "Approved";
+      const willBeAccepted = !currentlyAccepted;
+      const labelEl = btnEl.nextElementSibling;
+
+      btnEl.classList.toggle('active', willBeAccepted);
+      labelEl.classList.toggle('status-accepted', willBeAccepted);
+      labelEl.classList.toggle('status-pending', !willBeAccepted);
+      labelEl.innerText = willBeAccepted ? 'Accepted' : 'Pending';
+
       showToast(currentlyAccepted ? "Rejecting NGO..." : "Accepting NGO...");
-      // Step 4 mein yahan actual backend call add karenge
+
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'updateNGOStatus', ngoId, newStatus })
+      });
+      const result = await res.json();
+      showToast(result.message);
+      loadAdminData();
+    }
+
+    // Shows every member's full details for the clicked NGO, in a popup modal
+    function openNGOMembersModal(ngoId, ngoName) {
+      document.getElementById('ngo-members-modal-title').innerText = `👥 ${ngoName} — Members`;
+      const members = globalNGOMembersData.filter(m => m.NGOID == ngoId);
+      const listEl = document.getElementById('ngo-members-list');
+
+      if (members.length === 0) {
+        listEl.innerHTML = `<p style="color:var(--muted);">No member details found.</p>`;
+      } else {
+        listEl.innerHTML = `
+          <table>
+            <thead>
+              <tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Address</th><th>Aadhar No</th><th>Role</th></tr>
+            </thead>
+            <tbody>
+              ${members.map(m => `
+                <tr>
+                  <td>${m.MemberNumber}</td>
+                  <td>${m.Name}</td>
+                  <td>${m.Email}</td>
+                  <td>${m.Phone}</td>
+                  <td>${m.Address}</td>
+                  <td>${m.AadharNo}</td>
+                  <td>${m.Role}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      }
+      document.getElementById('ngo-members-modal').style.display = 'flex';
+    }
+
+    function closeNGOMembersModal() {
+      document.getElementById('ngo-members-modal').style.display = 'none';
     }
   </script>
 </body>
