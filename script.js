@@ -1,3 +1,9 @@
+<<<<<<< HEAD
+=======
+ 
+//This is Script connectivity
+const API_URL = "https://script.google.com/macros/s/AKfycbw-BFM76pop4O7zMaNhVt88JSq8PXvb0Ollbqk71Vc4Fg9yGoBkbnsMBng1VQj6CmljXA/exec";
+>>>>>>> a5f2ea8ec0b8993fec2ba2f2ca0a2ee92ae7fb79
 
 // DOM Elements
 const authModal = document.getElementById('auth-modal');
@@ -255,6 +261,78 @@ function switchTab(type) {
 // NEW: toggles between User and NGO registration fields
 let currentRegisterType = 'user';
 
+// NEW: NGO multi-step member entry state
+let ngoStep = 0;            // 0 = basic NGO info, 1..N = member step N
+let ngoMemberCount = 0;     // how many members the NGO said it has
+let ngoBasicData = {};      // captured NGO org-level fields
+let ngoMembersData = [];    // collected {name, phone} per member
+
+function resetNgoFlow() {
+  ngoStep = 0;
+  ngoMemberCount = 0;
+  ngoBasicData = {};
+  ngoMembersData = [];
+
+  const basicFields = document.getElementById('ngo-basic-fields');
+  const memberStepContainer = document.getElementById('ngo-member-step-container');
+  const registerBtn = document.getElementById('register-btn');
+
+  if (basicFields) basicFields.classList.remove('hidden');
+  if (memberStepContainer) {
+    memberStepContainer.classList.add('hidden');
+    memberStepContainer.innerHTML = '';
+  }
+  if (registerBtn) registerBtn.querySelector('.btn-text').innerText = 'Send Request';
+}
+
+// Renders the input fields for one member's details (called step by step)
+// Each member gets: Name, Email, Phone, Address, Aadhar Card No, and Role.
+// From Member 2 onwards, all fields are pre-filled with Member 1's values
+// so the user only needs to edit what's different.
+function renderNgoMemberStep(stepNumber) {
+  const container = document.getElementById('ngo-member-step-container');
+  if (!container) return;
+  container.classList.remove('hidden');
+
+  const firstMember = ngoMembersData[0] || { name: '', email: '', phone: '', address: '', aadharNo: '', role: '' };
+  const isFirst = stepNumber === 1;
+
+  const prefillName = isFirst ? '' : firstMember.name;
+  const prefillEmail = isFirst ? '' : firstMember.email;
+  const prefillPhone = isFirst ? '' : firstMember.phone;
+  const prefillAddress = isFirst ? '' : firstMember.address;
+  const prefillAadhar = isFirst ? '' : firstMember.aadharNo;
+  const prefillRole = isFirst ? '' : firstMember.role;
+
+  container.innerHTML = `
+    <h4 style="margin-bottom:0.6rem;">Member ${stepNumber} of ${ngoMemberCount} — Details</h4>
+    <div class="input-group">
+      <label><i class="fa-solid fa-user"></i> Member ${stepNumber} Name</label>
+      <input type="text" id="ngo-member-name-${stepNumber}" placeholder="Full Name" value="${prefillName}">
+    </div>
+    <div class="input-group">
+      <label><i class="fa-solid fa-envelope"></i> Member ${stepNumber} Email</label>
+      <input type="email" id="ngo-member-email-${stepNumber}" placeholder="member@mail.com" value="${prefillEmail}">
+    </div>
+    <div class="input-group">
+      <label><i class="fa-solid fa-phone"></i> Member ${stepNumber} Phone</label>
+      <input type="tel" id="ngo-member-phone-${stepNumber}" placeholder="+91 9876543210" value="${prefillPhone}">
+    </div>
+    <div class="input-group">
+      <label><i class="fa-solid fa-location-dot"></i> Member ${stepNumber} Address</label>
+      <input type="text" id="ngo-member-address-${stepNumber}" placeholder="Office / Street / Area / City" value="${prefillAddress}">
+    </div>
+    <div class="input-group">
+      <label><i class="fa-solid fa-id-card"></i> Member ${stepNumber} Aadhar Card No</label>
+      <input type="text" id="ngo-member-aadhar-${stepNumber}" placeholder="XXXX-XXXX-XXXX" maxlength="12" value="${prefillAadhar}">
+    </div>
+    <div class="input-group">
+      <label><i class="fa-solid fa-id-badge"></i> Role of Member</label>
+      <input type="text" id="ngo-member-role-${stepNumber}" placeholder="e.g. Volunteer, Coordinator" value="${prefillRole}">
+    </div>
+  `;
+}
+
 function switchRegisterType(type) {
   currentRegisterType = type;
   const userBtn = document.getElementById('reg-type-user-btn');
@@ -272,6 +350,14 @@ function switchRegisterType(type) {
     userBtn.classList.remove('active');
     ngoFields.classList.remove('hidden');
     userFields.classList.add('hidden');
+  }
+
+  resetNgoFlow(); // always start the NGO member-step flow fresh on toggle
+
+  // NEW: NGO's very first submit is just "basic info -> Next", not the final send
+  const registerBtn = document.getElementById('register-btn');
+  if (registerBtn) {
+    registerBtn.querySelector('.btn-text').innerText = (type === 'ngo') ? 'Next' : 'Send Request';
   }
 }
 
@@ -340,6 +426,7 @@ if (registerForm) {
 
   const hashedPassword = await hashPassword(password);
 
+<<<<<<< HEAD
   const res = await fetch(API_URL, {
     method: 'POST',
     body: JSON.stringify({ action: 'register', name, email, phone, address, aadharNo, password: hashedPassword })
@@ -375,6 +462,113 @@ if (registerForm) {
           switchRegisterType('user');
         } else {
           showToast(result.message, 'error');
+=======
+      } else {
+        // -------- NGO REGISTRATION (multi-step) --------
+
+        // STEP 0: capture basic NGO fields, then move to Member 1
+        if (ngoStep === 0) {
+          toggleBtnLoading(submitBtn, false); // no network call yet at this step
+
+          const ngoName = document.getElementById('reg-ngo-name').value.trim();
+          const email = document.getElementById('reg-ngo-email').value.trim();
+          const phone = document.getElementById('reg-ngo-phone').value.trim();
+          const address = document.getElementById('reg-ngo-address').value.trim();
+          const ownerName = document.getElementById('reg-ngo-owner-name').value.trim();
+          const aadharId = document.getElementById('reg-ngo-aadhar').value.trim();
+          const memberCount = parseInt(document.getElementById('reg-ngo-members').value, 10);
+
+          if (!ngoName || !email || !phone || !address || !ownerName || !aadharId || !memberCount || memberCount < 1) {
+            showToast('Please fill all NGO details correctly.', 'error');
+            return;
+          }
+
+          ngoBasicData = { ngoName, email, phone, address, ownerName, aadharId };
+          ngoMemberCount = memberCount;
+          ngoMembersData = [];
+
+          document.getElementById('ngo-basic-fields').classList.add('hidden');
+          renderNgoMemberStep(1);
+          ngoStep = 1;
+
+          submitBtn.querySelector('.btn-text').innerText = (ngoMemberCount === 1) ? 'Send Request' : 'Next';
+          return;
+        }
+
+        // STEP 1..N: capture each member's details one at a time
+        if (ngoStep >= 1 && ngoStep <= ngoMemberCount) {
+          toggleBtnLoading(submitBtn, false);
+
+          const nameEl = document.getElementById(`ngo-member-name-${ngoStep}`);
+          const emailEl = document.getElementById(`ngo-member-email-${ngoStep}`);
+          const phoneEl = document.getElementById(`ngo-member-phone-${ngoStep}`);
+          const addressEl = document.getElementById(`ngo-member-address-${ngoStep}`);
+          const aadharEl = document.getElementById(`ngo-member-aadhar-${ngoStep}`);
+          const roleEl = document.getElementById(`ngo-member-role-${ngoStep}`);
+
+          const memberName = nameEl ? nameEl.value.trim() : '';
+          const memberEmail = emailEl ? emailEl.value.trim() : '';
+          const memberPhone = phoneEl ? phoneEl.value.trim() : '';
+          const memberAddress = addressEl ? addressEl.value.trim() : '';
+          const memberAadhar = aadharEl ? aadharEl.value.trim() : '';
+          const memberRole = roleEl ? roleEl.value.trim() : '';
+
+          if (!memberName || !memberEmail || !memberPhone || !memberAddress || !memberAadhar || !memberRole) {
+            showToast(`Please fill all details for Member ${ngoStep}.`, 'error');
+            return;
+          }
+
+          if (!/^\d{12}$/.test(memberAadhar)) {
+            showToast(`Member ${ngoStep}: Please enter a valid 12-digit Aadhar number.`, 'error');
+            return;
+          }
+
+          ngoMembersData.push({
+            name: memberName,
+            email: memberEmail,
+            phone: memberPhone,
+            address: memberAddress,
+            aadharNo: memberAadhar,
+            role: memberRole
+          });
+
+          // More members left -> go to next step
+          if (ngoStep < ngoMemberCount) {
+            ngoStep++;
+            renderNgoMemberStep(ngoStep);
+            submitBtn.querySelector('.btn-text').innerText = (ngoStep === ngoMemberCount) ? 'Send Request' : 'Next';
+            return;
+          }
+
+          // Last member done -> actually submit everything now
+          toggleBtnLoading(submitBtn, true);
+          try {
+            const res = await fetch(API_URL, {
+              method: 'POST',
+              body: JSON.stringify({
+                action: 'registerNGO',
+                ...ngoBasicData,
+                memberCount: ngoMemberCount,
+                members: ngoMembersData
+              })
+            });
+            const result = await res.json();
+            toggleBtnLoading(submitBtn, false);
+
+            if (result.success) {
+              showToast('NGO Registered! Login via NGO Portal.', 'success');
+              switchTab('login');
+              registerForm.reset();
+              switchRegisterType('user'); // reset toggle back to default for next time
+              resetNgoFlow();
+            } else {
+              showToast(result.message, 'error');
+            }
+          } catch (err) {
+            toggleBtnLoading(submitBtn, false);
+            showToast('Failed to connect to server!', 'error');
+          }
+>>>>>>> a5f2ea8ec0b8993fec2ba2f2ca0a2ee92ae7fb79
         }
       }
     } catch (err) {
