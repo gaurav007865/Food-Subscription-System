@@ -319,7 +319,7 @@ if (registerForm) {
     toggleBtnLoading(submitBtn, true);
 
     try {
-    if (currentRegisterType === 'user') {
+     if (currentRegisterType === 'user') {
   const name = document.getElementById('reg-name').value.trim();
   const email = document.getElementById('reg-email').value.trim();
   const phone = document.getElementById('reg-phone').value.trim();
@@ -349,31 +349,30 @@ if (registerForm) {
 
   if (result.success) {
     showToast('Account created successfully! Please login.', 'success');
+    clearUserRegisterFields();
     switchTab('login');
-    registerForm.reset();
   } else {
     showToast(result.message, 'error');
   }
-} else {
-        // -------- NGO REGISTRATION (no password - admin sets it after verification) --------
+}else {
+        // -------- NGO REGISTRATION --------
         const ngoName = document.getElementById('reg-ngo-name').value;
         const email = document.getElementById('reg-ngo-email').value;
         const phone = document.getElementById('reg-ngo-phone').value;
         const address = document.getElementById('reg-ngo-address').value;
-        const password = document.getElementById('reg-ngo-password').value; // NOTE: not hashed - matches plain-text NGO login on ngo.html
 
         const res = await fetch(API_URL, {
           method: 'POST',
-          body: JSON.stringify({ action: 'registerNGO', ngoName, email, phone, address, password })
+          body: JSON.stringify({ action: 'registerNGO', ngoName, email, phone, address })
         });
         const result = await res.json();
         toggleBtnLoading(submitBtn, false);
 
         if (result.success) {
           showToast('NGO registration submitted! Our team will verify and share login access.', 'success');
+          clearNGORegisterFields();   // NEW - guaranteed clear
           switchTab('login');
-          registerForm.reset();
-          switchRegisterType('user'); // reset toggle back to default for next time
+          switchRegisterType('user');
         } else {
           showToast(result.message, 'error');
         }
@@ -383,6 +382,25 @@ if (registerForm) {
       showToast('Failed to connect to server!', 'error');
     }
   });
+}
+
+// NEW: explicitly clears every user-register field one by one (more reliable than form.reset()
+// when fields are inside dynamically shown/hidden sections)
+function clearUserRegisterFields() {
+  document.getElementById('reg-name').value = '';
+  document.getElementById('reg-email').value = '';
+  document.getElementById('reg-phone').value = '';
+  document.getElementById('reg-address').value = '';
+  document.getElementById('reg-aadhar').value = '';
+  document.getElementById('reg-password').value = '';
+}
+
+// NEW: explicitly clears every NGO-register field one by one
+function clearNGORegisterFields() {
+  document.getElementById('reg-ngo-name').value = '';
+  document.getElementById('reg-ngo-email').value = '';
+  document.getElementById('reg-ngo-phone').value = '';
+  document.getElementById('reg-ngo-address').value = '';
 }
 
 if (loginForm) {

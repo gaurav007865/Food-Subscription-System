@@ -235,6 +235,8 @@ body {
   position: relative;
   transform: translateY(20px);
   transition: 0.3s ease;
+  max-height: 90vh;      /* NEW - screen ki height se zyada na jaaye */
+  overflow-y: auto;      /* NEW - andar scroll ho jaaye agar content lamba ho */
 }
 
 .modal-overlay.active .auth-card {
