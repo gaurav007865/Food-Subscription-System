@@ -1,9 +1,6 @@
-// <<<<<<< HEAD
-// =======
  
 //This is Script connectivity
-const API_URL = "https://script.google.com/macros/s/AKfycbw-BFM76pop4O7zMaNhVt88JSq8PXvb0Ollbqk71Vc4Fg9yGoBkbnsMBng1VQj6CmljXA/exec";
-// >>>>>>> a5f2ea8ec0b8993fec2ba2f2ca0a2ee92ae7fb79
+// const API_URL = "https://script.google.com/macros/s/AKfycbw-BFM76pop4O7zMaNhVt88JSq8PXvb0Ollbqk71Vc4Fg9yGoBkbnsMBng1VQj6CmljXA/exec";
 
 // DOM Elements
 const authModal = document.getElementById('auth-modal');
