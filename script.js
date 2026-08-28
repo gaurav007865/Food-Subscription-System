@@ -1,9 +1,9 @@
-<<<<<<< HEAD
-=======
+// <<<<<<< HEAD
+// =======
  
 //This is Script connectivity
 const API_URL = "https://script.google.com/macros/s/AKfycbw-BFM76pop4O7zMaNhVt88JSq8PXvb0Ollbqk71Vc4Fg9yGoBkbnsMBng1VQj6CmljXA/exec";
->>>>>>> a5f2ea8ec0b8993fec2ba2f2ca0a2ee92ae7fb79
+// >>>>>>> a5f2ea8ec0b8993fec2ba2f2ca0a2ee92ae7fb79
 
 // DOM Elements
 const authModal = document.getElementById('auth-modal');
@@ -398,182 +398,371 @@ function toggleBtnLoading(button, isLoading) {
 // ==========================================================================
 // REGISTER / LOGIN
 // ==========================================================================
+
+
 if (registerForm) {
   registerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+
     const submitBtn = document.getElementById('register-btn');
-    toggleBtnLoading(submitBtn, true);
 
-    try {
-     if (currentRegisterType === 'user') {
-  const name = document.getElementById('reg-name').value.trim();
-  const email = document.getElementById('reg-email').value.trim();
-  const phone = document.getElementById('reg-phone').value.trim();
-  const address = document.getElementById('reg-address').value.trim();
-  const aadharNo = document.getElementById('reg-aadhar').value.trim();
-  const password = document.getElementById('reg-password').value;
+    // ============================================================
+    // USER REGISTRATION
+    // ============================================================
+    if (currentRegisterType === 'user') {
+      toggleBtnLoading(submitBtn, true);
 
-  if (!name || !email || !address || !aadharNo || !password) {
-    showToast("Please fill in all required fields.", "error");
-    toggleBtnLoading(submitBtn, false);
-    return;
-  }
-  if (!/^\d{12}$/.test(aadharNo)) {
-    showToast("Please enter a valid 12-digit Aadhar number.", "error");
-    toggleBtnLoading(submitBtn, false);
-    return;
-  }
+      try {
+        const name = document.getElementById('reg-name').value.trim();
+        const email = document.getElementById('reg-email').value.trim();
+        const phone = document.getElementById('reg-phone').value.trim();
+        const address = document.getElementById('reg-address').value.trim();
+        const aadharNo = document.getElementById('reg-aadhar').value.trim();
+        const password = document.getElementById('reg-password').value;
 
-  const hashedPassword = await hashPassword(password);
-
-<<<<<<< HEAD
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    body: JSON.stringify({ action: 'register', name, email, phone, address, aadharNo, password: hashedPassword })
-  });
-  const result = await res.json();
-  toggleBtnLoading(submitBtn, false);
-
-  if (result.success) {
-    showToast('Account created successfully! Please login.', 'success');
-    clearUserRegisterFields();
-    switchTab('login');
-  } else {
-    showToast(result.message, 'error');
-  }
-}else {
-        // -------- NGO REGISTRATION --------
-        const ngoName = document.getElementById('reg-ngo-name').value;
-        const email = document.getElementById('reg-ngo-email').value;
-        const phone = document.getElementById('reg-ngo-phone').value;
-        const address = document.getElementById('reg-ngo-address').value;
-
-        const res = await fetch(API_URL, {
-          method: 'POST',
-          body: JSON.stringify({ action: 'registerNGO', ngoName, email, phone, address })
-        });
-        const result = await res.json();
-        toggleBtnLoading(submitBtn, false);
-
-        if (result.success) {
-          showToast('NGO registration submitted! Our team will verify and share login access.', 'success');
-          clearNGORegisterFields();   // NEW - guaranteed clear
-          switchTab('login');
-          switchRegisterType('user');
-        } else {
-          showToast(result.message, 'error');
-=======
-      } else {
-        // -------- NGO REGISTRATION (multi-step) --------
-
-        // STEP 0: capture basic NGO fields, then move to Member 1
-        if (ngoStep === 0) {
-          toggleBtnLoading(submitBtn, false); // no network call yet at this step
-
-          const ngoName = document.getElementById('reg-ngo-name').value.trim();
-          const email = document.getElementById('reg-ngo-email').value.trim();
-          const phone = document.getElementById('reg-ngo-phone').value.trim();
-          const address = document.getElementById('reg-ngo-address').value.trim();
-          const ownerName = document.getElementById('reg-ngo-owner-name').value.trim();
-          const aadharId = document.getElementById('reg-ngo-aadhar').value.trim();
-          const memberCount = parseInt(document.getElementById('reg-ngo-members').value, 10);
-
-          if (!ngoName || !email || !phone || !address || !ownerName || !aadharId || !memberCount || memberCount < 1) {
-            showToast('Please fill all NGO details correctly.', 'error');
-            return;
-          }
-
-          ngoBasicData = { ngoName, email, phone, address, ownerName, aadharId };
-          ngoMemberCount = memberCount;
-          ngoMembersData = [];
-
-          document.getElementById('ngo-basic-fields').classList.add('hidden');
-          renderNgoMemberStep(1);
-          ngoStep = 1;
-
-          submitBtn.querySelector('.btn-text').innerText = (ngoMemberCount === 1) ? 'Send Request' : 'Next';
+        if (!name || !email || !address || !aadharNo || !password) {
+          showToast("Please fill in all required fields.", "error");
+          toggleBtnLoading(submitBtn, false);
           return;
         }
 
-        // STEP 1..N: capture each member's details one at a time
-        if (ngoStep >= 1 && ngoStep <= ngoMemberCount) {
+        if (!/^\d{12}$/.test(aadharNo)) {
+          showToast("Please enter a valid 12-digit Aadhar number.", "error");
           toggleBtnLoading(submitBtn, false);
-
-          const nameEl = document.getElementById(`ngo-member-name-${ngoStep}`);
-          const emailEl = document.getElementById(`ngo-member-email-${ngoStep}`);
-          const phoneEl = document.getElementById(`ngo-member-phone-${ngoStep}`);
-          const addressEl = document.getElementById(`ngo-member-address-${ngoStep}`);
-          const aadharEl = document.getElementById(`ngo-member-aadhar-${ngoStep}`);
-          const roleEl = document.getElementById(`ngo-member-role-${ngoStep}`);
-
-          const memberName = nameEl ? nameEl.value.trim() : '';
-          const memberEmail = emailEl ? emailEl.value.trim() : '';
-          const memberPhone = phoneEl ? phoneEl.value.trim() : '';
-          const memberAddress = addressEl ? addressEl.value.trim() : '';
-          const memberAadhar = aadharEl ? aadharEl.value.trim() : '';
-          const memberRole = roleEl ? roleEl.value.trim() : '';
-
-          if (!memberName || !memberEmail || !memberPhone || !memberAddress || !memberAadhar || !memberRole) {
-            showToast(`Please fill all details for Member ${ngoStep}.`, 'error');
-            return;
-          }
-
-          if (!/^\d{12}$/.test(memberAadhar)) {
-            showToast(`Member ${ngoStep}: Please enter a valid 12-digit Aadhar number.`, 'error');
-            return;
-          }
-
-          ngoMembersData.push({
-            name: memberName,
-            email: memberEmail,
-            phone: memberPhone,
-            address: memberAddress,
-            aadharNo: memberAadhar,
-            role: memberRole
-          });
-
-          // More members left -> go to next step
-          if (ngoStep < ngoMemberCount) {
-            ngoStep++;
-            renderNgoMemberStep(ngoStep);
-            submitBtn.querySelector('.btn-text').innerText = (ngoStep === ngoMemberCount) ? 'Send Request' : 'Next';
-            return;
-          }
-
-          // Last member done -> actually submit everything now
-          toggleBtnLoading(submitBtn, true);
-          try {
-            const res = await fetch(API_URL, {
-              method: 'POST',
-              body: JSON.stringify({
-                action: 'registerNGO',
-                ...ngoBasicData,
-                memberCount: ngoMemberCount,
-                members: ngoMembersData
-              })
-            });
-            const result = await res.json();
-            toggleBtnLoading(submitBtn, false);
-
-            if (result.success) {
-              showToast('NGO Registered! Login via NGO Portal.', 'success');
-              switchTab('login');
-              registerForm.reset();
-              switchRegisterType('user'); // reset toggle back to default for next time
-              resetNgoFlow();
-            } else {
-              showToast(result.message, 'error');
-            }
-          } catch (err) {
-            toggleBtnLoading(submitBtn, false);
-            showToast('Failed to connect to server!', 'error');
-          }
->>>>>>> a5f2ea8ec0b8993fec2ba2f2ca0a2ee92ae7fb79
+          return;
         }
+
+        const hashedPassword = await hashPassword(password);
+
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'register',
+            name,
+            email,
+            phone,
+            address,
+            aadharNo,
+            password: hashedPassword
+          })
+        });
+
+        const result = await res.json();
+
+        toggleBtnLoading(submitBtn, false);
+
+        if (result.success) {
+          showToast(
+            'Account created successfully! Please login.',
+            'success'
+          );
+
+          clearUserRegisterFields();
+          switchTab('login');
+        } else {
+          showToast(
+            result.message || 'Registration failed.',
+            'error'
+          );
+        }
+
+      } catch (err) {
+        console.error('User registration error:', err);
+
+        toggleBtnLoading(submitBtn, false);
+
+        showToast(
+          'Failed to connect to server!',
+          'error'
+        );
       }
-    } catch (err) {
+
+      return;
+    }
+
+    // ============================================================
+    // NGO REGISTRATION - MULTI STEP
+    // ============================================================
+    toggleBtnLoading(submitBtn, true);
+
+    try {
+
+      // ==========================================================
+      // STEP 0 - NGO BASIC DETAILS
+      // ==========================================================
+      if (ngoStep === 0) {
+
+        const ngoName =
+          document.getElementById('reg-ngo-name').value.trim();
+
+        const email =
+          document.getElementById('reg-ngo-email').value.trim();
+
+        const phone =
+          document.getElementById('reg-ngo-phone').value.trim();
+
+        const address =
+          document.getElementById('reg-ngo-address').value.trim();
+
+        const ownerName =
+          document.getElementById('reg-ngo-owner-name').value.trim();
+
+        const aadharId =
+          document.getElementById('reg-ngo-aadhar').value.trim();
+
+        const memberCount =
+          parseInt(
+            document.getElementById('reg-ngo-members').value,
+            10
+          );
+
+        // Validate NGO fields
+        if (
+          !ngoName ||
+          !email ||
+          !phone ||
+          !address ||
+          !ownerName ||
+          !aadharId ||
+          !memberCount ||
+          memberCount < 1
+        ) {
+          showToast(
+            'Please fill all NGO details correctly.',
+            'error'
+          );
+
+          toggleBtnLoading(submitBtn, false);
+          return;
+        }
+
+        // Validate NGO owner's Aadhar
+        if (!/^\d{12}$/.test(aadharId)) {
+          showToast(
+            'Please enter a valid 12-digit Aadhar number.',
+            'error'
+          );
+
+          toggleBtnLoading(submitBtn, false);
+          return;
+        }
+
+        // Save NGO basic information
+        ngoBasicData = {
+          ngoName,
+          email,
+          phone,
+          address,
+          ownerName,
+          aadharId
+        };
+
+        ngoMemberCount = memberCount;
+        ngoMembersData = [];
+
+        // Hide basic NGO fields
+        document
+          .getElementById('ngo-basic-fields')
+          .classList.add('hidden');
+
+        // Show Member 1
+        ngoStep = 1;
+        renderNgoMemberStep(ngoStep);
+
+        // Change button text
+        submitBtn.querySelector('.btn-text').innerText =
+          ngoMemberCount === 1
+            ? 'Send Request'
+            : 'Next';
+
+        // No API call yet
+        toggleBtnLoading(submitBtn, false);
+        return;
+      }
+
+      // ==========================================================
+      // STEP 1...N - NGO MEMBER DETAILS
+      // ==========================================================
+      if (
+        ngoStep >= 1 &&
+        ngoStep <= ngoMemberCount
+      ) {
+
+        const nameEl =
+          document.getElementById(
+            `ngo-member-name-${ngoStep}`
+          );
+
+        const emailEl =
+          document.getElementById(
+            `ngo-member-email-${ngoStep}`
+          );
+
+        const phoneEl =
+          document.getElementById(
+            `ngo-member-phone-${ngoStep}`
+          );
+
+        const addressEl =
+          document.getElementById(
+            `ngo-member-address-${ngoStep}`
+          );
+
+        const aadharEl =
+          document.getElementById(
+            `ngo-member-aadhar-${ngoStep}`
+          );
+
+        const roleEl =
+          document.getElementById(
+            `ngo-member-role-${ngoStep}`
+          );
+
+        const memberName =
+          nameEl ? nameEl.value.trim() : '';
+
+        const memberEmail =
+          emailEl ? emailEl.value.trim() : '';
+
+        const memberPhone =
+          phoneEl ? phoneEl.value.trim() : '';
+
+        const memberAddress =
+          addressEl ? addressEl.value.trim() : '';
+
+        const memberAadhar =
+          aadharEl ? aadharEl.value.trim() : '';
+
+        const memberRole =
+          roleEl ? roleEl.value.trim() : '';
+
+        // Validate member fields
+        if (
+          !memberName ||
+          !memberEmail ||
+          !memberPhone ||
+          !memberAddress ||
+          !memberAadhar ||
+          !memberRole
+        ) {
+          showToast(
+            `Please fill all details for Member ${ngoStep}.`,
+            'error'
+          );
+
+          toggleBtnLoading(submitBtn, false);
+          return;
+        }
+
+        // Validate member Aadhar
+        if (!/^\d{12}$/.test(memberAadhar)) {
+          showToast(
+            `Member ${ngoStep}: Please enter a valid 12-digit Aadhar number.`,
+            'error'
+          );
+
+          toggleBtnLoading(submitBtn, false);
+          return;
+        }
+
+        // Save current member
+        ngoMembersData.push({
+          name: memberName,
+          email: memberEmail,
+          phone: memberPhone,
+          address: memberAddress,
+          aadharNo: memberAadhar,
+          role: memberRole
+        });
+
+        // ========================================================
+        // MORE MEMBERS LEFT
+        // ========================================================
+        if (ngoStep < ngoMemberCount) {
+
+          ngoStep++;
+
+          renderNgoMemberStep(ngoStep);
+
+          submitBtn.querySelector('.btn-text').innerText =
+            ngoStep === ngoMemberCount
+              ? 'Send Request'
+              : 'Next';
+
+          toggleBtnLoading(submitBtn, false);
+          return;
+        }
+
+        // ========================================================
+        // LAST MEMBER - SUBMIT NGO REGISTRATION
+        // ========================================================
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'registerNGO',
+
+            ...ngoBasicData,
+
+            memberCount: ngoMemberCount,
+
+            members: ngoMembersData
+          })
+        });
+
+        const result = await res.json();
+
+        toggleBtnLoading(submitBtn, false);
+
+        if (result.success) {
+
+          showToast(
+            'NGO Registered! Login via NGO Portal.',
+            'success'
+          );
+
+          // Clear entire registration form
+          registerForm.reset();
+
+          // Reset to normal user registration
+          switchRegisterType('user');
+
+          // Reset NGO variables/UI
+          resetNgoFlow();
+
+          // Go to login
+          switchTab('login');
+
+        } else {
+
+          showToast(
+            result.message || 'NGO registration failed.',
+            'error'
+          );
+        }
+
+        return;
+      }
+
+      // ==========================================================
+      // INVALID NGO STEP
+      // ==========================================================
       toggleBtnLoading(submitBtn, false);
-      showToast('Failed to connect to server!', 'error');
+
+      showToast(
+        'Invalid NGO registration step.',
+        'error'
+      );
+
+    } catch (err) {
+
+      console.error('NGO registration error:', err);
+
+      toggleBtnLoading(submitBtn, false);
+
+      showToast(
+        'Failed to connect to server!',
+        'error'
+      );
     }
   });
 }
