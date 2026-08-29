@@ -291,41 +291,31 @@ function renderNgoMemberStep(stepNumber) {
   if (!container) return;
   container.classList.remove('hidden');
 
-  const firstMember = ngoMembersData[0] || { name: '', email: '', phone: '', address: '', aadharNo: '', role: '' };
-  const isFirst = stepNumber === 1;
-
-  const prefillName = isFirst ? '' : firstMember.name;
-  const prefillEmail = isFirst ? '' : firstMember.email;
-  const prefillPhone = isFirst ? '' : firstMember.phone;
-  const prefillAddress = isFirst ? '' : firstMember.address;
-  const prefillAadhar = isFirst ? '' : firstMember.aadharNo;
-  const prefillRole = isFirst ? '' : firstMember.role;
-
   container.innerHTML = `
     <h4 style="margin-bottom:0.6rem;">Member ${stepNumber} of ${ngoMemberCount} — Details</h4>
     <div class="input-group">
       <label><i class="fa-solid fa-user"></i> Member ${stepNumber} Name</label>
-      <input type="text" id="ngo-member-name-${stepNumber}" placeholder="Full Name" value="${prefillName}">
+      <input type="text" id="ngo-member-name-${stepNumber}" placeholder="Full Name">
     </div>
     <div class="input-group">
       <label><i class="fa-solid fa-envelope"></i> Member ${stepNumber} Email</label>
-      <input type="email" id="ngo-member-email-${stepNumber}" placeholder="member@mail.com" value="${prefillEmail}">
+      <input type="email" id="ngo-member-email-${stepNumber}" placeholder="member@mail.com">
     </div>
     <div class="input-group">
       <label><i class="fa-solid fa-phone"></i> Member ${stepNumber} Phone</label>
-      <input type="tel" id="ngo-member-phone-${stepNumber}" placeholder="+91 9876543210" value="${prefillPhone}">
+      <input type="tel" id="ngo-member-phone-${stepNumber}" placeholder="+91 9876543210">
     </div>
     <div class="input-group">
       <label><i class="fa-solid fa-location-dot"></i> Member ${stepNumber} Address</label>
-      <input type="text" id="ngo-member-address-${stepNumber}" placeholder="Office / Street / Area / City" value="${prefillAddress}">
+      <input type="text" id="ngo-member-address-${stepNumber}" placeholder="Office / Street / Area / City">
     </div>
     <div class="input-group">
       <label><i class="fa-solid fa-id-card"></i> Member ${stepNumber} Aadhar Card No</label>
-      <input type="text" id="ngo-member-aadhar-${stepNumber}" placeholder="XXXX-XXXX-XXXX" maxlength="12" value="${prefillAadhar}">
+      <input type="text" id="ngo-member-aadhar-${stepNumber}" placeholder="XXXX-XXXX-XXXX" maxlength="12">
     </div>
     <div class="input-group">
       <label><i class="fa-solid fa-id-badge"></i> Role of Member</label>
-      <input type="text" id="ngo-member-role-${stepNumber}" placeholder="e.g. Volunteer, Coordinator" value="${prefillRole}">
+      <input type="text" id="ngo-member-role-${stepNumber}" placeholder="e.g. Volunteer, Coordinator">
     </div>
   `;
 }
@@ -354,7 +344,7 @@ function switchRegisterType(type) {
   // NEW: NGO's very first submit is just "basic info -> Next", not the final send
   const registerBtn = document.getElementById('register-btn');
   if (registerBtn) {
-    registerBtn.querySelector('.btn-text').innerText = (type === 'ngo') ? 'Next' : 'Send Request';
+    registerBtn.querySelector('.btn-text').innerText = 'Send Request';
   }
 }
 
@@ -567,10 +557,7 @@ if (registerForm) {
         renderNgoMemberStep(ngoStep);
 
         // Change button text
-        submitBtn.querySelector('.btn-text').innerText =
-          ngoMemberCount === 1
-            ? 'Send Request'
-            : 'Next';
+       submitBtn.querySelector('.btn-text').innerText = 'Next';
 
         // No API call yet
         toggleBtnLoading(submitBtn, false);

@@ -392,41 +392,35 @@
       <input type="text" id="reg-address" placeholder="House / Street / Area / City">
     </div>
 
-<div class="input-group">
-  <label><i class="fa-solid fa-id-card"></i> Aadhar Number</label>
-  <input type="text" id="reg-aadhar" placeholder="12-digit Aadhar Number" maxlength="12" inputmode="numeric" required>
-</div>
+    <div class="input-group">
+      <label><i class="fa-solid fa-id-card"></i> Aadhar Number</label>
+      <input type="text" id="reg-aadhar" placeholder="12-digit Aadhar Number" maxlength="12" inputmode="numeric">
+    </div>
 
     <div class="input-group">
-      <label><i class="fa-solid fa-lock"></i> Password</label>
-      <input type="password" id="reg-password" placeholder="••••••••">
+     <label><i class="fa-solid fa-lock"></i> Password</label>
+     <input type="password" id="reg-password" placeholder="••••••••">
     </div>
+
   </div>
 
-  <!-- NGO REGISTRATION FIELDS -->
 <!-- NGO REGISTRATION FIELDS -->
 <div id="ngo-register-fields" class="hidden">
-  <div class="input-group">
-    <label><i class="fa-solid fa-building"></i> NGO / Organization Name</label>
-    <input type="text" id="reg-ngo-name" placeholder="Feeding India">
-  </div>
-
-  <div id="ngo-register-fields" class="hidden">
   <div id="ngo-basic-fields">
     <div class="input-group">
       <label><i class="fa-solid fa-building"></i> NGO / Organization Name</label>
       <input type="text" id="reg-ngo-name" placeholder="Feeding India">
     </div>
 
-  <div class="input-group">
-    <label><i class="fa-solid fa-envelope"></i> Email Address</label>
-    <input type="email" id="reg-ngo-email" placeholder="contact@ngo.org">
-  </div>
+    <div class="input-group">
+      <label><i class="fa-solid fa-envelope"></i> Email Address</label>
+      <input type="email" id="reg-ngo-email" placeholder="contact@ngo.org">
+    </div>
 
-  <div class="input-group">
-    <label><i class="fa-solid fa-phone"></i> Phone Number</label>
-    <input type="tel" id="reg-ngo-phone" placeholder="+91 9876543210">
-  </div>
+    <div class="input-group">
+      <label><i class="fa-solid fa-phone"></i> Phone Number</label>
+      <input type="tel" id="reg-ngo-phone" placeholder="+91 9876543210">
+    </div>
 
     <div class="input-group">
       <label><i class="fa-solid fa-location-dot"></i> Address</label>
@@ -434,16 +428,7 @@
     </div>
 
     <div class="input-group">
-      <label><i class="fa-solid fa-lock"></i> Password</label>
-      <input type="password" id="reg-ngo-password" placeholder="••••••••">
-    </div>
-
-  <p style="font-size:0.8rem; color:var(--text-muted); margin-top:-0.6rem; margin-bottom:1.2rem;">
-    <i class="fa-solid fa-circle-info"></i> After verification, our team will share your NGO Portal login credentials via email. Login window: 9:00 PM – 10:00 PM daily.
-  </p>
-</div>
-
-<label><i class="fa-solid fa-user"></i> Name of NGO Owner</label>
+      <label><i class="fa-solid fa-user"></i> Name of NGO Owner</label>
       <input type="text" id="reg-ngo-owner-name" placeholder="Owner's Full Name">
     </div>
 
@@ -452,18 +437,20 @@
       <input type="text" id="reg-ngo-aadhar" placeholder="XXXX-XXXX-XXXX" maxlength="12">
     </div>
 
-    <div class="input-group">
-      <label><i class="fa-solid fa-people-group"></i> How Many Members in Your NGO</label>
-      <input type="number" id="reg-ngo-members" min="1" placeholder="e.g. 2">
-    </div>
+   <div class="input-group">
+  <label><i class="fa-solid fa-people-group"></i> How Many Members in Your NGO</label>
+  <input type="number" id="reg-ngo-members" min="1" placeholder="e.g. 2">
+</div>
+
+
+    <p style="font-size:0.8rem; color:var(--text-muted); margin-top:-0.6rem; margin-bottom:1.2rem;">
+      <i class="fa-solid fa-circle-info"></i> After verification, our team will share your NGO Portal login credentials via email. Login window: 9:00 PM – 10:00 PM daily.
+    </p>
   </div>
 
   <!-- Member details ek-ek karke yahan render honge -->
   <div id="ngo-member-step-container" class="hidden"></div>
 </div>
-
-     
-
 
   <button type="submit" class="btn btn-primary btn-full" id="register-btn">
     <span class="btn-text">Send Request</span>

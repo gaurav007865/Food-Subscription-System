@@ -380,6 +380,7 @@
       <button class="admin-tab-btn" onclick="switchAdminTab('tab-subscriptions', this)"><i class="fa-solid fa-calendar-check"></i> Subscriptions</button>
       <button class="admin-tab-btn" onclick="switchAdminTab('tab-donations', this)"><i class="fa-solid fa-hand-holding-heart"></i> Food Donations</button>
       <button class="admin-tab-btn" onclick="switchAdminTab('tab-users', this)"><i class="fa-solid fa-users"></i> Users</button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('tab-settings', this)"><i class="fa-solid fa-gear"></i> Settings</button>
     </div>
 
     <div class="container">
@@ -509,6 +510,37 @@
           </table>
         </div>
       </div>
+
+      <div id="tab-settings" class="tab-content">
+  <div class="section-card">
+    <h2><i class="fa-solid fa-clock" style="color:var(--primary);"></i> Login & Ordering Time Windows</h2>
+    <p style="color:var(--muted); font-size:0.85rem; margin-bottom:1.5rem;">Set the hours (24-hour format, 0–23) during which Users can place orders/subscribe and NGOs can log in.</p>
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:1.5rem;">
+
+      <div>
+        <label style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:6px;">User Ordering Start Hour</label>
+        <input type="number" id="setting-ordering-start" class="input-field" min="0" max="23" placeholder="e.g. 8">
+      </div>
+      <div>
+        <label style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:6px;">User Ordering End Hour</label>
+        <input type="number" id="setting-ordering-end" class="input-field" min="0" max="23" placeholder="e.g. 22">
+      </div>
+
+      <div>
+        <label style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:6px;">NGO Login Start Hour</label>
+        <input type="number" id="setting-ngo-start" class="input-field" min="0" max="23" placeholder="e.g. 20">
+      </div>
+      <div>
+        <label style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:6px;">NGO Login End Hour</label>
+        <input type="number" id="setting-ngo-end" class="input-field" min="0" max="23" placeholder="e.g. 22">
+      </div>
+
+    </div>
+
+    <button class="btn" style="margin-top:1.5rem;" onclick="saveSettings()">Save Settings</button>
+  </div>
+</div>
 
       <!-- TAB 4: SUBSCRIPTIONS -->
       <div id="tab-subscriptions" class="tab-content">
@@ -771,8 +803,39 @@
         renderUsers(data.users);
         globalNGOMembersData = data.ngoMembers || [];
         renderNGOs(data.ngoList || []);
+        loadSettings();
       }
     }
+
+    async function loadSettings() {
+  const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getSettings' }) });
+  const result = await res.json();
+  if (result.success) {
+    const settings = result.settings;
+    const get = key => {
+      const s = settings.find(x => x.SettingKey === key);
+      return s ? s.SettingValue : '';
+    };
+    document.getElementById('setting-ordering-start').value = get('OrderingStartHour');
+    document.getElementById('setting-ordering-end').value = get('OrderingEndHour');
+    document.getElementById('setting-ngo-start').value = get('NGOLoginStartHour');
+    document.getElementById('setting-ngo-end').value = get('NGOLoginEndHour');
+  }
+}
+
+async function saveSettings() {
+  const updates = [
+    { key: 'OrderingStartHour', value: document.getElementById('setting-ordering-start').value },
+    { key: 'OrderingEndHour', value: document.getElementById('setting-ordering-end').value },
+    { key: 'NGOLoginStartHour', value: document.getElementById('setting-ngo-start').value },
+    { key: 'NGOLoginEndHour', value: document.getElementById('setting-ngo-end').value }
+  ];
+
+  showToast("Saving settings...");
+  const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'updateSettings', updates }) });
+  const result = await res.json();
+  showToast(result.message);
+}
 
     // Chart.js Rendering
     function renderCharts(orders) {

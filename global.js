@@ -1,4 +1,4 @@
 // ==========================================================================
 // GLOBAL CONFIG - Single source of truth for the backend URL
 // ==========================================================================
-const API_URL = "https://script.google.com/macros/s/AKfycbzck_jRmo52NVXM39CsjsyWZDIPCzs6RDvY3v48e49fqReOTsc1Sf6o-IozW-ixIZYGIA/exec"
+const API_URL = "https://script.google.com/macros/s/AKfycbzXsar5OoCBV3WqcvZVglYoOVdMMi6B8y0TcG6YoXdreuHdIyjxh2Cq1Zxqc_otib7tDg/exec"
