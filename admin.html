@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -6,7 +6,6 @@
   <title>Enterprise Admin Dashboard v3.0 - TiffinHub</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Chart.js CDN for Analytics Graphs -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
@@ -25,7 +24,6 @@
     * { margin:0; padding:0; box-sizing:border-box; font-family:'Plus Jakarta Sans', sans-serif; }
     body { background-color: var(--bg); color: var(--dark); }
 
-    /* Login Screen — Centered card, blurred background image */
     .admin-login-wrapper {
       min-height: 100vh;
       display: flex;
@@ -99,7 +97,6 @@
     .btn-secondary:hover { background: #26A398; }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    /* Dashboard Layout */
     .dashboard { display: none; }
     .dashboard.active { display: block; }
 
@@ -145,7 +142,6 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    /* Analytics Chart Grid */
     .charts-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -161,7 +157,6 @@
     }
     .chart-card h3 { font-size: 1.1rem; margin-bottom: 1rem; color: var(--dark); }
 
-    /* Stat Cards */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -232,7 +227,6 @@
     .btn-edit { background: rgba(46, 196, 182, 0.15); color: var(--secondary); margin-right: 4px; }
     .btn-delete { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
 
-    /* Modal Styling */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -256,75 +250,68 @@
       padding: 12px 20px; border-radius: 10px;
       display: none; z-index: 2000;
     }
-    /* NGO Accept/Reject Toggle Switch */
-.ngo-toggle-wrap {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.ngo-toggle-switch {
-  position: relative;
-  width: 46px;
-  height: 24px;
-  background: #E2E8F0;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: 0.3s;
-  border: none;
-}
-.ngo-toggle-switch.active {
-  background: var(--success);
-}
-.ngo-toggle-switch::before {
-  content: '';
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 18px;
-  height: 18px;
-  background: white;
-  border-radius: 50%;
-  transition: 0.3s;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-}
-.ngo-toggle-switch.active::before {
-  left: 25px;
-}
-.ngo-toggle-label {
-  font-size: 0.78rem;
-  font-weight: 700;
-  min-width: 55px;
-}
-.ngo-toggle-label.status-accepted { color: var(--success); }
-.ngo-toggle-label.status-pending { color: #D97706; }
+
+    .ngo-toggle-wrap { display: flex; align-items: center; gap: 8px; }
+    .ngo-toggle-switch {
+      position: relative;
+      width: 46px;
+      height: 24px;
+      background: #E2E8F0;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: 0.3s;
+      border: none;
+    }
+    .ngo-toggle-switch.active { background: var(--success); }
+    .ngo-toggle-switch::before {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      background: white;
+      border-radius: 50%;
+      transition: 0.3s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+    .ngo-toggle-switch.active::before { left: 25px; }
+    .ngo-toggle-label { font-size: 0.78rem; font-weight: 700; min-width: 55px; }
+    .ngo-toggle-label.status-accepted { color: var(--success); }
+    .ngo-toggle-label.status-pending { color: #D97706; }
+
+    .login-window-pill {
+      background: rgba(46, 196, 182, 0.12);
+      color: var(--secondary);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
   </style>
 </head>
 <body>
 
   <div id="toast" class="toast"></div>
 
-  <!-- 1. LOGIN / SIGNUP SCREEN -->
+  <!-- 1. LOGIN SCREEN -->
   <div id="login-screen" class="admin-login-wrapper">
-
     <img src="Tiffen.jpg" alt="" class="login-bg-image">
-
     <div class="login-box">
       <h1>🍱 Enterprise Admin</h1>
       <p id="auth-subtitle">Control Center v3.0 Login</p>
 
-      <!-- Toggle Tabs -->
       <div style="display:flex; background:#F1F5F9; border-radius:10px; padding:4px; margin-bottom:1.2rem;">
         <button id="tab-login-btn" onclick="switchAuthMode('login')"
           style="flex:1; padding:8px; border:none; border-radius:8px; background:var(--primary); color:white; font-weight:700; cursor:pointer;">
           Login
         </button>
-        <button id="tab-signup-btn" onclick="switchAuthMode('signup')"
-          style="flex:1; padding:8px; border:none; border-radius:8px; background:transparent; color:var(--muted); font-weight:700; cursor:pointer;">
-          Sign Up
-        </button>
       </div>
 
-      <!-- LOGIN FORM (existing admin) -->
       <div id="login-form-fields">
         <input type="email" id="admin-email" class="input-field" value="admin@tiffinhub.com">
         <div style="position:relative;">
@@ -340,26 +327,7 @@
         </p>
         <button class="btn" style="width:100%" onclick="loginAdmin()" id="admin-login-btn">Login</button>
       </div>
-
-      <!-- SIGNUP FORM (new admin) -->
-      <div id="signup-form-fields" style="display:none;">
-        <input type="text" id="signup-name" class="input-field" placeholder="Full Name">
-        <input type="email" id="signup-email" class="input-field" placeholder="Email">
-        <div style="position:relative;">
-          <input type="password" id="signup-password" class="input-field" style="padding-right:2.6rem;" placeholder="Create Password">
-          <i class="fa-solid fa-eye" id="toggle-signup-password-icon" onclick="toggleSignupPasswordVisibility()" style="position:absolute; right:14px; top:50%; transform:translateY(-70%); cursor:pointer; color:var(--muted);"></i>
-        </div>
-        <input type="password" id="signup-confirm-password" class="input-field" placeholder="Confirm Password">
-        <p id="signup-error-msg" style="color:#EF4444; font-size:0.82rem; font-weight:600; margin:-6px 0 12px; display:none;">
-          <i class="fa-solid fa-circle-exclamation"></i> <span id="signup-error-text"></span>
-        </p>
-        <p id="signup-success-msg" style="color:#10B981; font-size:0.82rem; font-weight:600; margin:-6px 0 12px; display:none;">
-          <i class="fa-solid fa-circle-check"></i> <span id="signup-success-text"></span>
-        </p>
-        <button class="btn" style="width:100%" onclick="signupAdmin()" id="admin-signup-btn">Create Account</button>
-      </div>
     </div>
-
   </div>
 
   <!-- 2. DASHBOARD SCREEN -->
@@ -373,46 +341,79 @@
     </header>
 
     <div class="admin-tabs">
-      <button class="admin-tab-btn" onclick="switchAdminTab('tab-ngo', this)"><i class="fa-solid fa-hand-holding-heart"></i> NGO Registrations</button>
       <button class="admin-tab-btn active" onclick="switchAdminTab('tab-overview', this)"><i class="fa-solid fa-chart-line"></i> Analytics & KPIs</button>
       <button class="admin-tab-btn" onclick="switchAdminTab('tab-orders', this)"><i class="fa-solid fa-truck-fast"></i> Live Orders</button>
       <button class="admin-tab-btn" onclick="switchAdminTab('tab-tiffins', this)"><i class="fa-solid fa-utensils"></i> Tiffin Catalog</button>
       <button class="admin-tab-btn" onclick="switchAdminTab('tab-subscriptions', this)"><i class="fa-solid fa-calendar-check"></i> Subscriptions</button>
       <button class="admin-tab-btn" onclick="switchAdminTab('tab-donations', this)"><i class="fa-solid fa-hand-holding-heart"></i> Food Donations</button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('tab-ngo', this)"><i class="fa-solid fa-people-group"></i> NGO Registrations</button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('tab-providers', this)"><i class="fa-solid fa-store"></i> Provider Registrations</button>
       <button class="admin-tab-btn" onclick="switchAdminTab('tab-users', this)"><i class="fa-solid fa-users"></i> Users</button>
       <button class="admin-tab-btn" onclick="switchAdminTab('tab-settings', this)"><i class="fa-solid fa-gear"></i> Settings</button>
     </div>
 
     <div class="container">
-<!-- TAB: NGO REGISTRATIONS -->
-<div id="tab-ngo" class="tab-content">
-  <div class="section-card">
-    <div class="table-header-tools">
-      <h2><i class="fa-solid fa-hand-holding-heart" style="color:#2EC4B6;"></i> NGO Registration Requests</h2>
-      <input type="text" class="search-box" placeholder="🔍 Search NGO Name / Email..." onkeyup="filterTable('ngo-table-body', this.value)">
-    </div>
-    <table>
-      <thead>
-        <tr>
-          <th>NGO ID</th>
-          <th>NGO Name</th>
-          <th>Owner Name</th>
-          <th>Email</th>
-          <th>Phone</th>
-          <th>Address</th>
-          <th>Aadhar ID</th>
-          <th>Members Count</th>
-          <th>Status</th>
-          <th>Accept Request</th>
-          <th>Members</th>
-        </tr>
-      </thead>
-      <tbody id="ngo-table-body">
-        <tr><td colspan="11">Loading...</td></tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+
+      <!-- TAB: NGO REGISTRATIONS -->
+      <div id="tab-ngo" class="tab-content">
+        <div class="section-card">
+          <div class="table-header-tools">
+            <h2><i class="fa-solid fa-hand-holding-heart" style="color:#2EC4B6;"></i> NGO Registration Requests</h2>
+            <input type="text" class="search-box" placeholder="🔍 Search NGO Name / Email..." onkeyup="filterTable('ngo-table-body', this.value)">
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>NGO ID</th>
+                <th>NGO Name</th>
+                <th>Owner Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Address</th>
+                <th>Aadhar ID</th>
+                <th>Members</th>
+                <th>Login Window</th>
+                <th>Status</th>
+                <th>Accept Request</th>
+                <th>Members</th>
+              </tr>
+            </thead>
+            <tbody id="ngo-table-body">
+              <tr><td colspan="12">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB: PROVIDER REGISTRATIONS -->
+      <div id="tab-providers" class="tab-content">
+        <div class="section-card">
+          <div class="table-header-tools">
+            <h2><i class="fa-solid fa-store" style="color:#FF6B35;"></i> Mess Provider Registration Requests</h2>
+            <input type="text" class="search-box" placeholder="🔍 Search Business / Email..." onkeyup="filterTable('providers-table-body', this.value)">
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Provider ID</th>
+                <th>Business Name</th>
+                <th>Owner Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Address</th>
+                <th>Aadhar ID</th>
+                <th>Status</th>
+                <th>Accept Request</th>
+                <th>Joined</th>
+              </tr>
+            </thead>
+            <tbody id="providers-table-body">
+              <tr><td colspan="10">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- TAB 1: ANALYTICS & KPIS -->
       <div id="tab-overview" class="tab-content active">
         <div class="stats-grid">
@@ -432,9 +433,12 @@
             <div><p>Users</p><h3 id="stat-users">0</h3></div>
             <i class="fa-solid fa-users" style="font-size:2rem; color:#6366F1;"></i>
           </div>
+          <div class="stat-card">
+            <div><p>Providers</p><h3 id="stat-providers">0</h3></div>
+            <i class="fa-solid fa-store" style="font-size:2rem; color:#F59E0B;"></i>
+          </div>
         </div>
 
-        <!-- Charts Section -->
         <div class="charts-grid">
           <div class="chart-card">
             <h3>📈 Revenue & Orders Trend</h3>
@@ -447,7 +451,7 @@
         </div>
       </div>
 
-      <!-- TAB 2: LIVE ORDERS WITH LIVE SEARCH & CSV EXPORT -->
+      <!-- TAB 2: LIVE ORDERS -->
       <div id="tab-orders" class="tab-content">
         <div class="section-card">
           <div class="table-header-tools">
@@ -475,7 +479,7 @@
         </div>
       </div>
 
-      <!-- TAB 3: TIFFIN CATALOG (EDIT MODAL + CRUD) -->
+      <!-- TAB 3: TIFFIN CATALOG -->
       <div id="tab-tiffins" class="tab-content">
         <div class="section-card">
           <h2><i class="fa-solid fa-plus-circle" style="color:var(--secondary);"></i> Add New Tiffin Provider</h2>
@@ -511,36 +515,29 @@
         </div>
       </div>
 
+      <!-- TAB: SETTINGS (User Ordering only — NGO hours are now per-NGO) -->
       <div id="tab-settings" class="tab-content">
-  <div class="section-card">
-    <h2><i class="fa-solid fa-clock" style="color:var(--primary);"></i> Login & Ordering Time Windows</h2>
-    <p style="color:var(--muted); font-size:0.85rem; margin-bottom:1.5rem;">Set the hours (24-hour format, 0–23) during which Users can place orders/subscribe and NGOs can log in.</p>
+        <div class="section-card">
+          <h2><i class="fa-solid fa-clock" style="color:var(--primary);"></i> User Ordering Time Window</h2>
+          <p style="color:var(--muted); font-size:0.85rem; margin-bottom:1.5rem;">
+            Set the hours (24-hour format, 0–23) during which Users can place orders and start subscriptions.
+            NGO login windows are now configured independently by each NGO during their registration.
+          </p>
 
-    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:1.5rem;">
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:1.5rem;">
+            <div>
+              <label style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:6px;">User Ordering Start Hour</label>
+              <input type="number" id="setting-ordering-start" class="input-field" min="0" max="23" placeholder="e.g. 8">
+            </div>
+            <div>
+              <label style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:6px;">User Ordering End Hour</label>
+              <input type="number" id="setting-ordering-end" class="input-field" min="0" max="23" placeholder="e.g. 22">
+            </div>
+          </div>
 
-      <div>
-        <label style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:6px;">User Ordering Start Hour</label>
-        <input type="number" id="setting-ordering-start" class="input-field" min="0" max="23" placeholder="e.g. 8">
+          <button class="btn" style="margin-top:1.5rem;" onclick="saveSettings()">Save Settings</button>
+        </div>
       </div>
-      <div>
-        <label style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:6px;">User Ordering End Hour</label>
-        <input type="number" id="setting-ordering-end" class="input-field" min="0" max="23" placeholder="e.g. 22">
-      </div>
-
-      <div>
-        <label style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:6px;">NGO Login Start Hour</label>
-        <input type="number" id="setting-ngo-start" class="input-field" min="0" max="23" placeholder="e.g. 20">
-      </div>
-      <div>
-        <label style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:6px;">NGO Login End Hour</label>
-        <input type="number" id="setting-ngo-end" class="input-field" min="0" max="23" placeholder="e.g. 22">
-      </div>
-
-    </div>
-
-    <button class="btn" style="margin-top:1.5rem;" onclick="saveSettings()">Save Settings</button>
-  </div>
-</div>
 
       <!-- TAB 4: SUBSCRIPTIONS -->
       <div id="tab-subscriptions" class="tab-content">
@@ -558,7 +555,7 @@
         </div>
       </div>
 
-      <!-- TAB 5: DONATIONS List-->
+      <!-- TAB 5: DONATIONS -->
       <div id="tab-donations" class="tab-content">
         <div class="section-card">
           <h2><i class="fa-solid fa-hand-holding-heart" style="color:#2EC4B6;"></i> Food Donations Matcher</h2>
@@ -571,7 +568,7 @@
         </div>
       </div>
 
-      <!-- TAB 6: ALL USERS -->
+      <!-- TAB 6: USERS -->
       <div id="tab-users" class="tab-content">
         <div class="section-card">
           <div class="table-header-tools">
@@ -590,7 +587,7 @@
     </div>
   </div>
 
-  <!-- VIEW NGO MEMBERS MODAL -->
+  <!-- NGO MEMBERS MODAL -->
   <div id="ngo-members-modal" class="modal-overlay">
     <div class="modal-card" style="max-width:700px; max-height:80vh; overflow-y:auto;">
       <h2 style="margin-bottom:1rem;" id="ngo-members-modal-title">👥 NGO Members</h2>
@@ -599,7 +596,7 @@
     </div>
   </div>
 
-  <!-- EDIT TIFFIN MODAL Section-->
+  <!-- EDIT TIFFIN MODAL -->
   <div id="edit-tiffin-modal" class="modal-overlay">
     <div class="modal-card">
       <h2 style="margin-bottom:1rem;">✏️ Edit Tiffin Provider</h2>
@@ -634,11 +631,7 @@
   <script src="global.js"></script>
   <script>
 
-    //Connectivity url
-    // const API_URL = "https://script.google.com/macros/s/AKfycbw-BFM76pop4O7zMaNhVt88JSq8PXvb0Ollbqk71Vc4Fg9yGoBkbnsMBng1VQj6CmljXA/exec";
-
-
-     let adminToken = localStorage.getItem('tiffin_admin_token') || sessionStorage.getItem('tiffin_admin_token') || null;
+    let adminToken = localStorage.getItem('tiffin_admin_token') || sessionStorage.getItem('tiffin_admin_token') || null;
     let adminEmail = localStorage.getItem('tiffin_admin_email') || sessionStorage.getItem('tiffin_admin_email') || null;
     let globalTiffinsData = [];
     let globalNGOMembersData = [];
@@ -653,7 +646,6 @@
       setTimeout(() => toast.style.display = 'none', 3000);
     }
 
-    // Fixed admin credentials (temporary, until signup/backend auth is wired up)
     const FIXED_ADMIN_EMAIL = "admin@tiffinhub.com";
     const FIXED_ADMIN_PASSWORD = "admin@123";
 
@@ -672,7 +664,6 @@
       btn.disabled = true;
       btn.innerText = "Logging in...";
 
-      // Simple local check against the one fixed admin account
       setTimeout(() => {
         if (email === FIXED_ADMIN_EMAIL && pass === FIXED_ADMIN_PASSWORD) {
           const rememberMe = document.getElementById('admin-remember-me').checked;
@@ -694,61 +685,12 @@
       errorBox.style.display = 'block';
     }
 
-     function hideLoginError() {
+    function hideLoginError() {
       document.getElementById('login-error-msg').style.display = 'none';
     }
 
     function switchAuthMode(mode) {
-      const loginBtn = document.getElementById('tab-login-btn');
-      const signupBtn = document.getElementById('tab-signup-btn');
-      const loginFields = document.getElementById('login-form-fields');
-      const signupFields = document.getElementById('signup-form-fields');
-      const subtitle = document.getElementById('auth-subtitle');
-
-      hideLoginError();
-      hideSignupMessages();
-
-      if (mode === 'login') {
-        loginBtn.style.background = 'var(--primary)'; loginBtn.style.color = 'white';
-        signupBtn.style.background = 'transparent'; signupBtn.style.color = 'var(--muted)';
-        loginFields.style.display = 'block';
-        signupFields.style.display = 'none';
-        subtitle.innerText = 'Control Center v3.0 Login';
-      } else {
-        signupBtn.style.background = 'var(--primary)'; signupBtn.style.color = 'white';
-        loginBtn.style.background = 'transparent'; loginBtn.style.color = 'var(--muted)';
-        signupFields.style.display = 'block';
-        loginFields.style.display = 'none';
-        subtitle.innerText = 'Create your Admin Account';
-      }
-    }
-
-    function toggleSignupPasswordVisibility() {
-      const pwdField = document.getElementById('signup-password');
-      const icon = document.getElementById('toggle-signup-password-icon');
-      if (pwdField.type === 'password') {
-        pwdField.type = 'text'; icon.classList.replace('fa-eye', 'fa-eye-slash');
-      } else {
-        pwdField.type = 'password'; icon.classList.replace('fa-eye-slash', 'fa-eye');
-      }
-    }
-
-    // NOTE: Sign Up is UI-only for now (no backend save yet).
-    async function signupAdmin() {
-      showSignupError("Sign up isn't connected yet. Please use the Login tab with the provided admin email & password.");
-    }
-
-    function showSignupError(msg) {
-      document.getElementById('signup-error-text').innerText = msg;
-      document.getElementById('signup-error-msg').style.display = 'block';
-    }
-    function showSignupSuccess(msg) {
-      document.getElementById('signup-success-text').innerText = msg;
-      document.getElementById('signup-success-msg').style.display = 'block';
-    }
-    function hideSignupMessages() {
-      document.getElementById('signup-error-msg').style.display = 'none';
-      document.getElementById('signup-success-msg').style.display = 'none';
+      // login-only mode
     }
 
     function togglePasswordVisibility() {
@@ -764,6 +706,7 @@
         icon.classList.add('fa-eye');
       }
     }
+
     function showDashboard() {
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('dashboard-screen').classList.add('active');
@@ -794,6 +737,8 @@
         document.getElementById('stat-orders').innerText = data.kpis.totalOrders;
         document.getElementById('stat-active-subs').innerText = data.kpis.activeSubs;
         document.getElementById('stat-users').innerText = data.kpis.totalUsers;
+        const provEl = document.getElementById('stat-providers');
+        if (provEl) provEl.innerText = data.kpis.totalProviders || 0;
 
         renderCharts(data.orders);
         renderOrders(data.orders);
@@ -803,43 +748,38 @@
         renderUsers(data.users);
         globalNGOMembersData = data.ngoMembers || [];
         renderNGOs(data.ngoList || []);
+        renderProviders(data.providers || []);
         loadSettings();
       }
     }
 
     async function loadSettings() {
-  const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getSettings' }) });
-  const result = await res.json();
-  if (result.success) {
-    const settings = result.settings;
-    const get = key => {
-      const s = settings.find(x => x.SettingKey === key);
-      return s ? s.SettingValue : '';
-    };
-    document.getElementById('setting-ordering-start').value = get('OrderingStartHour');
-    document.getElementById('setting-ordering-end').value = get('OrderingEndHour');
-    document.getElementById('setting-ngo-start').value = get('NGOLoginStartHour');
-    document.getElementById('setting-ngo-end').value = get('NGOLoginEndHour');
-  }
-}
+      const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getSettings' }) });
+      const result = await res.json();
+      if (result.success) {
+        const settings = result.settings;
+        const get = key => {
+          const s = settings.find(x => x.SettingKey === key);
+          return s ? s.SettingValue : '';
+        };
+        document.getElementById('setting-ordering-start').value = get('OrderingStartHour');
+        document.getElementById('setting-ordering-end').value = get('OrderingEndHour');
+      }
+    }
 
-async function saveSettings() {
-  const updates = [
-    { key: 'OrderingStartHour', value: document.getElementById('setting-ordering-start').value },
-    { key: 'OrderingEndHour', value: document.getElementById('setting-ordering-end').value },
-    { key: 'NGOLoginStartHour', value: document.getElementById('setting-ngo-start').value },
-    { key: 'NGOLoginEndHour', value: document.getElementById('setting-ngo-end').value }
-  ];
+    async function saveSettings() {
+      const updates = [
+        { key: 'OrderingStartHour', value: document.getElementById('setting-ordering-start').value },
+        { key: 'OrderingEndHour', value: document.getElementById('setting-ordering-end').value }
+      ];
 
-  showToast("Saving settings...");
-  const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'updateSettings', updates }) });
-  const result = await res.json();
-  showToast(result.message);
-}
+      showToast("Saving settings...");
+      const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'updateSettings', updates }) });
+      const result = await res.json();
+      showToast(result.message);
+    }
 
-    // Chart.js Rendering
     function renderCharts(orders) {
-      // 1. Revenue/Orders Trend Chart
       const ctx1 = document.getElementById('revenueChart').getContext('2d');
       new Chart(ctx1, {
         type: 'bar',
@@ -849,7 +789,6 @@ async function saveSettings() {
         }
       });
 
-      // 2. Order Status Pie Chart
       const ctx2 = document.getElementById('orderStatusChart').getContext('2d');
       new Chart(ctx2, {
         type: 'doughnut',
@@ -898,7 +837,6 @@ async function saveSettings() {
       `).join('');
     }
 
-    // Edit Modal Functions
     function openEditModal(tiffinId) {
       const tif = globalTiffinsData.find(t => t.TiffinID == tiffinId);
       if (!tif) return;
@@ -932,7 +870,6 @@ async function saveSettings() {
       loadAdminData();
     }
 
-    // Live Search Filter Helper
     function filterTable(tbodyId, query) {
       const rows = document.querySelectorAll(`#${tbodyId} tr`);
       const q = query.toLowerCase();
@@ -942,7 +879,6 @@ async function saveSettings() {
       });
     }
 
-    // Export Table to CSV File
     function exportTableToCSV(tbodyId, filename) {
       const rows = document.querySelectorAll(`#${tbodyId} tr`);
       let csv = [];
@@ -995,18 +931,25 @@ async function saveSettings() {
       `).join('');
     }
 
-    // FIXED: NGO Name <td> was missing before — that was shifting every
-    // column left by one. Row now matches the 11-column header exactly:
-    // NGO ID | NGO Name | Owner Name | Email | Phone | Address | Aadhar ID | Members Count | Status | Accept Request | Members
+    // ==========================================================================
+    // NGO RENDERING (with Login Window column)
+    // ==========================================================================
     function renderNGOs(ngoList) {
       const tbody = document.getElementById('ngo-table-body');
       if (!ngoList || ngoList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="11">No NGO registrations yet.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="12">No NGO registrations yet.</td></tr>`;
         return;
       }
       tbody.innerHTML = ngoList.map(ngo => {
         const status = (ngo.Status || 'Pending').toString().trim();
         const isAccepted = status.toLowerCase() === 'approved';
+
+        const hasHours = ngo.LoginStartHour !== undefined && ngo.LoginStartHour !== "" &&
+                         ngo.LoginEndHour !== undefined && ngo.LoginEndHour !== "";
+        const windowText = hasHours
+          ? `${String(ngo.LoginStartHour).padStart(2,'0')}:00 – ${String(ngo.LoginEndHour).padStart(2,'0')}:00`
+          : '21:00 – 22:00';
+
         return `
         <tr>
           <td><b>${ngo.NGOID}</b></td>
@@ -1017,6 +960,7 @@ async function saveSettings() {
           <td>${ngo.Address || 'N/A'}</td>
           <td>${ngo["Aadhar ID"] || 'N/A'}</td>
           <td>${ngo.MemberCount || 0}</td>
+          <td><span class="login-window-pill"><i class="fa-solid fa-clock"></i> ${windowText}</span></td>
           <td><span class="status-badge ${isAccepted ? 'badge-yes' : 'badge-pending'}">${status}</span></td>
           <td>
             <div class="ngo-toggle-wrap">
@@ -1032,8 +976,6 @@ async function saveSettings() {
       }).join('');
     }
 
-    // Accept/Reject toggle - flips Status between "Approved" and "Rejected" in the NGO sheet.
-    // Optimistic UI: button slides/turns green instantly on click, then syncs with backend.
     async function toggleNGOStatus(ngoId, currentlyAccepted, btnEl) {
       const newStatus = currentlyAccepted ? "Rejected" : "Approved";
       const willBeAccepted = !currentlyAccepted;
@@ -1055,7 +997,6 @@ async function saveSettings() {
       loadAdminData();
     }
 
-    // Shows every member's full details for the clicked NGO, in a popup modal
     function openNGOMembersModal(ngoId, ngoName) {
       document.getElementById('ngo-members-modal-title').innerText = `👥 ${ngoName} — Members`;
       const members = globalNGOMembersData.filter(m => m.NGOID == ngoId);
@@ -1090,6 +1031,62 @@ async function saveSettings() {
 
     function closeNGOMembersModal() {
       document.getElementById('ngo-members-modal').style.display = 'none';
+    }
+
+    // ==========================================================================
+    // PROVIDER REGISTRATIONS
+    // ==========================================================================
+    function renderProviders(providerList) {
+      const tbody = document.getElementById('providers-table-body');
+      if (!tbody) return;
+      if (!providerList || providerList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10">No provider registrations yet.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = providerList.map(p => {
+        const status = (p.Status || 'Pending').toString().trim();
+        const isAccepted = status.toLowerCase() === 'approved';
+        return `
+          <tr>
+            <td><b>${p.ProviderID}</b></td>
+            <td>${p.BusinessName || 'N/A'}</td>
+            <td>${p.OwnerName || 'N/A'}</td>
+            <td>${p.Email || 'N/A'}</td>
+            <td>${p.Phone || 'N/A'}</td>
+            <td>${p.Address || 'N/A'}</td>
+            <td>${p.AadharID || 'N/A'}</td>
+            <td><span class="status-badge ${isAccepted ? 'badge-yes' : 'badge-pending'}">${status}</span></td>
+            <td>
+              <div class="ngo-toggle-wrap">
+                <button class="ngo-toggle-switch ${isAccepted ? 'active' : ''}" onclick="toggleProviderStatus('${p.ProviderID}', ${isAccepted}, this)"></button>
+                <span class="ngo-toggle-label ${isAccepted ? 'status-accepted' : 'status-pending'}">${isAccepted ? 'Accepted' : 'Pending'}</span>
+              </div>
+            </td>
+            <td>${p.CreatedAt || 'N/A'}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function toggleProviderStatus(providerId, currentlyAccepted, btnEl) {
+      const newStatus = currentlyAccepted ? "Rejected" : "Approved";
+      const willBeAccepted = !currentlyAccepted;
+      const labelEl = btnEl.nextElementSibling;
+
+      btnEl.classList.toggle('active', willBeAccepted);
+      labelEl.classList.toggle('status-accepted', willBeAccepted);
+      labelEl.classList.toggle('status-pending', !willBeAccepted);
+      labelEl.innerText = willBeAccepted ? 'Accepted' : 'Pending';
+
+      showToast(currentlyAccepted ? "Rejecting provider..." : "Accepting provider...");
+
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'updateProviderStatus', providerId, newStatus })
+      });
+      const result = await res.json();
+      showToast(result.message);
+      loadAdminData();
     }
   </script>
 </body>

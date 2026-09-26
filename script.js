@@ -1,1406 +1,4324 @@
- 
-//This is Script connectivity
-// const API_URL = "https://script.google.com/macros/s/AKfycbw-BFM76pop4O7zMaNhVt88JSq8PXvb0Ollbqk71Vc4Fg9yGoBkbnsMBng1VQj6CmljXA/exec";
-
 // DOM Elements
+
+
 const authModal = document.getElementById('auth-modal');
+
+
 const btnOpenLogin = document.getElementById('btn-open-login');
+
+
 const btnOpenRegister = document.getElementById('btn-open-register');
+
+
 const btnCloseModal = document.getElementById('close-modal');
+
+
 const tabLogin = document.getElementById('tab-login');
+
+
 const tabRegister = document.getElementById('tab-register');
+
+
 const loginForm = document.getElementById('login-form');
+
+
 const registerForm = document.getElementById('register-form');
 
-// Persistent User State from LocalStorage
+
+ 
+
+
 let currentUser = JSON.parse(localStorage.getItem('tiffin_user_session')) || null;
 
-// Global State
-let allTiffinsList = [];      // tiffins for "Explore" section (public, no login needed)
-let globalTiffins = [];       // tiffins for logged-in dashboard subscribe flow
+
+ 
+
+
+let allTiffinsList = [];
+
+
+let globalTiffins = [];
+
+
 let selectedTiffinForSub = null;
+
+
 let selectedPlan = { type: 'Daily', days: 1, multiplier: 1 };
-let selectedTiffinForQuickOrder = null; // for the new "+" quick order flow
-let selectedPaymentMethod = 'UPI'; // default selected
-let pendingSubscribeIntent = false;     // (kept for compatibility, no longer used to gate the picker)
-let pendingSubscriptionIntent = false;  // true when user tried to pay for a plan but wasn't logged in yet
-let pendingQuickOrderTiffinId = null;   // remembers which tiffin's "+" was clicked before login
-let areaStatusList = [];      // NEW: [{Area, Status}] - which areas currently need food donations
+
+
+let selectedTiffinForQuickOrder = null;
+
+
+let selectedPaymentMethod = 'UPI';
+
+
+let pendingSubscribeIntent = false;
+
+
+let pendingSubscriptionIntent = false;
+
+
+let pendingQuickOrderTiffinId = null;
+
+
+let areaStatusList = [];
+
+
+ 
+
+
+// Phase 5 state
+
+
+let reviewedOrderIds = [];
+
+
+let selectedOrderForReview = null;
+
+
+let selectedRating = 0;
+
+
+ 
+
 
 // ==========================================================================
+
+
 // PAGE LOAD
+
+
 // ==========================================================================
+
+
 document.addEventListener('DOMContentLoaded', () => {
+
+
   updateNavUI();
+
+
   fetchExploreTiffins();
 
-  // Hero CTA button -> get user's location and show nearest tiffins first
+
+ 
+
+
   const heroExploreBtn = document.getElementById('hero-explore-btn');
+
+
   if (heroExploreBtn) {
+
+
     heroExploreBtn.addEventListener('click', findNearestTiffins);
+
+
   }
+
+
 });
 
-// ==========================================================================
-// "FIND TIFFINS NEAR ME" - DUMMY GPS DEMO
-// TODO: Once real coordinates are added to the Tiffins sheet (Latitude,
-// Longitude columns), replace DUMMY_AREA_COORDS lookup below with the
-// tiffin's own tif.Latitude / tif.Longitude values.
+
+ 
+
+
 // ==========================================================================
 
-// Approx coordinates per Nagpur locality - stand-in until real per-provider coordinates exist
+
+// NEARBY MAP (Leaflet)
+
+
+// ==========================================================================
+
+
 const DUMMY_AREA_COORDS = {
+
+
   'Bansi Nagar': { lat: 21.1352, lng: 79.0616 },
+
+
   'Lokmanya Nagar': { lat: 21.1197, lng: 79.0517 },
+
+
   'Dharampeth': { lat: 21.1394, lng: 79.0578 },
+
+
   'Sadar': { lat: 21.1622, lng: 79.0771 },
+
+
   'Civil Lines': { lat: 21.1580, lng: 79.0870 },
+
+
   'Sitabuldi': { lat: 21.1490, lng: 79.0810 },
+
+
   'Ramdaspeth': { lat: 21.1370, lng: 79.0790 },
+
+
   'Trimurti Nagar': { lat: 21.1280, lng: 79.0390 },
+
+
   'Pratap Nagar': { lat: 21.1330, lng: 79.0710 },
+
+
   'Manish Nagar': { lat: 21.1050, lng: 79.0300 },
+
+
   'Wardhaman Nagar': { lat: 21.1660, lng: 79.1210 },
+
+
   'Hingna Road': { lat: 21.1050, lng: 78.9950 }
+
+
 };
 
-// Haversine formula - real-world distance (km) between two lat/lng points
+
+ 
+
+
 function haversineDistanceKm(lat1, lng1, lat2, lng2) {
+
+
   const toRad = deg => (deg * Math.PI) / 180;
-  const R = 6371; // Earth radius in km
+
+
+  const R = 6371;
+
+
   const dLat = toRad(lat2 - lat1);
+
+
   const dLng = toRad(lng2 - lng1);
+
+
   const a = Math.sin(dLat / 2) ** 2 +
+
+
             Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+
+
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+
   return R * c;
+
+
 }
+
+
+ 
+
 
 function findNearestTiffins() {
+
+
   const heroExploreBtn = document.getElementById('hero-explore-btn');
+
+
   const tiffinsSection = document.getElementById('tiffins');
 
+
+ 
+
+
   if (!navigator.geolocation) {
+
+
     showToast("Location not supported by your browser. Showing all tiffins.", "info");
+
+
     if (tiffinsSection) tiffinsSection.scrollIntoView({ behavior: 'smooth' });
+
+
     return;
+
+
   }
+
+
+ 
+
 
   const originalText = heroExploreBtn.innerText;
+
+
   heroExploreBtn.innerText = "Locating...";
+
+
   heroExploreBtn.disabled = true;
 
+
+ 
+
+
   navigator.geolocation.getCurrentPosition(
+
+
     (position) => {
+
+
       const userLat = position.coords.latitude;
+
+
       const userLng = position.coords.longitude;
 
+
+ 
+
+
       const sorted = [...allTiffinsList]
+
+
         .map(t => {
+
+
           const coords = DUMMY_AREA_COORDS[t.Location] || DUMMY_AREA_COORDS['Sitabuldi'];
+
+
           const distance = haversineDistanceKm(userLat, userLng, coords.lat, coords.lng);
+
+
           return { ...t, distance, _coords: coords };
+
+
         })
+
+
         .sort((a, b) => a.distance - b.distance);
 
-      // Also update the normal grid behind the modal, so it's ready when they close the map
+
+ 
+
+
       renderExploreTiffins(sorted);
 
+
+ 
+
+
       heroExploreBtn.innerText = originalText;
+
+
       heroExploreBtn.disabled = false;
+
+
+ 
+
 
       openMapModal(userLat, userLng, sorted);
+
+
     },
+
+
     (error) => {
+
+
       heroExploreBtn.innerText = originalText;
+
+
       heroExploreBtn.disabled = false;
+
+
       showToast("Location access denied. Showing all tiffins instead.", "info");
+
+
       if (tiffinsSection) tiffinsSection.scrollIntoView({ behavior: 'smooth' });
+
+
     }
+
+
   );
+
+
 }
 
-// ==========================================================================
-// NEARBY MAP MODAL (Leaflet + OpenStreetMap — free, no API key needed)
-// ==========================================================================
-let nearbyMap = null;         // holds the Leaflet map instance so we don't re-init it
-let nearbyMarkersLayer = null; // holds all markers so we can clear & redraw them
+
+ 
+
+
+let nearbyMap = null;
+
+
+let nearbyMarkersLayer = null;
+
+
+ 
+
 
 function openMapModal(userLat, userLng, sortedTiffins) {
+
+
   const modal = document.getElementById('map-modal');
+
+
   modal.classList.add('active');
 
+
+ 
+
+
   setTimeout(() => {
+
+
     if (!nearbyMap) {
+
+
       nearbyMap = L.map('nearby-map');
+
+
     }
+
+
     nearbyMap.setView([userLat, userLng], 12);
 
+
+ 
+
+
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+
+
       attribution: '&copy; OpenStreetMap contributors',
+
+
       maxZoom: 19
+
+
     }).addTo(nearbyMap);
 
+
+ 
+
+
     if (nearbyMarkersLayer) nearbyMap.removeLayer(nearbyMarkersLayer);
+
+
     nearbyMarkersLayer = L.layerGroup().addTo(nearbyMap);
 
+
+ 
+
+
     L.circleMarker([userLat, userLng], {
+
+
       radius: 9, color: '#1D4ED8', fillColor: '#3B82F6', fillOpacity: 0.9, weight: 2
+
+
     }).addTo(nearbyMarkersLayer).bindPopup('<strong>📍 You are here</strong>');
 
+
+ 
+
+
     const bounds = [[userLat, userLng]];
+
+
     const top = sortedTiffins.slice(0, 12);
 
+
+ 
+
+
     top.forEach(tif => {
+
+
       const coords = tif._coords;
+
+
       const marker = L.circleMarker([coords.lat, coords.lng], {
+
+
         radius: 9, color: '#E85A26', fillColor: '#FF6B35', fillOpacity: 0.9, weight: 2
+
+
       }).addTo(nearbyMarkersLayer);
 
+
+ 
+
+
       marker.bindPopup(`
+
+
         <div style="min-width:160px; font-family:'Plus Jakarta Sans', sans-serif;">
+
+
           <strong>${tif.ProviderName}</strong><br>
+
+
           <span style="font-size:0.85rem; color:#6C757D;">${tif.MealType} • ${tif.distance.toFixed(1)} km away</span><br>
+
+
           <span style="font-weight:800; color:#FF6B35;">₹${tif.Price} / meal</span><br>
+
+
           <button onclick="closeMapModal(); openSubscriptionModal('${tif.TiffinID}')"
+
+
             style="margin-top:6px; padding:5px 10px; background:#FF6B35; color:white; border:none; border-radius:6px; font-weight:700; cursor:pointer; font-size:0.8rem;">
+
+
             Subscribe
+
+
           </button>
+
+
         </div>
+
+
       `);
 
+
+ 
+
+
       bounds.push([coords.lat, coords.lng]);
+
+
     });
 
+
+ 
+
+
     nearbyMap.fitBounds(bounds, { padding: [40, 40] });
+
+
     setTimeout(() => nearbyMap.invalidateSize(), 200);
 
+
+ 
+
+
     renderNearbyMapList(top, userLat, userLng);
+
+
   }, 100);
+
+
 }
+
+
+ 
+
 
 function renderNearbyMapList(tiffins, userLat, userLng) {
+
+
   const list = document.getElementById('nearby-map-list');
+
+
   if (!list) return;
 
+
+ 
+
+
   if (!tiffins || tiffins.length === 0) {
+
+
     list.innerHTML = `<p class="text-muted">No nearby tiffins found.</p>`;
+
+
     return;
+
+
   }
+
+
+ 
+
 
   list.innerHTML = tiffins.map(tif => `
+
+
     <div class="nearby-map-item" onclick="focusMapMarker(${tif._coords.lat}, ${tif._coords.lng})">
+
+
       <div>
+
+
         <strong>${tif.ProviderName}</strong>
+
+
         <div style="font-size:0.8rem; color:var(--text-muted);">${tif.Location} • ${tif.distance.toFixed(1)} km away</div>
+
+
       </div>
+
+
       <span class="price-text" style="font-size:1rem;">₹${tif.Price}</span>
+
+
     </div>
+
+
   `).join('');
+
+
 }
+
+
+ 
+
 
 function focusMapMarker(lat, lng) {
+
+
   if (nearbyMap) nearbyMap.setView([lat, lng], 15);
+
+
 }
+
+
+ 
+
 
 function closeMapModal() {
-  const modal = document.getElementById('map-modal');
-  modal.classList.remove('active');
+
+
+  document.getElementById('map-modal').classList.remove('active');
+
+
 }
 
-// Modal Toggles (Auth)
-if (btnOpenLogin) btnOpenLogin.addEventListener('click', () => openModal('login'));
-if (btnCloseModal) btnCloseModal.addEventListener('click', closeModal);
 
-// NEW: navbar "Subscribe" button (was "Get Started") - starts the subscribe journey
-const btnNavSubscribe = document.getElementById('btn-open-register');
-if (btnNavSubscribe) btnNavSubscribe.addEventListener('click', handleNavSubscribeClick);
+ 
 
-function handleNavSubscribeClick() {
-  const source = (globalTiffins && globalTiffins.length) ? globalTiffins : allTiffinsList;
-  if (!source || source.length === 0) return;
-  openSubscriptionModal(source[0].TiffinID);
-}
-
-// NEW: navbar "Donate Food" link - opens the donation popup directly (works regardless of subscription)
-function handleNavDonateClick(e) {
-  e.preventDefault();
-  openDonationModal();
-}
-
-function openModal(type) {
-  authModal.classList.add('active');
-  switchTab(type);
-}
-
-function closeModal() {
-  authModal.classList.remove('active');
-}
-
-// Tab Switching (Auth)
-if (tabLogin) tabLogin.addEventListener('click', () => switchTab('login'));
-if (tabRegister) tabRegister.addEventListener('click', () => switchTab('register'));
-
-function switchTab(type) {
-  if (type === 'login') {
-    tabLogin.classList.add('active');
-    tabRegister.classList.remove('active');
-    loginForm.classList.add('active');
-    registerForm.classList.remove('active');
-  } else {
-    tabRegister.classList.add('active');
-    tabLogin.classList.remove('active');
-    registerForm.classList.add('active');
-    loginForm.classList.remove('active');
-  }
-}
-
-// NEW: toggles between User and NGO registration fields
-let currentRegisterType = 'user';
-
-// NEW: NGO multi-step member entry state
-let ngoStep = 0;            // 0 = basic NGO info, 1..N = member step N
-let ngoMemberCount = 0;     // how many members the NGO said it has
-let ngoBasicData = {};      // captured NGO org-level fields
-let ngoMembersData = [];    // collected {name, phone} per member
-
-function resetNgoFlow() {
-  ngoStep = 0;
-  ngoMemberCount = 0;
-  ngoBasicData = {};
-  ngoMembersData = [];
-
-  const basicFields = document.getElementById('ngo-basic-fields');
-  const memberStepContainer = document.getElementById('ngo-member-step-container');
-  const registerBtn = document.getElementById('register-btn');
-
-  if (basicFields) basicFields.classList.remove('hidden');
-  if (memberStepContainer) {
-    memberStepContainer.classList.add('hidden');
-    memberStepContainer.innerHTML = '';
-  }
-  if (registerBtn) registerBtn.querySelector('.btn-text').innerText = 'Send Request';
-}
-
-// Renders the input fields for one member's details (called step by step)
-// Each member gets: Name, Email, Phone, Address, Aadhar Card No, and Role.
-// From Member 2 onwards, all fields are pre-filled with Member 1's values
-// so the user only needs to edit what's different.
-function renderNgoMemberStep(stepNumber) {
-  const container = document.getElementById('ngo-member-step-container');
-  if (!container) return;
-  container.classList.remove('hidden');
-
-  container.innerHTML = `
-    <h4 style="margin-bottom:0.6rem;">Member ${stepNumber} of ${ngoMemberCount} — Details</h4>
-    <div class="input-group">
-      <label><i class="fa-solid fa-user"></i> Member ${stepNumber} Name</label>
-      <input type="text" id="ngo-member-name-${stepNumber}" placeholder="Full Name">
-    </div>
-    <div class="input-group">
-      <label><i class="fa-solid fa-envelope"></i> Member ${stepNumber} Email</label>
-      <input type="email" id="ngo-member-email-${stepNumber}" placeholder="member@mail.com">
-    </div>
-    <div class="input-group">
-      <label><i class="fa-solid fa-phone"></i> Member ${stepNumber} Phone</label>
-      <input type="tel" id="ngo-member-phone-${stepNumber}" placeholder="+91 9876543210">
-    </div>
-    <div class="input-group">
-      <label><i class="fa-solid fa-location-dot"></i> Member ${stepNumber} Address</label>
-      <input type="text" id="ngo-member-address-${stepNumber}" placeholder="Office / Street / Area / City">
-    </div>
-    <div class="input-group">
-      <label><i class="fa-solid fa-id-card"></i> Member ${stepNumber} Aadhar Card No</label>
-      <input type="text" id="ngo-member-aadhar-${stepNumber}" placeholder="XXXX-XXXX-XXXX" maxlength="12">
-    </div>
-    <div class="input-group">
-      <label><i class="fa-solid fa-id-badge"></i> Role of Member</label>
-      <input type="text" id="ngo-member-role-${stepNumber}" placeholder="e.g. Volunteer, Coordinator">
-    </div>
-  `;
-}
-
-function switchRegisterType(type) {
-  currentRegisterType = type;
-  const userBtn = document.getElementById('reg-type-user-btn');
-  const ngoBtn = document.getElementById('reg-type-ngo-btn');
-  const userFields = document.getElementById('user-register-fields');
-  const ngoFields = document.getElementById('ngo-register-fields');
-
-  if (type === 'user') {
-    userBtn.classList.add('active');
-    ngoBtn.classList.remove('active');
-    userFields.classList.remove('hidden');
-    ngoFields.classList.add('hidden');
-  } else {
-    ngoBtn.classList.add('active');
-    userBtn.classList.remove('active');
-    ngoFields.classList.remove('hidden');
-    userFields.classList.add('hidden');
-  }
-
-  resetNgoFlow(); // always start the NGO member-step flow fresh on toggle
-
-  // NEW: NGO's very first submit is just "basic info -> Next", not the final send
-  const registerBtn = document.getElementById('register-btn');
-  if (registerBtn) {
-    registerBtn.querySelector('.btn-text').innerText = 'Send Request';
-  }
-}
-
-// Toast Helper
-function showToast(message, type = 'info') {
-  const container = document.getElementById('toast-container');
-  if (!container) return;
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.innerText = message;
-  container.appendChild(toast);
-  setTimeout(() => { toast.remove(); }, 3500);
-}
-
-// Password Hash Helper (SHA-256)
-async function hashPassword(password) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-function toggleBtnLoading(button, isLoading) {
-  const textSpan = button.querySelector('.btn-text');
-  const loaderSpan = button.querySelector('.loader');
-  if (isLoading) {
-    textSpan.classList.add('hidden');
-    loaderSpan.classList.remove('hidden');
-    button.disabled = true;
-  } else {
-    textSpan.classList.remove('hidden');
-    loaderSpan.classList.add('hidden');
-    button.disabled = false;
-  }
-}
 
 // ==========================================================================
-// REGISTER / LOGIN
+
+
+// AUTH MODAL TOGGLES
+
+
+// ==========================================================================
+
+
+if (btnOpenLogin) btnOpenLogin.addEventListener('click', () => openModal('login'));
+
+
+if (btnCloseModal) btnCloseModal.addEventListener('click', closeModal);
+
+
+ 
+
+
+const btnNavSubscribe = document.getElementById('btn-open-register');
+
+
+if (btnNavSubscribe) btnNavSubscribe.addEventListener('click', handleNavSubscribeClick);
+
+
+ 
+
+
+function handleNavSubscribeClick() {
+
+
+  const source = (currentUser && globalTiffins.length) ? globalTiffins : allTiffinsList;
+
+
+  if (!source || source.length === 0) {
+
+
+    showToast("Tiffins are still loading, please try again in a moment.", "info");
+
+
+    return;
+
+
+  }
+
+
+  openSubscriptionModal(source[0].TiffinID);
+
+
+}
+
+
+ 
+
+
+function handleNavDonateClick(e) {
+
+
+  e.preventDefault();
+
+
+  openDonationModal();
+
+
+}
+
+
+ 
+
+
+function openModal(type) {
+
+
+  authModal.classList.add('active');
+
+
+  switchTab(type);
+
+
+}
+
+
+ 
+
+
+function closeModal() {
+
+
+  authModal.classList.remove('active');
+
+
+}
+
+
+ 
+
+
+if (tabLogin) tabLogin.addEventListener('click', () => switchTab('login'));
+
+
+if (tabRegister) tabRegister.addEventListener('click', () => switchTab('register'));
+
+
+ 
+
+
+function switchTab(type) {
+
+
+  if (type === 'login') {
+
+
+    tabLogin.classList.add('active');
+
+
+    tabRegister.classList.remove('active');
+
+
+    loginForm.classList.add('active');
+
+
+    registerForm.classList.remove('active');
+
+
+  } else {
+
+
+    tabRegister.classList.add('active');
+
+
+    tabLogin.classList.remove('active');
+
+
+    registerForm.classList.add('active');
+
+
+    loginForm.classList.remove('active');
+
+
+  }
+
+
+}
+
+
+ 
+
+
+// ==========================================================================
+
+
+// REGISTER TYPE STATE (user / ngo / provider)
+
+
+// ==========================================================================
+
+
+let currentRegisterType = 'user';
+
+
+let ngoStep = 0;
+
+
+let ngoMemberCount = 0;
+
+
+let ngoBasicData = {};
+
+
+let ngoMembersData = [];
+
+
+ 
+
+
+function resetNgoFlow() {
+
+
+  ngoStep = 0;
+
+
+  ngoMemberCount = 0;
+
+
+  ngoBasicData = {};
+
+
+  ngoMembersData = [];
+
+
+ 
+
+
+  const basicFields = document.getElementById('ngo-basic-fields');
+
+
+  const memberStepContainer = document.getElementById('ngo-member-step-container');
+
+
+  const registerBtn = document.getElementById('register-btn');
+
+
+ 
+
+
+  if (basicFields) basicFields.classList.remove('hidden');
+
+
+  if (memberStepContainer) {
+
+
+    memberStepContainer.classList.add('hidden');
+
+
+    memberStepContainer.innerHTML = '';
+
+
+  }
+
+
+  if (registerBtn) registerBtn.querySelector('.btn-text').innerText = 'Send Request';
+
+
+}
+
+
+ 
+
+
+function renderNgoMemberStep(stepNumber) {
+
+
+  const container = document.getElementById('ngo-member-step-container');
+
+
+  if (!container) return;
+
+
+  container.classList.remove('hidden');
+
+
+ 
+
+
+  container.innerHTML = `
+
+
+    <h4 style="margin-bottom:0.6rem;">Member ${stepNumber} of ${ngoMemberCount} — Details</h4>
+
+
+    <div class="input-group">
+
+
+      <label><i class="fa-solid fa-user"></i> Member ${stepNumber} Name</label>
+
+
+      <input type="text" id="ngo-member-name-${stepNumber}" placeholder="Full Name">
+
+
+    </div>
+
+
+    <div class="input-group">
+
+
+      <label><i class="fa-solid fa-envelope"></i> Member ${stepNumber} Email</label>
+
+
+      <input type="email" id="ngo-member-email-${stepNumber}" placeholder="member@mail.com">
+
+
+    </div>
+
+
+    <div class="input-group">
+
+
+      <label><i class="fa-solid fa-phone"></i> Member ${stepNumber} Phone</label>
+
+
+      <input type="tel" id="ngo-member-phone-${stepNumber}" placeholder="+91 9876543210">
+
+
+    </div>
+
+
+    <div class="input-group">
+
+
+      <label><i class="fa-solid fa-location-dot"></i> Member ${stepNumber} Address</label>
+
+
+      <input type="text" id="ngo-member-address-${stepNumber}" placeholder="Office / Street / Area / City">
+
+
+    </div>
+
+
+    <div class="input-group">
+
+
+      <label><i class="fa-solid fa-id-card"></i> Member ${stepNumber} Aadhar Card No</label>
+
+
+      <input type="text" id="ngo-member-aadhar-${stepNumber}" placeholder="12-digit Aadhar Number" maxlength="12" inputmode="numeric">
+
+
+    </div>
+
+
+    <div class="input-group">
+
+
+      <label><i class="fa-solid fa-id-badge"></i> Role of Member</label>
+
+
+      <input type="text" id="ngo-member-role-${stepNumber}" placeholder="e.g. Volunteer, Coordinator">
+
+
+    </div>
+
+
+  `;
+
+
+}
+
+
+ 
+
+
+function switchRegisterType(type) {
+
+
+  currentRegisterType = type;
+
+
+  const userBtn = document.getElementById('reg-type-user-btn');
+
+
+  const ngoBtn = document.getElementById('reg-type-ngo-btn');
+
+
+  const provBtn = document.getElementById('reg-type-provider-btn');
+
+
+  const userFields = document.getElementById('user-register-fields');
+
+
+  const ngoFields = document.getElementById('ngo-register-fields');
+
+
+  const provFields = document.getElementById('provider-register-fields');
+
+
+ 
+
+
+  [userBtn, ngoBtn, provBtn].forEach(b => b && b.classList.remove('active'));
+
+
+  [userFields, ngoFields, provFields].forEach(f => f && f.classList.add('hidden'));
+
+
+ 
+
+
+  if (type === 'user') {
+
+
+    userBtn.classList.add('active');
+
+
+    userFields.classList.remove('hidden');
+
+
+  } else if (type === 'ngo') {
+
+
+    ngoBtn.classList.add('active');
+
+
+    ngoFields.classList.remove('hidden');
+
+
+  } else if (type === 'provider') {
+
+
+    provBtn.classList.add('active');
+
+
+    provFields.classList.remove('hidden');
+
+
+  }
+
+
+ 
+
+
+  resetNgoFlow();
+
+
+ 
+
+
+  const registerBtn = document.getElementById('register-btn');
+
+
+  if (registerBtn) {
+
+
+    if (type === 'ngo') {
+
+
+      registerBtn.querySelector('.btn-text').innerText = 'Next';
+
+
+    } else if (type === 'provider') {
+
+
+      registerBtn.querySelector('.btn-text').innerText = 'Create Provider Account';
+
+
+    } else {
+
+
+      registerBtn.querySelector('.btn-text').innerText = 'Send Request';
+
+
+    }
+
+
+  }
+
+
+}
+
+
+ 
+
+
+// ==========================================================================
+
+
+// HELPERS
+
+
+// ==========================================================================
+
+
+function showToast(message, type = 'info') {
+
+
+  const container = document.getElementById('toast-container');
+
+
+  if (!container) return;
+
+
+  const toast = document.createElement('div');
+
+
+  toast.className = `toast ${type}`;
+
+
+  toast.innerText = message;
+
+
+  container.appendChild(toast);
+
+
+  setTimeout(() => { toast.remove(); }, 3500);
+
+
+}
+
+
+ 
+
+
+async function hashPassword(password) {
+
+
+  const encoder = new TextEncoder();
+
+
+  const data = encoder.encode(password);
+
+
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+
+
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+
+
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+
+}
+
+
+ 
+
+
+function toggleBtnLoading(button, isLoading) {
+
+
+  const textSpan = button.querySelector('.btn-text');
+
+
+  const loaderSpan = button.querySelector('.loader');
+
+
+  if (isLoading) {
+
+
+    textSpan.classList.add('hidden');
+
+
+    loaderSpan.classList.remove('hidden');
+
+
+    button.disabled = true;
+
+
+  } else {
+
+
+    textSpan.classList.remove('hidden');
+
+
+    loaderSpan.classList.add('hidden');
+
+
+    button.disabled = false;
+
+
+  }
+
+
+}
+
+
+ 
+
+
+// ==========================================================================
+
+
+// REGISTER FORM SUBMISSION
+
+
 // ==========================================================================
 
 
 if (registerForm) {
+
+
   registerForm.addEventListener('submit', async (e) => {
+
+
     e.preventDefault();
+
+
+ 
+
 
     const submitBtn = document.getElementById('register-btn');
 
-    // ============================================================
-    // USER REGISTRATION
-    // ============================================================
-    if (currentRegisterType === 'user') {
+
+ 
+
+
+    // ============ PROVIDER REGISTRATION (DIRECT SIGNUP + AUTO LOGIN) ============
+
+
+    if (currentRegisterType === 'provider') {
+
+
       toggleBtnLoading(submitBtn, true);
 
+
       try {
+
+
+        const businessName = document.getElementById('reg-prov-name').value.trim();
+
+
+        const ownerName    = document.getElementById('reg-prov-owner').value.trim();
+
+
+        const email        = document.getElementById('reg-prov-email').value.trim();
+
+
+        const phone        = document.getElementById('reg-prov-phone').value.trim();
+
+
+        const address      = document.getElementById('reg-prov-address').value.trim();
+
+
+        const aadharId     = document.getElementById('reg-prov-aadhar').value.trim();
+
+
+        const password     = document.getElementById('reg-prov-password').value;
+
+
+ 
+
+
+        if (!businessName || !ownerName || !email || !phone || !address || !aadharId || !password) {
+
+
+          showToast("Please fill in all required fields.", "error");
+
+
+          toggleBtnLoading(submitBtn, false);
+
+
+          return;
+
+
+        }
+
+
+        if (!/^\d{12}$/.test(aadharId)) {
+
+
+          showToast("Please enter a valid 12-digit Aadhar number.", "error");
+
+
+          toggleBtnLoading(submitBtn, false);
+
+
+          return;
+
+
+        }
+
+
+        if (password.length < 6) {
+
+
+          showToast("Password must be at least 6 characters.", "error");
+
+
+          toggleBtnLoading(submitBtn, false);
+
+
+          return;
+
+
+        }
+
+
+ 
+
+
+        const res = await fetch(API_URL, {
+
+
+          method: 'POST',
+
+
+          body: JSON.stringify({
+
+
+            action: 'registerProviderDirect',
+
+
+            businessName, ownerName, email, phone, address, aadharId, password
+
+
+          })
+
+
+        });
+
+
+        const result = await res.json();
+
+
+        toggleBtnLoading(submitBtn, false);
+
+
+ 
+
+
+        if (result.success) {
+
+
+          showToast(`✅ Provider account created! Your ID: ${result.providerId}`, 'success');
+
+
+ 
+
+
+          // AUTO-LOGIN: store session so provider.html skips login
+
+
+          sessionStorage.setItem('tiffin_provider_session', JSON.stringify({
+
+
+            providerId: result.providerId,
+
+
+            businessName: businessName,
+
+
+            email: email,
+
+
+            status: 'Approved'
+
+
+          }));
+
+
+ 
+
+
+          // Clear all provider fields
+
+
+          ['reg-prov-name','reg-prov-owner','reg-prov-email','reg-prov-phone','reg-prov-address','reg-prov-aadhar','reg-prov-password']
+
+
+            .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+
+
+ 
+
+
+          setTimeout(() => {
+
+
+            showToast(`🎉 Welcome ${businessName}! Taking you to your dashboard...`, 'success');
+
+
+            setTimeout(() => { window.location.href = 'provider.html'; }, 900);
+
+
+          }, 400);
+
+
+        } else {
+
+
+          showToast(result.message || 'Provider registration failed.', 'error');
+
+
+        }
+
+
+      } catch (err) {
+
+
+        console.error('Provider registration error:', err);
+
+
+        toggleBtnLoading(submitBtn, false);
+
+
+        showToast('Failed to connect to server!', 'error');
+
+
+      }
+
+
+      return;
+
+
+    }
+
+
+ 
+
+
+    // ============ USER REGISTRATION ============
+
+
+    if (currentRegisterType === 'user') {
+
+
+      toggleBtnLoading(submitBtn, true);
+
+
+ 
+
+
+      try {
+
+
         const name = document.getElementById('reg-name').value.trim();
+
+
         const email = document.getElementById('reg-email').value.trim();
+
+
         const phone = document.getElementById('reg-phone').value.trim();
+
+
         const address = document.getElementById('reg-address').value.trim();
+
+
         const aadharNo = document.getElementById('reg-aadhar').value.trim();
+
+
         const password = document.getElementById('reg-password').value;
 
+
+ 
+
+
         if (!name || !email || !address || !aadharNo || !password) {
+
+
           showToast("Please fill in all required fields.", "error");
+
+
           toggleBtnLoading(submitBtn, false);
+
+
           return;
+
+
         }
 
+
+ 
+
+
         if (!/^\d{12}$/.test(aadharNo)) {
+
+
           showToast("Please enter a valid 12-digit Aadhar number.", "error");
+
+
           toggleBtnLoading(submitBtn, false);
+
+
           return;
+
+
         }
+
+
+ 
+
 
         const hashedPassword = await hashPassword(password);
 
+
+ 
+
+
         const res = await fetch(API_URL, {
+
+
           method: 'POST',
+
+
           body: JSON.stringify({
+
+
             action: 'register',
-            name,
-            email,
-            phone,
-            address,
-            aadharNo,
+
+
+            name, email, phone, address, aadharNo,
+
+
             password: hashedPassword
+
+
           })
+
+
         });
+
+
+ 
+
 
         const result = await res.json();
 
+
         toggleBtnLoading(submitBtn, false);
+
+
+ 
+
 
         if (result.success) {
-          showToast(
-            'Account created successfully! Please login.',
-            'success'
-          );
+
+
+          showToast('Account created successfully! Please login.', 'success');
+
 
           clearUserRegisterFields();
+
+
           switchTab('login');
+
+
         } else {
-          showToast(
-            result.message || 'Registration failed.',
-            'error'
-          );
+
+
+          showToast(result.message || 'Registration failed.', 'error');
+
+
         }
 
+
       } catch (err) {
+
+
         console.error('User registration error:', err);
+
 
         toggleBtnLoading(submitBtn, false);
 
-        showToast(
-          'Failed to connect to server!',
-          'error'
-        );
+
+        showToast('Failed to connect to server!', 'error');
+
+
       }
 
+
+ 
+
+
       return;
+
+
     }
 
-    // ============================================================
-    // NGO REGISTRATION - MULTI STEP
-    // ============================================================
+
+ 
+
+
+    // ============ NGO REGISTRATION - MULTI STEP ============
+
+
     toggleBtnLoading(submitBtn, true);
+
+
+ 
+
 
     try {
 
-      // ==========================================================
-      // STEP 0 - NGO BASIC DETAILS
-      // ==========================================================
+
       if (ngoStep === 0) {
 
-        const ngoName =
-          document.getElementById('reg-ngo-name').value.trim();
 
-        const email =
-          document.getElementById('reg-ngo-email').value.trim();
+        const ngoName = document.getElementById('reg-ngo-name').value.trim();
 
-        const phone =
-          document.getElementById('reg-ngo-phone').value.trim();
 
-        const address =
-          document.getElementById('reg-ngo-address').value.trim();
+        const email = document.getElementById('reg-ngo-email').value.trim();
 
-        const ownerName =
-          document.getElementById('reg-ngo-owner-name').value.trim();
 
-        const aadharId =
-          document.getElementById('reg-ngo-aadhar').value.trim();
+        const phone = document.getElementById('reg-ngo-phone').value.trim();
 
-        const memberCount =
-          parseInt(
-            document.getElementById('reg-ngo-members').value,
-            10
-          );
 
-        // Validate NGO fields
-        if (
-          !ngoName ||
-          !email ||
-          !phone ||
-          !address ||
-          !ownerName ||
-          !aadharId ||
-          !memberCount ||
-          memberCount < 1
-        ) {
-          showToast(
-            'Please fill all NGO details correctly.',
-            'error'
-          );
+        const address = document.getElementById('reg-ngo-address').value.trim();
+
+
+        const ownerName = document.getElementById('reg-ngo-owner-name').value.trim();
+
+
+        const aadharId = document.getElementById('reg-ngo-aadhar').value.trim();
+
+
+        const password = document.getElementById('reg-ngo-password').value;
+
+
+        const memberCount = parseInt(document.getElementById('reg-ngo-members').value, 10);
+
+
+        const loginStartHour = parseInt(document.getElementById('reg-ngo-login-start').value, 10);
+
+
+        const loginEndHour = parseInt(document.getElementById('reg-ngo-login-end').value, 10);
+
+
+ 
+
+
+        if (!ngoName || !email || !phone || !address || !ownerName || !aadharId || !password || !memberCount || memberCount < 1) {
+
+
+          showToast('Please fill all NGO details correctly.', 'error');
+
 
           toggleBtnLoading(submitBtn, false);
+
+
           return;
+
+
         }
 
-        // Validate NGO owner's Aadhar
+
+ 
+
+
         if (!/^\d{12}$/.test(aadharId)) {
-          showToast(
-            'Please enter a valid 12-digit Aadhar number.',
-            'error'
-          );
+
+
+          showToast('Please enter a valid 12-digit Aadhar number.', 'error');
+
 
           toggleBtnLoading(submitBtn, false);
+
+
           return;
+
+
         }
 
-        // Save NGO basic information
+
+ 
+
+
+        if (password.length < 6) {
+
+
+          showToast('Password must be at least 6 characters.', 'error');
+
+
+          toggleBtnLoading(submitBtn, false);
+
+
+          return;
+
+
+        }
+
+
+ 
+
+
+        if (isNaN(loginStartHour) || isNaN(loginEndHour) ||
+
+
+            loginStartHour < 0 || loginStartHour > 23 ||
+
+
+            loginEndHour < 0 || loginEndHour > 23) {
+
+
+          showToast('Please enter valid login hours (0–23).', 'error');
+
+
+          toggleBtnLoading(submitBtn, false);
+
+
+          return;
+
+
+        }
+
+
+ 
+
+
+        if (loginStartHour === loginEndHour) {
+
+
+          showToast('Login start and end hours cannot be the same.', 'error');
+
+
+          toggleBtnLoading(submitBtn, false);
+
+
+          return;
+
+
+        }
+
+
+ 
+
+
         ngoBasicData = {
-          ngoName,
-          email,
-          phone,
-          address,
-          ownerName,
-          aadharId
+
+
+          ngoName, email, phone, address, ownerName, aadharId, password,
+
+
+          loginStartHour, loginEndHour
+
+
         };
 
+
         ngoMemberCount = memberCount;
+
+
         ngoMembersData = [];
 
-        // Hide basic NGO fields
-        document
-          .getElementById('ngo-basic-fields')
-          .classList.add('hidden');
 
-        // Show Member 1
+ 
+
+
+        document.getElementById('ngo-basic-fields').classList.add('hidden');
+
+
         ngoStep = 1;
+
+
         renderNgoMemberStep(ngoStep);
 
-        // Change button text
-       submitBtn.querySelector('.btn-text').innerText = 'Next';
 
-        // No API call yet
+        submitBtn.querySelector('.btn-text').innerText = 'Next';
+
+
+ 
+
+
         toggleBtnLoading(submitBtn, false);
+
+
         return;
+
+
       }
 
-      // ==========================================================
-      // STEP 1...N - NGO MEMBER DETAILS
-      // ==========================================================
-      if (
-        ngoStep >= 1 &&
-        ngoStep <= ngoMemberCount
-      ) {
 
-        const nameEl =
-          document.getElementById(
-            `ngo-member-name-${ngoStep}`
-          );
+ 
 
-        const emailEl =
-          document.getElementById(
-            `ngo-member-email-${ngoStep}`
-          );
 
-        const phoneEl =
-          document.getElementById(
-            `ngo-member-phone-${ngoStep}`
-          );
+      if (ngoStep >= 1 && ngoStep <= ngoMemberCount) {
 
-        const addressEl =
-          document.getElementById(
-            `ngo-member-address-${ngoStep}`
-          );
 
-        const aadharEl =
-          document.getElementById(
-            `ngo-member-aadhar-${ngoStep}`
-          );
+        const nameEl = document.getElementById(`ngo-member-name-${ngoStep}`);
 
-        const roleEl =
-          document.getElementById(
-            `ngo-member-role-${ngoStep}`
-          );
 
-        const memberName =
-          nameEl ? nameEl.value.trim() : '';
+        const emailEl = document.getElementById(`ngo-member-email-${ngoStep}`);
 
-        const memberEmail =
-          emailEl ? emailEl.value.trim() : '';
 
-        const memberPhone =
-          phoneEl ? phoneEl.value.trim() : '';
+        const phoneEl = document.getElementById(`ngo-member-phone-${ngoStep}`);
 
-        const memberAddress =
-          addressEl ? addressEl.value.trim() : '';
 
-        const memberAadhar =
-          aadharEl ? aadharEl.value.trim() : '';
+        const addressEl = document.getElementById(`ngo-member-address-${ngoStep}`);
 
-        const memberRole =
-          roleEl ? roleEl.value.trim() : '';
 
-        // Validate member fields
-        if (
-          !memberName ||
-          !memberEmail ||
-          !memberPhone ||
-          !memberAddress ||
-          !memberAadhar ||
-          !memberRole
-        ) {
-          showToast(
-            `Please fill all details for Member ${ngoStep}.`,
-            'error'
-          );
+        const aadharEl = document.getElementById(`ngo-member-aadhar-${ngoStep}`);
+
+
+        const roleEl = document.getElementById(`ngo-member-role-${ngoStep}`);
+
+
+ 
+
+
+        const memberName = nameEl ? nameEl.value.trim() : '';
+
+
+        const memberEmail = emailEl ? emailEl.value.trim() : '';
+
+
+        const memberPhone = phoneEl ? phoneEl.value.trim() : '';
+
+
+        const memberAddress = addressEl ? addressEl.value.trim() : '';
+
+
+        const memberAadhar = aadharEl ? aadharEl.value.trim() : '';
+
+
+        const memberRole = roleEl ? roleEl.value.trim() : '';
+
+
+ 
+
+
+        if (!memberName || !memberEmail || !memberPhone || !memberAddress || !memberAadhar || !memberRole) {
+
+
+          showToast(`Please fill all details for Member ${ngoStep}.`, 'error');
+
 
           toggleBtnLoading(submitBtn, false);
+
+
           return;
+
+
         }
 
-        // Validate member Aadhar
+
+ 
+
+
         if (!/^\d{12}$/.test(memberAadhar)) {
-          showToast(
-            `Member ${ngoStep}: Please enter a valid 12-digit Aadhar number.`,
-            'error'
-          );
+
+
+          showToast(`Member ${ngoStep}: Please enter a valid 12-digit Aadhar number.`, 'error');
+
 
           toggleBtnLoading(submitBtn, false);
+
+
           return;
+
+
         }
 
-        // Save current member
+
+ 
+
+
         ngoMembersData.push({
-          name: memberName,
-          email: memberEmail,
-          phone: memberPhone,
-          address: memberAddress,
-          aadharNo: memberAadhar,
-          role: memberRole
+
+
+          name: memberName, email: memberEmail, phone: memberPhone,
+
+
+          address: memberAddress, aadharNo: memberAadhar, role: memberRole
+
+
         });
 
-        // ========================================================
-        // MORE MEMBERS LEFT
-        // ========================================================
+
+ 
+
+
         if (ngoStep < ngoMemberCount) {
+
 
           ngoStep++;
 
+
           renderNgoMemberStep(ngoStep);
 
-          submitBtn.querySelector('.btn-text').innerText =
-            ngoStep === ngoMemberCount
-              ? 'Send Request'
-              : 'Next';
+
+          submitBtn.querySelector('.btn-text').innerText = ngoStep === ngoMemberCount ? 'Send Request' : 'Next';
+
 
           toggleBtnLoading(submitBtn, false);
+
+
           return;
+
+
         }
 
-        // ========================================================
-        // LAST MEMBER - SUBMIT NGO REGISTRATION
-        // ========================================================
+
+ 
+
+
+        // Final submit for NGO — sends basic data + members + login hours
+
+
         const res = await fetch(API_URL, {
+
+
           method: 'POST',
+
+
           body: JSON.stringify({
+
+
             action: 'registerNGO',
+
 
             ...ngoBasicData,
 
+
             memberCount: ngoMemberCount,
 
+
             members: ngoMembersData
+
+
           })
+
+
         });
+
+
+ 
+
 
         const result = await res.json();
 
+
         toggleBtnLoading(submitBtn, false);
+
+
+ 
+
 
         if (result.success) {
 
-          showToast(
-            'NGO Registered! Login via NGO Portal.',
-            'success'
-          );
 
-          // Clear entire registration form
+          showToast('NGO Registered! Login via NGO Portal.', 'success');
+
+
           registerForm.reset();
 
-          // Reset to normal user registration
+
           switchRegisterType('user');
 
-          // Reset NGO variables/UI
+
           resetNgoFlow();
 
-          // Go to login
+
           switchTab('login');
+
 
         } else {
 
-          showToast(
-            result.message || 'NGO registration failed.',
-            'error'
-          );
+
+          showToast(result.message || 'NGO registration failed.', 'error');
+
+
         }
 
+
+ 
+
+
         return;
+
+
       }
 
-      // ==========================================================
-      // INVALID NGO STEP
-      // ==========================================================
+
+ 
+
+
       toggleBtnLoading(submitBtn, false);
 
-      showToast(
-        'Invalid NGO registration step.',
-        'error'
-      );
+
+      showToast('Invalid NGO registration step.', 'error');
+
 
     } catch (err) {
+
 
       console.error('NGO registration error:', err);
 
+
       toggleBtnLoading(submitBtn, false);
 
-      showToast(
-        'Failed to connect to server!',
-        'error'
-      );
+
+      showToast('Failed to connect to server!', 'error');
+
+
     }
+
+
   });
+
+
 }
 
-// NEW: explicitly clears every user-register field one by one (more reliable than form.reset()
-// when fields are inside dynamically shown/hidden sections)
+
+ 
+
+
 function clearUserRegisterFields() {
+
+
   document.getElementById('reg-name').value = '';
+
+
   document.getElementById('reg-email').value = '';
+
+
   document.getElementById('reg-phone').value = '';
+
+
   document.getElementById('reg-address').value = '';
+
+
   document.getElementById('reg-aadhar').value = '';
+
+
   document.getElementById('reg-password').value = '';
+
+
 }
 
-// NEW: explicitly clears every NGO-register field one by one
-function clearNGORegisterFields() {
-  document.getElementById('reg-ngo-name').value = '';
-  document.getElementById('reg-ngo-email').value = '';
-  document.getElementById('reg-ngo-phone').value = '';
-  document.getElementById('reg-ngo-address').value = '';
+
+ 
+
+
+// ==========================================================================
+
+// LOGIN
+
+// ==========================================================================
+
+
+let currentLoginType = 'user';
+
+
+function switchLoginType(type) {
+
+  currentLoginType = type;
+
+
+  const userBtn = document.getElementById('login-type-user-btn');
+
+  const ngoBtn = document.getElementById('login-type-ngo-btn');
+
+  const providerBtn = document.getElementById('login-type-provider-btn');
+
+  const adminBtn = document.getElementById('login-type-admin-btn');
+
+
+  [userBtn, ngoBtn, providerBtn, adminBtn].forEach(btn => {
+
+    if (btn) btn.classList.remove('active');
+
+  });
+
+
+  if (type === 'user' && userBtn) {
+
+    userBtn.classList.add('active');
+
+  }
+
+
+  if (type === 'ngo' && ngoBtn) {
+
+    ngoBtn.classList.add('active');
+
+  }
+
+
+  if (type === 'provider' && providerBtn) {
+
+    providerBtn.classList.add('active');
+
+  }
+
+
+  if (type === 'admin' && adminBtn) {
+
+    adminBtn.classList.add('active');
+
+  }
+
 }
+
+
 
 if (loginForm) {
+
   loginForm.addEventListener('submit', async (e) => {
+
     e.preventDefault();
-    const email = document.getElementById('login-email').value;
+
+
+    const email = document.getElementById('login-email').value.trim();
+
     const password = document.getElementById('login-password').value;
 
+
     const submitBtn = document.getElementById('login-btn');
+
+
+    if (!email || !password) {
+
+      showToast('Please enter email and password.', 'error');
+
+      return;
+
+    }
+
+
     toggleBtnLoading(submitBtn, true);
 
-    const hashedPassword = await hashPassword(password);
+
+    // ----------------------------------------------------
+
+    // ADMIN LOGIN
+
+    // ----------------------------------------------------
+
+    if (currentLoginType === 'admin') {
+
+      const ADMIN_EMAIL = 'admin@tiffinhub.com';
+
+      const ADMIN_PASSWORD = 'admin@123';
+
+
+      if (email.toLowerCase() === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+
+        sessionStorage.setItem('tiffin_admin_session', 'true');
+
+        toggleBtnLoading(submitBtn, false);
+
+        showToast('Welcome, Admin!', 'success');
+
+        setTimeout(() => {
+
+          window.location.href = 'admin.html';
+
+        }, 500);
+
+      } else {
+
+        toggleBtnLoading(submitBtn, false);
+
+        showToast('Invalid admin email or password.', 'error');
+
+      }
+
+      return;
+
+    }
+
 
     try {
+
+      // ----------------------------------------------------
+
+      // NGO LOGIN
+
+      // ----------------------------------------------------
+
+      if (currentLoginType === 'ngo') {
+
+        const res = await fetch(API_URL, {
+
+          method: 'POST',
+
+          body: JSON.stringify({
+
+            action: 'ngoLogin',
+
+            email: email,
+
+            password: password
+
+          })
+
+        });
+
+
+        const result = await res.json();
+
+
+        if (result.success) {
+
+          sessionStorage.setItem('tiffin_ngo_session', JSON.stringify(result.ngo));
+
+          toggleBtnLoading(submitBtn, false);
+
+          showToast('NGO login successful!', 'success');
+
+          setTimeout(() => {
+
+            window.location.href = 'ngo.html';
+
+          }, 500);
+
+        } else {
+
+          toggleBtnLoading(submitBtn, false);
+
+          showToast(result.message || 'Invalid NGO email or password.', 'error');
+
+        }
+
+        return;
+
+      }
+
+
+      // ----------------------------------------------------
+
+      // MESS OWNER / PROVIDER LOGIN
+
+      // ----------------------------------------------------
+
+      if (currentLoginType === 'provider') {
+
+        const res = await fetch(API_URL, {
+
+          method: 'POST',
+
+          body: JSON.stringify({
+
+            action: 'providerLogin',
+
+            email: email,
+
+            password: password
+
+          })
+
+        });
+
+
+        const result = await res.json();
+
+
+        if (result.success) {
+
+          sessionStorage.setItem('tiffin_provider_session', JSON.stringify(result.provider));
+
+          toggleBtnLoading(submitBtn, false);
+
+          showToast('Mess Owner login successful!', 'success');
+
+          setTimeout(() => {
+
+            window.location.href = 'provider.html';
+
+          }, 500);
+
+        } else {
+
+          toggleBtnLoading(submitBtn, false);
+
+          showToast(result.message || 'Invalid Mess Owner email or password.', 'error');
+
+        }
+
+        return;
+
+      }
+
+
+      // ----------------------------------------------------
+
+      // NORMAL USER LOGIN
+
+      // ----------------------------------------------------
+
+      const hashedPassword = await hashPassword(password);
+
       const res = await fetch(API_URL, {
+
         method: 'POST',
-        body: JSON.stringify({ action: 'login', email, password: hashedPassword })
+
+        body: JSON.stringify({
+
+          action: 'login',
+
+          email: email,
+
+          password: hashedPassword
+
+        })
+
       });
+
+
       const result = await res.json();
+
+
       toggleBtnLoading(submitBtn, false);
+
 
       if (result.success) {
+
+
         showToast(`Welcome back, ${result.user.name}!`, 'success');
+
+
         currentUser = result.user;
-        localStorage.setItem('tiffin_user_session', JSON.stringify(currentUser));
+
+
+        localStorage.setItem(
+
+          'tiffin_user_session',
+
+          JSON.stringify(currentUser)
+
+        );
+
+
         updateNavUI();
+
+
         closeModal();
 
-        // If they clicked navbar "Subscribe" before logging in, continue that journey now
+
         if (pendingSubscribeIntent) {
+
           pendingSubscribeIntent = false;
-          setTimeout(() => openSubscribePickerModal(), 300);
+
+
+          setTimeout(() => {
+
+            openSubscribePickerModal();
+
+          }, 300);
+
         }
 
-        // If they tried to pay for a plan before logging in, finish that payment now
+
         if (pendingSubscriptionIntent) {
+
           pendingSubscriptionIntent = false;
-          setTimeout(() => processSubscriptionPayment(), 300);
+
+
+          setTimeout(() => {
+
+            processSubscriptionPayment();
+
+          }, 300);
+
         }
 
-        // If they clicked a card's "+" before logging in, continue straight to that payment popup
+
         if (pendingQuickOrderTiffinId) {
+
           const tiffinIdToOrder = pendingQuickOrderTiffinId;
+
+
           pendingQuickOrderTiffinId = null;
-          setTimeout(() => openQuickOrderModal(tiffinIdToOrder), 300);
+
+
+          setTimeout(() => {
+
+            openQuickOrderModal(tiffinIdToOrder);
+
+          }, 300);
+
         }
+
+
       } else {
-        showToast(result.message, 'error');
+
+        showToast(
+
+          result.message || 'Invalid email or password.',
+
+          'error'
+
+        );
+
       }
+
+
     } catch (err) {
+
+
+      console.error('Login error:', err);
+
+
       toggleBtnLoading(submitBtn, false);
-      showToast('Server connection error!', 'error');
+
+
+      showToast(
+
+        'Server connection error!',
+
+        'error'
+
+      );
+
     }
+
   });
+
 }
 
-function logoutUser() {
+
+ function logoutUser() {
+
   localStorage.removeItem('tiffin_user_session');
+
+  sessionStorage.removeItem('tiffin_user_session');
+
+
   currentUser = null;
-  location.reload();
+
+
+  window.location.reload();
+
 }
 
+
 // ==========================================================================
-// NAV UI / DASHBOARD SWITCH
+
+
+// NAV UI / DASHBOARD
+
+
 // ==========================================================================
+
+
 function updateNavUI() {
+
+
   const authSection = document.getElementById('nav-auth-section');
+
+
   const heroSection = document.querySelector('.hero');
+
+
   const exploreSection = document.getElementById('tiffins');
+
+
   const dashSection = document.getElementById('user-dashboard');
 
+
+ 
+
+
   if (currentUser) {
+
+
     if (heroSection) heroSection.style.display = 'none';
-    if (exploreSection) exploreSection.style.display = 'none'; // hide public menu once logged in, dashboard has its own
+
+
+    if (exploreSection) exploreSection.style.display = 'none';
+
+
     if (dashSection) dashSection.classList.remove('hidden');
 
+
+ 
+
+
     document.getElementById('user-display-name').innerText = currentUser.name;
+
+
     authSection.innerHTML = `
+
+
       <span style="font-weight:700; display:flex; align-items:center; gap:6px;">
+
+
         <i class="fa-solid fa-circle-user" style="color:var(--primary); font-size:1.2rem;"></i> ${currentUser.name}
+
+
       </span>
+
+
       <button class="btn btn-outline" onclick="logoutUser()">Logout</button>
+
+
     `;
+
+
+ 
+
 
     loadUserDashboard();
+
+
   }
+
+
 }
 
-// Fetch User Subscription, Donations, Reward Points & Orders
+
+ 
+
+
 async function loadUserDashboard() {
+
+
   try {
+
+
     const res = await fetch(API_URL, {
+
+
       method: 'POST',
+
+
       body: JSON.stringify({ action: 'getUserDashboard', userId: currentUser.userId })
+
+
     });
+
+
     const data = await res.json();
+
+
+ 
+
 
     if (data.success) {
-      // Fallback: if the dashboard's own tiffin list comes back empty (e.g. a
-      // casing mismatch on the "Available" column in the Sheet), fall back to
-      // the already-fetched public list so the section never looks blank.
+
+
       globalTiffins = (data.availableTiffins && data.availableTiffins.length)
+
+
         ? data.availableTiffins
+
+
         : allTiffinsList;
 
+
+ 
+
+
       const points = data.rewardPoints || 0;
+
+
       const pointsEl = document.getElementById('reward-points-value');
+
+
       if (pointsEl) pointsEl.innerText = points;
 
+
+ 
+
+
+      reviewedOrderIds = data.reviewedOrderIds || [];
+
+
+ 
+
+
       if (data.activeSubscription) {
+
+
         document.getElementById('active-subscription-view').classList.remove('hidden');
+
+
         document.getElementById('active-provider-name').innerText = data.activeSubscription.TiffinID;
+
+
         document.getElementById('active-plan-type').innerText = `${data.activeSubscription.PlanType} Plan`;
+
+
         document.getElementById('active-end-date').innerText = data.activeSubscription.EndDate || 'Active';
-        document.getElementById('no-sub-banner').classList.add('hidden'); // hide only the "no plan yet" message
+
+
+        document.getElementById('no-sub-banner').classList.add('hidden');
+
+
       } else {
+
+
         document.getElementById('active-subscription-view').classList.add('hidden');
+
+
         document.getElementById('no-sub-banner').classList.remove('hidden');
+
+
       }
 
-      // Tiffin browsing + "+" ordering is always available, subscribed or not
+
+ 
+
+
       document.getElementById('no-subscription-view').classList.remove('hidden');
+
+
       renderTiffinCards(globalTiffins);
 
+
+ 
+
+
       renderUserOrders(data.orders || []);
+
+
       renderUserDonations(data.donations || []);
+
+
     }
+
+
   } catch (err) {
+
+
     console.error("Dashboard error:", err);
+
+
     showToast('Could not load your dashboard. Please try again.', 'error');
+
+
   }
+
+
 }
+
+
+ 
+
 
 function renderUserOrders(orders) {
+
+
   const container = document.getElementById('user-orders-list');
+
+
   if (!container) return;
+
+
   if (!orders || orders.length === 0) {
+
+
     container.innerHTML = `<p class="text-muted">No past orders yet.</p>`;
+
+
     return;
+
+
   }
-  container.innerHTML = orders.map(o => `
-    <div style="display:flex; justify-content:space-between; padding:0.8rem 0; border-bottom:1px solid #E2E8F0;">
-      <div>
-        <strong>Order #${o.OrderID}</strong>
-        <div style="font-size:0.8rem; color:gray;">${new Date(o.Timestamp || Date.now()).toLocaleDateString()}</div>
+
+
+  container.innerHTML = orders.map(o => {
+
+
+    const isDelivered = (o.OrderStatus || '').toString().trim() === 'Delivered';
+
+
+    const alreadyReviewed = reviewedOrderIds.includes((o.OrderID || '').toString().trim());
+
+
+    const showRateBtn = isDelivered && !alreadyReviewed && o.TiffinID;
+
+
+ 
+
+
+    return `
+
+
+      <div style="display:flex; justify-content:space-between; padding:0.8rem 0; border-bottom:1px solid #E2E8F0; flex-wrap:wrap; gap:8px;">
+
+
+        <div>
+
+
+          <strong>Order #${o.OrderID}</strong>
+
+
+          <div style="font-size:0.8rem; color:gray;">${new Date(o.Timestamp || Date.now()).toLocaleDateString()}</div>
+
+
+        </div>
+
+
+        <div style="display:flex; align-items:center; gap:8px;">
+
+
+          <span style="font-weight:700; color:var(--primary);">₹${o.Amount}</span>
+
+
+          <span style="font-size:0.8rem; padding:2px 8px; background:#E2E8F0; border-radius:10px;">${o.OrderStatus}</span>
+
+
+          ${showRateBtn ? `<button class="btn btn-primary" style="padding:4px 10px; font-size:0.78rem;" onclick="openReviewModal('${o.OrderID}', '${o.TiffinID}')"><i class="fa-solid fa-star"></i> Rate</button>` : ''}
+
+
+          ${alreadyReviewed ? `<span style="font-size:0.75rem; color:var(--success); font-weight:700;"><i class="fa-solid fa-circle-check"></i> Reviewed</span>` : ''}
+
+
+        </div>
+
+
       </div>
-      <div>
-        <span style="font-weight:700; color:var(--primary);">₹${o.Amount}</span>
-        <span style="margin-left:8px; font-size:0.8rem; padding:2px 8px; background:#E2E8F0; border-radius:10px;">${o.OrderStatus}</span>
-      </div>
-    </div>
-  `).join('');
+
+
+    `;
+
+
+  }).join('');
+
+
 }
 
+
+ 
+
+
 // ==========================================================================
+
+
 // DONATION MODULE
+
+
 // ==========================================================================
+
 
 function openDonationModal() {
+
+
   if (!currentUser) {
-    showToast("Please Sign In to donate food!", "info");
+
+
+    showToast("Please Sign In to donate!", "info");
+
+
     openModal('login');
+
+
     return;
+
+
   }
+
+
   document.getElementById('donation-form').reset();
+
+
   const statusEl = document.getElementById('area-need-status');
-  if (statusEl) statusEl.innerHTML = ''; // NEW: clear old area badge each time modal opens
+
+
+  if (statusEl) statusEl.innerHTML = '';
+
+
   document.getElementById('donation-modal').classList.add('active');
+
+
 }
+
+
+ 
+
 
 function closeDonationModal() {
+
+
   document.getElementById('donation-modal').classList.remove('active');
+
+
 }
 
-// NEW: shows a "Needed" / "Not Needed" badge under the area dropdown based on AreaStatus sheet data
+
+ 
+
+
 function updateAreaNeedStatus() {
+
+
   const areaSelect = document.getElementById('donate-area');
+
+
   const statusEl = document.getElementById('area-need-status');
+
+
   if (!areaSelect || !statusEl) return;
 
+
+ 
+
+
   const selectedArea = areaSelect.value;
+
+
   if (!selectedArea) {
+
+
     statusEl.innerHTML = '';
+
+
     return;
+
+
   }
+
+
+ 
+
 
   const match = areaStatusList.find(a =>
+
+
     (a.Area || '').toString().trim().toLowerCase() === selectedArea.trim().toLowerCase()
+
+
   );
 
-  // Default to "Needed" if admin hasn't set a status for this area yet
+
+ 
+
+
   const isNeeded = match ? (match.Status || '').toString().trim().toLowerCase() === 'needed' : true;
 
+
+ 
+
+
   if (isNeeded) {
+
+
     statusEl.innerHTML = `
+
+
       <span class="area-badge area-badge-needed">
+
+
         <i class="fa-solid fa-circle-check"></i> Needed — Food is needed in this area
+
+
       </span>`;
+
+
   } else {
+
+
     statusEl.innerHTML = `
+
+
       <span class="area-badge area-badge-not-needed">
+
+
         <i class="fa-solid fa-circle-xmark"></i> Not Needed — Food is not needed in this area
+
+
       </span>`;
+
+
   }
+
+
 }
+
+
+ 
+
 
 async function submitDonation(e) {
+
+
   e.preventDefault();
+
+
   if (!currentUser) {
-    showToast("Please Sign In to donate food!", "info");
+
+
+    showToast("Please Sign In to donate!", "info");
+
+
     return;
+
+
   }
 
-  const foodDetails = document.getElementById('donate-food-details').value.trim();
+
+ 
+
+
+  const donationType = document.getElementById('donate-type').value;
+
+
+  const details = document.getElementById('donate-food-details').value.trim();
+
+
   const quantity = document.getElementById('donate-quantity').value;
+
+
   const area = document.getElementById('donate-area').value;
-  const expiryHours = document.getElementById('donate-expiry').value;
+
+
   const address = document.getElementById('donate-address').value.trim();
 
-  if (!foodDetails || !quantity || !area || !expiryHours || !address) {
+
+ 
+
+
+  if (!donationType || !details || !quantity || !area || !address) {
+
+
     showToast("Please fill in all donation details.", "error");
+
+
     return;
+
+
   }
+
+
+ 
+
 
   const btn = document.getElementById('btn-submit-donation');
+
+
   toggleBtnLoading(btn, true);
 
+
+ 
+
+
   try {
+
+
     const res = await fetch(API_URL, {
+
+
       method: 'POST',
+
+
       body: JSON.stringify({
+
+
         action: 'submitDonation',
+
+
         userId: currentUser.userId,
+
+
         donorName: currentUser.name,
-        foodDetails: `${foodDetails} (Qty: ${quantity})`,
+
+
+        foodDetails: `[${donationType}] ${details} (Qty: ${quantity})`,
+
+
         area,
-        expiryHours,
-        address
+
+
+        address,
+
+
+        // Kept only for compatibility with the existing backend.
+
+
+        // The user no longer enters an expiry value in the form.
+
+
+        expiryHours: 0
+
+
       })
+
+
     });
+
+
     const result = await res.json();
+
+
     toggleBtnLoading(btn, false);
 
+
+ 
+
+
     if (result.success) {
+
+
       showToast("🎉 Donation request submitted! Status: Pending", "success");
+
+
       closeDonationModal();
+
+
       loadUserDashboard();
+
+
     } else {
+
+
       showToast(result.message || "Could not submit donation.", "error");
+
+
     }
+
+
   } catch (err) {
+
+
+    console.error('Donation error:', err);
+
+
     toggleBtnLoading(btn, false);
+
+
     showToast("Failed to connect to server!", "error");
+
+
   }
+
+
 }
+
+
+ 
+
 
 function renderUserDonations(donations) {
+
+
   const container = document.getElementById('user-donations-list');
+
+
   if (!container) return;
+
+
+ 
+
 
   if (!donations || donations.length === 0) {
-    container.innerHTML = `<p class="text-muted">You haven't donated any food yet. Click "Donate Food" above to get started!</p>`;
+
+
+    container.innerHTML = `<p class="text-muted">You haven't made any donations yet. Click "Donate" above to get started!</p>`;
+
+
     return;
+
+
   }
+
+
+ 
+
 
   container.innerHTML = donations.map(d => {
+
+
     const status = (d.Status || 'Pending').trim();
+
+
     const badgeClass = status.toLowerCase() === 'accepted' ? 'badge-yes'
+
+
                       : status.toLowerCase() === 'rejected' ? 'badge-no'
+
+
                       : 'badge-pending';
+
+
     return `
+
+
       <div class="donation-item">
+
+
         <div class="donation-item-main">
+
+
           <strong>#${d.DonationID}</strong> — ${d.FoodDetails}
+
+
           <div class="donation-item-meta">
+
+
             <span><i class="fa-solid fa-location-dot"></i> ${d.Area || 'N/A'}</span>
+
+
             <span><i class="fa-solid fa-clock"></i> Expires in ${d.ExpiryHours || '-'}h</span>
+
+
             ${d.NGOAssigned ? `<span><i class="fa-solid fa-people-group"></i> ${d.NGOAssigned}</span>` : ''}
+
+
           </div>
+
+
         </div>
+
+
         <span class="status-badge ${badgeClass}">${status}</span>
+
+
       </div>
+
+
     `;
+
+
   }).join('');
+
+
 }
 
+
+ 
+
+
 // ==========================================================================
-// TODAY'S MENU MODAL
+
+
+// MENU MODAL
+
+
 // ==========================================================================
+
+
 function openMenuModal(tiffinId) {
+
+
   const source = (currentUser && globalTiffins.length) ? globalTiffins : allTiffinsList;
+
+
   const tif = source.find(t => t.TiffinID === tiffinId);
+
+
   if (!tif) return;
 
+
+ 
+
+
   document.getElementById('menu-modal-title').innerHTML =
+
+
     `<i class="fa-solid fa-utensils" style="color:var(--primary);"></i> ${tif.ProviderName} — Today's Menu`;
+
+
   document.getElementById('menu-modal-location').innerText = `${tif.Location} • ${tif.MealType}`;
 
+
+ 
+
+
   const menuList = document.getElementById('menu-modal-list');
+
+
   const menuText = (tif.TodayMenu || '').trim();
 
+
+ 
+
+
   if (!menuText) {
+
+
     menuList.innerHTML = `<p class="text-muted">Menu not updated yet for today. Please check back later.</p>`;
+
+
   } else {
+
+
     const items = menuText.split(',').map(i => i.trim()).filter(Boolean);
+
+
     menuList.innerHTML = items.map(item => `
+
+
       <div class="menu-item-row">
+
+
         <i class="fa-solid fa-bowl-food"></i>
+
+
         <span>${item}</span>
+
+
       </div>
+
+
     `).join('');
+
+
   }
+
+
+ 
+
 
   document.getElementById('menu-modal').classList.add('active');
+
+
 }
+
+
+ 
+
 
 function closeMenuModal() {
+
+
   document.getElementById('menu-modal').classList.remove('active');
+
+
 }
 
+
+ 
+
+
 // ==========================================================================
-// EXPLORE TIFFINS (Public section, no login required)
+
+
+// EXPLORE TIFFINS
+
+
 // ==========================================================================
+
+
 async function fetchExploreTiffins() {
+
+
   const container = document.getElementById('explore-tiffins-container');
+
+
   try {
+
+
     const res = await fetch(API_URL, {
+
+
       method: 'POST',
+
+
       body: JSON.stringify({ action: 'getAdminData' })
+
+
     });
+
+
     const data = await res.json();
 
+
+ 
+
+
     if (data.success && data.tiffins) {
+
+
       allTiffinsList = data.tiffins.filter(t => t.Available === 'Yes' || t.Available === 'yes');
-      areaStatusList = data.areaStatus || []; // NEW: capture area need/not-needed data
+
+
+      areaStatusList = data.areaStatus || [];
+
+
       renderExploreTiffins(allTiffinsList);
+
+
     } else {
+
+
       container.innerHTML = `<p class="text-muted" style="grid-column: 1/-1; text-align: center;">No mess services available right now.</p>`;
+
+
     }
+
+
   } catch (err) {
+
+
     console.error("Error fetching tiffins:", err);
+
+
     container.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--danger);">Failed to load tiffins. Please check your network connection.</p>`;
+
+
   }
+
+
 }
+
+
+ 
+
 
 function renderExploreTiffins(tiffins) {
+
+
   const container = document.getElementById('explore-tiffins-container');
+
+
   if (!tiffins || tiffins.length === 0) {
+
+
     container.innerHTML = `<p class="text-muted" style="grid-column: 1/-1; text-align: center; padding: 2rem;">No matching tiffin providers found.</p>`;
+
+
     return;
+
+
   }
+
+
   container.innerHTML = tiffins.map(tif => `
+
+
     <div class="tiffin-card">
+
+
       <div class="tiffin-card-img-wrapper">
+
+
         <img src="${tif.ImageURL || 'https://images.unsplash.com/photo-1546833999-b9f581a1996d'}" alt="${tif.ProviderName}">
+
+
         <span class="meal-badge">${tif.MealType}</span>
+
+
         <span class="rating-badge"><i class="fa-solid fa-star" style="color:#F59E0B"></i> ${tif.Rating || '4.8'}</span>
+
+
       </div>
+
+
       <div class="tiffin-card-body">
+
+
         <div>
+
+
           <h3>${tif.ProviderName}</h3>
+
+
           <p class="location-info"><i class="fa-solid fa-location-dot" style="color:var(--primary);"></i> ${tif.Location}</p>
+
+
           <span class="view-menu-link" onclick="openMenuModal('${tif.TiffinID}')">
+
+
             <i class="fa-solid fa-list-ul"></i> View Today's Menu
+
+
           </span>
+
+
         </div>
+
+
         <div class="card-footer-action">
+
+
           <div>
+
+
             <span class="price-text">₹${tif.Price}</span>
+
+
             <span style="font-size:0.8rem; color:var(--text-muted);">/ meal</span>
+
+
           </div>
+
+
           <button class="btn btn-primary btn-add-rect" onclick="openQuickOrderModal('${tif.TiffinID}')">
+
+
             Add <i class="fa-solid fa-plus"></i>
+
+
           </button>
+
+
         </div>
+
+
       </div>
+
+
     </div>
+
+
   `).join('');
+
+
 }
+
+
+ 
+
 
 function filterTiffins() {
+
+
   const inputEl = document.getElementById('search-tiffin-input') || document.getElementById('search-location');
+
+
   const query = (inputEl ? inputEl.value : '').toLowerCase().trim();
 
+
+ 
+
+
   if (currentUser) {
+
+
     const filtered = globalTiffins.filter(t =>
+
+
       t.ProviderName.toLowerCase().includes(query) || t.Location.toLowerCase().includes(query)
+
+
     );
+
+
     renderTiffinCards(filtered);
+
+
   } else {
+
+
     const filtered = allTiffinsList.filter(t =>
+
+
       t.ProviderName.toLowerCase().includes(query) || t.Location.toLowerCase().includes(query)
+
+
     );
+
+
     renderExploreTiffins(filtered);
+
+
   }
+
+
 }
+
+
+ 
+
 
 function filterByMeal(type, button) {
+
+
   document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+
+
   button.classList.add('active');
 
+
+ 
+
+
   const source = currentUser ? globalTiffins : allTiffinsList;
+
+
   const renderFn = currentUser ? renderTiffinCards : renderExploreTiffins;
 
+
+ 
+
+
   if (type === 'All') {
+
+
     renderFn(source);
+
+
   } else {
+
+
     renderFn(source.filter(t => t.MealType === type));
+
+
   }
+
+
 }
 
-// Tiffin Cards Grid (logged-in dashboard version)
+
+ 
+
+
 function renderTiffinCards(tiffins) {
+
+
   const container = document.getElementById('tiffins-cards-container');
+
+
   if (!container) return;
+
+
   if (!tiffins || tiffins.length === 0) {
+
+
     container.innerHTML = `<p class="text-muted">No mess providers available right now.</p>`;
+
+
     return;
+
+
   }
+
+
   container.innerHTML = tiffins.map(tif => `
+
+
     <div class="tiffin-card">
+
+
       <img src="${tif.ImageURL || 'https://images.unsplash.com/photo-1546833999-b9f581a1996d'}" class="tiffin-img" alt="${tif.ProviderName}">
+
+
       <div class="tiffin-body">
+
+
         <h3>${tif.ProviderName}</h3>
+
+
         <span class="view-menu-link" onclick="openMenuModal('${tif.TiffinID}')">
+
+
           <i class="fa-solid fa-list-ul"></i> View Today's Menu
+
+
         </span>
+
+
         <div class="tiffin-meta">
+
+
           <span><i class="fa-solid fa-utensils"></i> ${tif.MealType}</span>
+
+
           <span><i class="fa-solid fa-star" style="color:#F59E0B"></i> ${tif.Rating || '4.8'}</span>
+
+
           <span><i class="fa-solid fa-location-dot"></i> ${tif.Location}</span>
+
+
         </div>
+
+
         <div style="display:flex; justify-content:space-between; align-items:center;">
+
+
           <div><span style="font-size:1.3rem; font-weight:800; color:var(--primary);">₹${tif.Price}</span> / meal</div>
+
+
           <button class="btn btn-primary btn-add-rect" onclick="openQuickOrderModal('${tif.TiffinID}')">
+
+
             Add <i class="fa-solid fa-plus"></i>
+
+
           </button>
+
+
         </div>
+
+
       </div>
+
+
     </div>
+
+
   `).join('');
+
+
 }
 
+
+ 
+
+
 // ==========================================================================
-// SUBSCRIBE PICKER (opened from navbar "Subscribe" button)
+
+
+// SUBSCRIBE PICKER
+
+
 // ==========================================================================
+
+
 function openSubscribePickerModal() {
+
+
   const source = (globalTiffins && globalTiffins.length) ? globalTiffins : allTiffinsList;
+
+
   const list = document.getElementById('subscribe-picker-list');
 
+
+ 
+
+
   if (!source || source.length === 0) {
+
+
     list.innerHTML = `<p class="text-muted">No tiffins available right now.</p>`;
+
+
   } else {
+
+
     list.innerHTML = source.map(t => `
+
+
       <div class="nearby-map-item" onclick="closeSubscribePickerModal(); openSubscriptionModal('${t.TiffinID}')">
+
+
         <div>
+
+
           <strong>${t.ProviderName}</strong>
+
+
           <div style="font-size:0.8rem; color:var(--text-muted);">${t.Location} • ${t.MealType}</div>
+
+
         </div>
+
+
         <span class="price-text" style="font-size:1rem;">₹${t.Price}</span>
+
+
       </div>
+
+
     `).join('');
+
+
   }
+
+
+ 
+
 
   document.getElementById('subscribe-picker-modal').classList.add('active');
+
+
 }
+
+
+ 
+
 
 function closeSubscribePickerModal() {
+
+
   document.getElementById('subscribe-picker-modal').classList.remove('active');
+
+
 }
 
+
+ 
+
+
 // ==========================================================================
-// QUICK ORDER (the "+" button on each card)
-// FIXED: now remembers which tiffin was clicked if login is required first,
-// and automatically re-opens this same popup right after login succeeds.
+
+
+// QUICK ORDER
+
+
 // ==========================================================================
+
+
 function openQuickOrderModal(tiffinId) {
+
+
   if (!currentUser) {
-    pendingQuickOrderTiffinId = tiffinId; // remember intent so we auto-continue right after login
+
+
+    pendingQuickOrderTiffinId = tiffinId;
+
+
     showToast("Please Sign In to order!", "info");
+
+
     openModal('login');
+
+
     return;
+
+
   }
+
+
+ 
+
 
   const source = (globalTiffins && globalTiffins.length) ? globalTiffins : allTiffinsList;
+
+
   selectedTiffinForQuickOrder = source.find(t => t.TiffinID === tiffinId);
+
+
   if (!selectedTiffinForQuickOrder) return;
 
+
+ 
+
+
   document.getElementById('quick-order-title').innerText = `Order: ${selectedTiffinForQuickOrder.ProviderName}`;
+
+
   document.getElementById('quick-order-location').innerText = `${selectedTiffinForQuickOrder.Location} • ${selectedTiffinForQuickOrder.MealType}`;
+
+
   document.getElementById('quick-order-price').innerText = `₹${selectedTiffinForQuickOrder.Price}`;
+
+
   document.getElementById('quick-order-total').innerText = `₹${selectedTiffinForQuickOrder.Price}`;
 
+
+ 
+
+
   document.getElementById('quick-order-modal').classList.add('active');
+
+
 }
+
+
+ 
+
 
 function closeQuickOrderModal() {
+
+
   document.getElementById('quick-order-modal').classList.remove('active');
+
+
 }
+
+
+ 
+
 
 function selectPaymentMethod(method, element) {
+
+
   selectedPaymentMethod = method;
-  document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('active'));
+
+
+  document.querySelectorAll('.payment-option').forEach(btn => {
+
+
+    btn.classList.remove('active');
+
+
+    btn.style.border = '1.5px solid var(--border-color)';
+
+
+    btn.style.background = 'white';
+
+
+  });
+
+
   element.classList.add('active');
+
+
+  element.style.border = '1.5px solid var(--primary)';
+
+
+  element.style.background = '#FFF3EC';
+
+
 }
+
+
+ 
+
 
 async function processQuickOrder() {
+
+
   if (!currentUser || !selectedTiffinForQuickOrder) return;
 
+
+ 
+
+
   const btn = document.getElementById('btn-confirm-quick-order');
+
+
   toggleBtnLoading(btn, true);
 
+
+ 
+
+
   try {
+
+
     const res = await fetch(API_URL, {
+
+
       method: 'POST',
+
+
       body: JSON.stringify({
+
+
         action: 'placeOrder',
+
+
         userId: currentUser.userId,
+
+
         tiffinId: selectedTiffinForQuickOrder.TiffinID,
+
+
         amount: selectedTiffinForQuickOrder.Price,
+
+
         paymentMethod: selectedPaymentMethod
+
+
       })
+
+
     });
+
+
     const result = await res.json();
+
+
     toggleBtnLoading(btn, false);
+
+
+ 
+
 
     if (result.success) {
+
+
       showToast("🎉 Order placed successfully!", "success");
+
+
       closeQuickOrderModal();
+
+
       if (currentUser) loadUserDashboard();
+
+
     } else {
+
+
       showToast(result.message, "error");
+
+
     }
+
+
   } catch (err) {
+
+
     toggleBtnLoading(btn, false);
+
+
     showToast("Order failed! Please try again.", "error");
+
+
   }
+
+
 }
 
+
+ 
+
+
 // ==========================================================================
-// SUBSCRIPTION / CHECKOUT (unchanged)
+
+
+// SUBSCRIPTION / CHECKOUT
+
+
 // ==========================================================================
+
+
 function openSubscriptionModal(tiffinId) {
+
+
   const source = globalTiffins.length ? globalTiffins : allTiffinsList;
+
+
   selectedTiffinForSub = source.find(t => t.TiffinID === tiffinId);
+
+
   if (!selectedTiffinForSub) return;
+
+
+ 
+
 
   document.getElementById('modal-tiffin-title').innerText = `Subscribe: ${selectedTiffinForSub.ProviderName}`;
+
+
   document.getElementById('modal-tiffin-location').innerText = `Location: ${selectedTiffinForSub.Location} | Meal Type: ${selectedTiffinForSub.MealType}`;
 
+
+ 
+
+
   const unitPrice = Number(selectedTiffinForSub.Price);
+
+
   document.getElementById('price-daily').innerText = `₹${unitPrice} / day`;
+
+
   document.getElementById('price-weekly').innerText = `₹${Math.round(unitPrice * 7 * 0.9)} / wk`;
+
+
   document.getElementById('price-monthly').innerText = `₹${Math.round(unitPrice * 30 * 0.8)} / mo`;
 
+
+ 
+
+
   selectedPlan = { type: 'Daily', days: 1, multiplier: 1 };
+
+
   calculateTotal();
+
+
+ 
+
 
   document.getElementById('checkout-modal').classList.add('active');
+
+
 }
+
+
+ 
+
 
 function selectPlan(planType, days, element) {
+
+
   document.querySelectorAll('.plan-box').forEach(b => b.classList.remove('active'));
+
+
   element.classList.add('active');
 
+
+ 
+
+
   let multiplier = 1;
+
+
   if (planType === 'Weekly') multiplier = 7 * 0.9;
+
+
   if (planType === 'Monthly') multiplier = 30 * 0.8;
 
+
+ 
+
+
   selectedPlan = { type: planType, days, multiplier };
+
+
   calculateTotal();
+
+
 }
+
+
+ 
+
 
 function calculateTotal() {
+
+
   if (!selectedTiffinForSub) return;
+
+
   const unitPrice = Number(selectedTiffinForSub.Price);
+
+
   const total = Math.round(unitPrice * selectedPlan.multiplier);
+
+
+ 
+
 
   document.getElementById('summary-unit-price').innerText = `₹${unitPrice}`;
+
+
   document.getElementById('summary-duration').innerText = `${selectedPlan.type} (${selectedPlan.days} Days)`;
+
+
   document.getElementById('summary-total-price').innerText = `₹${total.toLocaleString()}`;
+
+
 }
+
+
+ 
+
 
 function closeCheckoutModal() {
+
+
   document.getElementById('checkout-modal').classList.remove('active');
+
+
 }
 
+
+ 
+
+
 async function processSubscriptionPayment() {
+
+
   if (!selectedTiffinForSub) return;
 
+
+ 
+
+
   if (!currentUser) {
-    pendingSubscriptionIntent = true; // remember so we auto-continue payment right after login
+
+
+    pendingSubscriptionIntent = true;
+
+
     showToast("For Payment first login/register.", "info");
+
+
     openModal('login');
+
+
     return;
+
+
   }
+
+
+ 
+
 
   const btn = document.getElementById('btn-confirm-pay');
+
+
   toggleBtnLoading(btn, true);
 
+
+ 
+
+
   const unitPrice = Number(selectedTiffinForSub.Price);
+
+
   const total = Math.round(unitPrice * selectedPlan.multiplier);
 
+
+ 
+
+
   const startDate = new Date().toISOString().split('T')[0];
+
+
   const endDateObj = new Date();
+
+
   endDateObj.setDate(endDateObj.getDate() + selectedPlan.days);
+
+
   const endDate = endDateObj.toISOString().split('T')[0];
 
+
+ 
+
+
   try {
+
+
     const res = await fetch(API_URL, {
+
+
       method: 'POST',
+
+
       body: JSON.stringify({
+
+
         action: 'createSubscription',
+
+
         userId: currentUser.userId,
+
+
         tiffinId: selectedTiffinForSub.TiffinID,
+
+
         planType: selectedPlan.type,
+
+
         startDate: startDate,
+
+
         endDate: endDate,
+
+
         totalAmount: total
+
+
       })
+
+
     });
+
+
     const result = await res.json();
+
+
     toggleBtnLoading(btn, false);
 
+
+ 
+
+
     if (result.success) {
+
+
       showToast("🎉 Subscription Activated Successfully!", "success");
+
+
       closeCheckoutModal();
+
+
       loadUserDashboard();
+
+
     } else {
+
+
       showToast(result.message, "error");
+
+
     }
+
+
   } catch (err) {
+
+
     toggleBtnLoading(btn, false);
+
+
     showToast("Payment failed! Please try again.", "error");
+
+
   }
+
+
+}
+
+
+ 
+
+
+// ==========================================================================
+
+
+// REVIEW MODULE
+
+
+// ==========================================================================
+
+
+function openReviewModal(orderId, tiffinId) {
+
+
+  selectedOrderForReview = { orderId, tiffinId };
+
+
+  selectedRating = 0;
+
+
+ 
+
+
+  document.querySelectorAll('#star-rating i').forEach(el => {
+
+
+    el.style.color = '#D1D5DB';
+
+
+  });
+
+
+  document.getElementById('review-comment').value = '';
+
+
+  document.getElementById('review-modal-subtitle').innerText = `Order #${orderId}`;
+
+
+  document.getElementById('review-modal').classList.add('active');
+
+
+ 
+
+
+  document.querySelectorAll('#star-rating i').forEach(starEl => {
+
+
+    starEl.onclick = () => {
+
+
+      selectedRating = Number(starEl.dataset.rating);
+
+
+      document.querySelectorAll('#star-rating i').forEach(s => {
+
+
+        const r = Number(s.dataset.rating);
+
+
+        s.style.color = r <= selectedRating ? '#F59E0B' : '#D1D5DB';
+
+
+      });
+
+
+    };
+
+
+  });
+
+
+}
+
+
+ 
+
+
+function closeReviewModal() {
+
+
+  document.getElementById('review-modal').classList.remove('active');
+
+
+  selectedOrderForReview = null;
+
+
+  selectedRating = 0;
+
+
+}
+
+
+ 
+
+
+async function submitReview() {
+
+
+  if (!selectedOrderForReview || !currentUser) return;
+
+
+  if (selectedRating < 1) {
+
+
+    showToast("Please select a star rating.", "error");
+
+
+    return;
+
+
+  }
+
+
+ 
+
+
+  const btn = document.getElementById('review-submit-btn');
+
+
+  toggleBtnLoading(btn, true);
+
+
+ 
+
+
+  try {
+
+
+    const res = await fetch(API_URL, {
+
+
+      method: 'POST',
+
+
+      body: JSON.stringify({
+
+
+        action: 'submitReview',
+
+
+        orderId: selectedOrderForReview.orderId,
+
+
+        userId: currentUser.userId,
+
+
+        tiffinId: selectedOrderForReview.tiffinId,
+
+
+        rating: selectedRating,
+
+
+        comment: document.getElementById('review-comment').value.trim()
+
+
+      })
+
+
+    });
+
+
+    const result = await res.json();
+
+
+    toggleBtnLoading(btn, false);
+
+
+ 
+
+
+    if (result.success) {
+
+
+      showToast("🎉 Thanks for your review!", "success");
+
+
+      closeReviewModal();
+
+
+      loadUserDashboard();
+
+
+    } else {
+
+
+      showToast(result.message || "Could not submit review.", "error");
+
+
+    }
+
+
+  } catch (err) {
+
+
+    toggleBtnLoading(btn, false);
+
+
+    showToast("Server connection error!", "error");
+
+
+  }
+
+
 }

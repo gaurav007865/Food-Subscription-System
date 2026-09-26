@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NGO Portal - TiffinHub Donations</title>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Sneha -->
   <style>
     :root {
       --primary: #FF6B35;
@@ -21,10 +22,19 @@
       --danger: #EF4444;
       --warning: #F59E0B;
     }
-    * { margin:0; padding:0; box-sizing:border-box; font-family:'Plus Jakarta Sans', sans-serif; }
-    body { background-color: var(--bg); color: var(--dark); }
 
-    /* Login Screen */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--dark);
+    }
+
     .ngo-login-wrapper {
       min-height: 100vh;
       display: flex;
@@ -32,17 +42,27 @@
       justify-content: center;
       background: linear-gradient(135deg, #2EC4B6 0%, #1A1A24 100%);
     }
+
     .login-box {
       background: white;
       padding: 2.5rem;
       border-radius: 20px;
       width: 100%;
       max-width: 420px;
-      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
       text-align: center;
     }
-    .login-box h1 { font-size: 1.7rem; margin-bottom: 0.4rem; }
-    .login-box p { color: var(--muted); font-size: 0.85rem; margin-bottom: 1.5rem; }
+
+    .login-box h1 {
+      font-size: 1.7rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .login-box p {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-bottom: 1.5rem;
+    }
 
     .time-window-note {
       background: rgba(245, 158, 11, 0.12);
@@ -68,7 +88,10 @@
       outline: none;
       font-size: 0.95rem;
     }
-    .input-field:focus { border-color: var(--secondary); }
+
+    .input-field:focus {
+      border-color: var(--secondary);
+    }
 
     .btn {
       padding: 0.8rem 1.4rem;
@@ -84,20 +107,55 @@
       gap: 0.5rem;
       justify-content: center;
     }
-    .btn:hover { background: #26A398; }
-    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    .btn-primary { background: var(--primary); }
-    .btn-primary:hover { background: var(--primary-hover); }
-    .btn-sm { padding: 6px 12px; font-size: 0.82rem; }
 
-    #login-error-msg {
-      color: var(--danger); font-size: 0.85rem; font-weight: 600;
-      margin: -6px 0 12px; display: none; text-align: left;
+    .btn:hover {
+      background: #26A398;
     }
 
-    /* Dashboard */
-    .dashboard { display: none; }
-    .dashboard.active { display: block; }
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 0.82rem;
+    }
+
+    #login-error-msg,
+    #setpwd-error-msg {
+      color: var(--danger);
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin: -6px 0 12px;
+      display: none;
+      text-align: left;
+    }
+
+    #setpwd-success-msg {
+      color: var(--success);
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin: -6px 0 12px;
+      display: none;
+      text-align: left;
+    }
+
+    .dashboard {
+      display: none;
+    }
+
+    .dashboard.active {
+      display: block;
+    }
 
     header {
       background: var(--dark);
@@ -110,10 +168,21 @@
       top: 0;
       z-index: 100;
     }
-    .header-brand { font-size: 1.4rem; font-weight: 800; }
-    .header-brand span { color: var(--secondary); }
 
-    .container { padding: 2rem 5%; max-width: 1100px; margin: 0 auto; }
+    .header-brand {
+      font-size: 1.4rem;
+      font-weight: 800;
+    }
+
+    .header-brand span {
+      color: var(--secondary);
+    }
+
+    .container {
+      padding: 2rem 5%;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
 
     .section-card {
       background: var(--card);
@@ -122,7 +191,14 @@
       border: 1px solid var(--border);
       margin-bottom: 2rem;
     }
-    .section-card h2 { font-size: 1.3rem; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 8px; }
+
+    .section-card h2 {
+      font-size: 1.3rem;
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
     .donation-row {
       display: flex;
@@ -134,50 +210,129 @@
       margin-bottom: 0.8rem;
       background: #FAFAFA;
     }
+
     .donation-row input[type="checkbox"] {
-      width: 20px; height: 20px; margin-top: 4px; cursor: pointer; accent-color: var(--secondary);
+      width: 20px;
+      height: 20px;
+      margin-top: 4px;
+      cursor: pointer;
+      accent-color: var(--secondary);
     }
-    .donation-row-main { flex: 1; }
-    .donation-row-main strong { font-size: 1rem; }
+
+    .donation-row-main {
+      flex: 1;
+    }
+
+    .donation-row-main strong {
+      font-size: 1rem;
+    }
+
     .donation-meta {
-      display: flex; gap: 1.2rem; flex-wrap: wrap; margin-top: 0.5rem;
-      font-size: 0.82rem; color: var(--muted);
+      display: flex;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+      font-size: 0.82rem;
+      color: var(--muted);
     }
-    .donation-meta i { color: var(--secondary); margin-right: 4px; }
+
+    .donation-meta i {
+      color: var(--secondary);
+      margin-right: 4px;
+    }
 
     .status-badge {
-      padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; white-space: nowrap;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      white-space: nowrap;
     }
-    .badge-pending { background: rgba(245, 158, 11, 0.15); color: #D97706; }
-    .badge-accepted { background: rgba(46, 196, 182, 0.15); color: var(--secondary); }
-    .badge-reached { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+
+    .badge-pending {
+      background: rgba(245, 158, 11, 0.15);
+      color: #D97706;
+    }
+
+    .badge-accepted {
+      background: rgba(46, 196, 182, 0.15);
+      color: var(--secondary);
+    }
+
+    .badge-reached {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+    }
 
     .action-bar {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 1rem; flex-wrap: wrap; gap: 10px;
-    }
-    .select-all-label {
-      display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.9rem; cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
-    .empty-msg { color: var(--muted); text-align: center; padding: 2rem; }
+    .select-all-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .empty-msg {
+      color: var(--muted);
+      text-align: center;
+      padding: 2rem;
+    }
 
     .toast {
-      position: fixed; bottom: 20px; right: 20px;
-      background: var(--dark); color: white;
-      padding: 12px 20px; border-radius: 10px;
-      display: none; z-index: 2000; font-weight: 600;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--dark);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 10px;
+      display: none;
+      z-index: 2000;
+      font-weight: 600;
     }
 
     @media (max-width: 600px) {
-      .donation-row { flex-direction: column; }
-      .donation-meta { flex-direction: column; gap: 0.3rem; }
+      .donation-row {
+        flex-direction: column;
+      }
+
+      .donation-meta {
+        flex-direction: column;
+        gap: 0.3rem;
+      }
     }
   </style>
 </head>
+
 <body>
 
   <div id="toast" class="toast"></div>
+
+  <!-- 0. SET PASSWORD SCREEN -->
+  <div id="set-password-screen" class="ngo-login-wrapper" style="display:none;">
+    <div class="login-box">
+      <h1>🔑 Set Your Password</h1>
+      <p>Your NGO registration has been approved. Set a password to activate your NGO Portal account.</p>
+
+      <input type="password" id="setpwd-new" class="input-field" placeholder="New Password">
+      <input type="password" id="setpwd-confirm" class="input-field" placeholder="Confirm Password">
+
+      <p id="setpwd-error-msg"><i class="fa-solid fa-circle-exclamation"></i> <span id="setpwd-error-text"></span></p>
+      <p id="setpwd-success-msg"><i class="fa-solid fa-circle-check"></i> <span id="setpwd-success-text"></span></p>
+
+      <button class="btn" style="width:100%" onclick="submitSetPassword()" id="setpwd-btn">Set Password</button>
+    </div>
+  </div>
 
   <!-- 1. NGO LOGIN SCREEN -->
   <div id="login-screen" class="ngo-login-wrapper">
@@ -185,6 +340,10 @@
       <h1>🤝 NGO Portal</h1>
       <p>Login to view & accept food donations</p>
 
+      <div class="time-window-note">
+        <i class="fa-solid fa-clock"></i> Login is only available during your NGO's configured time window. Check with
+        your NGO owner for exact hours.
+      </div>
 
       <input type="email" id="ngo-email" class="input-field" placeholder="NGO Email">
       <input type="password" id="ngo-password" class="input-field" placeholder="Password">
@@ -201,13 +360,13 @@
       <div class="header-brand">🤝 <span>NGO</span> Portal</div>
       <div>
         <span style="margin-right: 15px; color:#A0AEC0;" id="logged-ngo-name">NGO</span>
-        <button onclick="logoutNGO()" style="background:#EF4444; color:white; border:none; padding:6px 14px; border-radius:6px; cursor:pointer; font-weight:700;">Logout</button>
+        <button onclick="logoutNGO()"
+          style="background:#EF4444; color:white; border:none; padding:6px 14px; border-radius:6px; cursor:pointer; font-weight:700;">Logout</button>
       </div>
     </header>
 
     <div class="container">
 
-      <!-- AVAILABLE DONATIONS -->
       <div class="section-card">
         <h2><i class="fa-solid fa-hand-holding-heart" style="color:var(--primary);"></i> Available Donations</h2>
 
@@ -226,7 +385,6 @@
         </div>
       </div>
 
-      <!-- MY ACCEPTED DONATIONS -->
       <div class="section-card">
         <h2><i class="fa-solid fa-truck-fast" style="color:var(--secondary);"></i> My Accepted Donations</h2>
         <div id="accepted-donations-list">
@@ -243,6 +401,16 @@
     let currentNGO = JSON.parse(sessionStorage.getItem('tiffin_ngo_session')) || null;
 
     document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const resetToken = urlParams.get('token');
+
+      if (resetToken) {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('set-password-screen').style.display = 'flex';
+        window._ngoResetToken = resetToken;
+        return;
+      }
+
       if (currentNGO) showDashboard();
     });
 
@@ -250,6 +418,58 @@
       const toast = document.getElementById('toast');
       toast.innerText = msg; toast.style.display = 'block';
       setTimeout(() => toast.style.display = 'none', 3000);
+    }
+
+    function showSetPwdError(msg) {
+      document.getElementById('setpwd-error-text').innerText = msg;
+      document.getElementById('setpwd-error-msg').style.display = 'block';
+      document.getElementById('setpwd-success-msg').style.display = 'none';
+    }
+    function showSetPwdSuccess(msg) {
+      document.getElementById('setpwd-success-text').innerText = msg;
+      document.getElementById('setpwd-success-msg').style.display = 'block';
+      document.getElementById('setpwd-error-msg').style.display = 'none';
+    }
+
+    async function submitSetPassword() {
+      const newPwd = document.getElementById('setpwd-new').value.trim();
+      const confirmPwd = document.getElementById('setpwd-confirm').value.trim();
+      const btn = document.getElementById('setpwd-btn');
+
+      document.getElementById('setpwd-error-msg').style.display = 'none';
+      document.getElementById('setpwd-success-msg').style.display = 'none';
+
+      if (!newPwd || !confirmPwd) { showSetPwdError("Please fill in both fields."); return; }
+      if (newPwd.length < 6) { showSetPwdError("Password should be at least 6 characters."); return; }
+      if (newPwd !== confirmPwd) { showSetPwdError("Passwords do not match."); return; }
+
+      btn.disabled = true;
+      btn.innerText = "Saving...";
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'setNGOPassword',
+            token: window._ngoResetToken,
+            password: newPwd
+          })
+        });
+        const result = await res.json();
+
+        if (result.success) {
+          showSetPwdSuccess("Password set successfully! Redirecting to login...");
+          setTimeout(() => { window.location.href = window.location.pathname; }, 1800);
+        } else {
+          showSetPwdError(result.message || "Could not set password. The link may have expired.");
+          btn.disabled = false;
+          btn.innerText = "Set Password";
+        }
+      } catch (err) {
+        showSetPwdError("Server connection error!");
+        btn.disabled = false;
+        btn.innerText = "Set Password";
+      }
     }
 
     function showLoginError(msg) {
@@ -303,6 +523,7 @@
     }
 
     function showDashboard() {
+      document.getElementById('set-password-screen').style.display = 'none';
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('dashboard-screen').classList.add('active');
       document.getElementById('logged-ngo-name').innerText = currentNGO.name;
@@ -310,9 +531,6 @@
       loadAcceptedDonations();
     }
 
-    // ==========================================================================
-    // AVAILABLE DONATIONS (Pending pickup)
-    // ==========================================================================
     async function loadAvailableDonations() {
       const container = document.getElementById('available-donations-list');
       try {
@@ -383,9 +601,6 @@
       btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Accept Selected';
     }
 
-    // ==========================================================================
-    // MY ACCEPTED DONATIONS (Track & mark as reached)
-    // ==========================================================================
     async function loadAcceptedDonations() {
       const container = document.getElementById('accepted-donations-list');
       try {
@@ -441,4 +656,5 @@
     }
   </script>
 </body>
+
 </html>

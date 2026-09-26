@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Provider Portal - TiffinHub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #FF6B35; --primary-hover: #E85A26; --secondary: #2EC4B6;
+      --dark: #1A1A24; --bg: #FAF7F2; --card: #FFFFFF; --border: #E2E8F0;
+      --muted: #6C757D; --success: #10B981; --danger: #EF4444; --warning: #F59E0B;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Plus Jakarta Sans', sans-serif; }
+    body { background-color: var(--bg); color: var(--dark); }
+
+    .provider-wrapper {
+      min-height: 100vh; display:flex; align-items:center; justify-content:center;
+      background: linear-gradient(135deg, #FF6B35 0%, #1A1A24 100%); padding: 1rem;
+    }
+    .login-box {
+      background:white; padding:2.5rem; border-radius:20px; width:100%; max-width:440px;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); text-align:center;
+    }
+    .login-box h1 { font-size:1.7rem; margin-bottom:0.4rem; }
+    .login-box p { color:var(--muted); font-size:0.85rem; margin-bottom:1.5rem; }
+
+    .input-field {
+      width:100%; padding:0.8rem 1rem; margin-bottom:1rem;
+      border:1.5px solid var(--border); border-radius:10px; outline:none; font-size:0.95rem;
+      font-family:inherit;
+    }
+    .input-field:focus { border-color:var(--primary); }
+    textarea.input-field { resize:vertical; min-height:60px; }
+
+    .btn {
+      padding:0.8rem 1.4rem; background:var(--primary); color:white; border:none;
+      border-radius:10px; font-weight:700; cursor:pointer; transition:0.3s;
+      display:inline-flex; align-items:center; gap:0.5rem; justify-content:center;
+    }
+    .btn:hover { background:var(--primary-hover); }
+    .btn:disabled { opacity:0.6; cursor:not-allowed; }
+    .btn-secondary { background:var(--secondary); }
+    .btn-secondary:hover { background:#26A398; }
+    .btn-danger { background:var(--danger); }
+    .btn-sm { padding:6px 12px; font-size:0.8rem; }
+
+    .error-msg { color:var(--danger); font-size:0.85rem; font-weight:600; margin:-6px 0 12px; display:none; text-align:left; }
+    .success-msg { color:var(--success); font-size:0.85rem; font-weight:600; margin:-6px 0 12px; display:none; text-align:left; }
+
+    .auth-toggle { display:flex; background:#F1F5F9; border-radius:10px; padding:4px; margin-bottom:1.2rem; }
+    .auth-toggle button {
+      flex:1; padding:8px; border:none; border-radius:8px; background:transparent;
+      color:var(--muted); font-weight:700; cursor:pointer; font-size:0.85rem;
+    }
+    .auth-toggle button.active { background:var(--primary); color:white; }
+
+    .dashboard { display:none; }
+    .dashboard.active { display:block; }
+    header {
+      background:var(--dark); color:white; padding:1rem 5%;
+      display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:100;
+    }
+    .header-brand { font-size:1.4rem; font-weight:800; }
+    .header-brand span { color:var(--primary); }
+    .container { padding:2rem 5%; max-width:1200px; margin:0 auto; }
+
+    .section-card {
+      background:var(--card); padding:1.8rem; border-radius:16px;
+      border:1px solid var(--border); margin-bottom:2rem;
+    }
+    .section-card h2 { font-size:1.2rem; margin-bottom:1.2rem; display:flex; align-items:center; gap:8px; }
+
+    .stats-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:1.5rem; margin-bottom:2rem; }
+    .stat-card {
+      background:var(--card); padding:1.3rem; border-radius:16px; border:1px solid var(--border);
+    }
+    .stat-card p { color:var(--muted); font-weight:600; font-size:0.8rem; }
+    .stat-card h3 { font-size:1.6rem; margin-top:0.3rem; }
+
+    .admin-tabs { background:#252533; padding:0.5rem 5%; display:flex; gap:1rem; overflow-x:auto; }
+    .admin-tab-btn {
+      background:transparent; color:#A0AEC0; border:none; padding:0.7rem 1.2rem;
+      font-weight:700; font-size:0.9rem; border-radius:8px; cursor:pointer; white-space:nowrap;
+    }
+    .admin-tab-btn.active, .admin-tab-btn:hover { background:var(--primary); color:white; }
+    .tab-content { display:none; }
+    .tab-content.active { display:block; }
+
+    .form-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:1rem; }
+    .form-grid .input-field { margin-bottom:0; }
+
+    table { width:100%; border-collapse:collapse; }
+    th, td { padding:0.85rem; text-align:left; border-bottom:1px solid var(--border); font-size:0.9rem; }
+    th { background:#F8FAFC; color:var(--muted); font-weight:700; }
+    .status-badge { padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:700; display:inline-block; }
+    .badge-yes { background:rgba(16,185,129,0.15); color:var(--success); }
+    .badge-no { background:rgba(239,68,68,0.15); color:var(--danger); }
+    .badge-pending { background:rgba(245,158,11,0.15); color:#D97706; }
+
+    .action-btn { padding:5px 10px; border-radius:6px; border:none; cursor:pointer; font-weight:600; font-size:0.8rem; }
+    .btn-edit { background:rgba(46,196,182,0.15); color:var(--secondary); margin-right:4px; }
+    .btn-delete { background:rgba(239,68,68,0.15); color:var(--danger); }
+
+    .modal-overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,0.5); display:none;
+      justify-content:center; align-items:center; z-index:1000; padding:1rem;
+    }
+    .modal-card {
+      background:white; padding:2rem; border-radius:16px; width:100%; max-width:480px;
+      max-height:90vh; overflow-y:auto;
+    }
+    .modal-card h2 { font-size:1.3rem; margin-bottom:1rem; }
+
+    .review-item {
+      padding:0.9rem; border:1px solid var(--border); border-radius:12px;
+      margin-bottom:0.7rem; background:#FAFAFA;
+    }
+    .review-stars { color:#F59E0B; font-size:1rem; }
+    .review-meta { font-size:0.78rem; color:var(--muted); margin-top:4px; }
+
+    .toast {
+      position:fixed; bottom:20px; right:20px; background:var(--dark); color:white;
+      padding:12px 20px; border-radius:10px; display:none; z-index:2000; font-weight:600;
+    }
+    .hidden { display:none !important; }
+  </style>
+</head>
+<body>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- SET PASSWORD SCREEN -->
+  <div id="set-password-screen" class="provider-wrapper" style="display:none;">
+    <div class="login-box">
+      <h1>🔑 Set Your Password</h1>
+      <p>Your Mess Provider registration has been approved. Set a password to activate your Provider Portal account.</p>
+      <input type="password" id="setpwd-new" class="input-field" placeholder="New Password">
+      <input type="password" id="setpwd-confirm" class="input-field" placeholder="Confirm Password">
+      <p id="setpwd-error-msg" class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> <span id="setpwd-error-text"></span></p>
+      <p id="setpwd-success-msg" class="success-msg"><i class="fa-solid fa-circle-check"></i> <span id="setpwd-success-text"></span></p>
+      <button class="btn" style="width:100%" onclick="submitSetPassword()" id="setpwd-btn">Set Password</button>
+    </div>
+  </div>
+
+  <!-- LOGIN / REGISTER SCREEN -->
+  <div id="login-screen" class="provider-wrapper">
+    <div class="login-box">
+      <h1>🍱 Provider Portal</h1>
+      <p>Manage your tiffins, orders, subscriptions & earnings</p>
+
+      <div class="auth-toggle">
+        <button id="toggle-login-btn" class="active" onclick="switchAuth('login')">Login</button>
+      </div>
+
+      <div id="login-fields">
+        <input type="email" id="prov-email" class="input-field" placeholder="Business Email">
+        <input type="password" id="prov-password" class="input-field" placeholder="Password">
+        <p id="login-error-msg" class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> <span id="login-error-text"></span></p>
+        <button class="btn" style="width:100%" onclick="loginProvider()" id="prov-login-btn">Login</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD SCREEN -->
+  <div id="dashboard-screen" class="dashboard">
+    <header>
+      <div class="header-brand">🍱 Provider <span>Portal</span></div>
+      <div>
+        <span style="margin-right:15px; color:#A0AEC0;" id="logged-provider-name">Provider</span>
+        <button onclick="logoutProvider()" style="background:#EF4444; color:white; border:none; padding:6px 14px; border-radius:6px; cursor:pointer; font-weight:700;">Logout</button>
+      </div>
+    </header>
+
+    <div class="admin-tabs">
+      <button class="admin-tab-btn active" onclick="switchTab('tab-overview', this)"><i class="fa-solid fa-chart-line"></i> Overview</button>
+      <button class="admin-tab-btn" onclick="switchTab('tab-menu', this)"><i class="fa-solid fa-utensils"></i> My Tiffins</button>
+      <button class="admin-tab-btn" onclick="switchTab('tab-orders', this)"><i class="fa-solid fa-truck-fast"></i> My Orders</button>
+      <button class="admin-tab-btn" onclick="switchTab('tab-subs', this)"><i class="fa-solid fa-calendar-check"></i> Subscriptions</button>
+      <button class="admin-tab-btn" onclick="switchTab('tab-reviews', this)"><i class="fa-solid fa-star"></i> Reviews</button>
+    </div>
+
+    <div class="container">
+
+      <div id="tab-overview" class="tab-content active">
+        <div class="stats-grid">
+          <div class="stat-card"><p>Total Earnings</p><h3 id="stat-earnings">₹0</h3></div>
+          <div class="stat-card"><p>Total Orders</p><h3 id="stat-orders">0</h3></div>
+          <div class="stat-card"><p>Active Subscriptions</p><h3 id="stat-subs">0</h3></div>
+          <div class="stat-card"><p>My Tiffins</p><h3 id="stat-tiffins">0</h3></div>
+          <div class="stat-card"><p>Average Rating</p><h3 id="stat-rating">—</h3></div>
+        </div>
+      </div>
+
+      <div id="tab-menu" class="tab-content">
+        <div class="section-card">
+          <h2><i class="fa-solid fa-plus-circle" style="color:var(--secondary);"></i> Add New Tiffin</h2>
+          <div class="form-grid">
+            <input type="text"   id="tif-name"     class="input-field" placeholder="Provider Name">
+            <select              id="tif-meal"     class="input-field">
+              <option value="Veg">Veg</option>
+              <option value="Non-Veg">Non-Veg</option>
+              <option value="Jain Veg">Jain Veg</option>
+            </select>
+            <input type="number" id="tif-price"    class="input-field" placeholder="Price (₹)">
+            <input type="text"   id="tif-location" class="input-field" placeholder="Location">
+            <input type="text"   id="tif-image"    class="input-field" placeholder="Image URL (Optional)">
+          </div>
+          <button class="btn" style="margin-top:1rem;" onclick="providerAddTiffin()">+ Publish Tiffin</button>
+        </div>
+
+        <div class="section-card">
+          <h2><i class="fa-solid fa-list-check" style="color:var(--primary);"></i> My Tiffins</h2>
+          <table>
+            <thead>
+              <tr><th>ID</th><th>Provider</th><th>Type</th><th>Price</th><th>Location</th><th>Stock</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="tiffins-table-body"><tr><td colspan="7">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="tab-orders" class="tab-content">
+        <div class="section-card">
+          <h2><i class="fa-solid fa-truck-fast" style="color:var(--primary);"></i> Orders</h2>
+          <table>
+            <thead>
+              <tr><th>Order ID</th><th>User</th><th>Tiffin</th><th>Amount</th><th>Status</th><th>Action</th></tr>
+            </thead>
+            <tbody id="orders-table-body"><tr><td colspan="6">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="tab-subs" class="tab-content">
+        <div class="section-card">
+          <h2><i class="fa-solid fa-calendar-check" style="color:var(--secondary);"></i> Subscriptions</h2>
+          <table>
+            <thead>
+              <tr><th>Sub ID</th><th>User</th><th>Tiffin</th><th>Plan</th><th>Start</th><th>End</th><th>Amount</th><th>Status</th></tr>
+            </thead>
+            <tbody id="subs-table-body"><tr><td colspan="8">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="tab-reviews" class="tab-content">
+        <div class="section-card">
+          <h2><i class="fa-solid fa-star" style="color:#F59E0B;"></i> Customer Reviews</h2>
+          <div id="reviews-list"><p style="color:var(--muted);">Loading reviews...</p></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="edit-tiffin-modal" class="modal-overlay">
+    <div class="modal-card">
+      <h2>✏️ Edit Tiffin</h2>
+      <input type="hidden" id="edit-tif-id">
+      <input type="text"   id="edit-tif-name"     class="input-field" placeholder="Provider Name">
+      <select              id="edit-tif-meal"     class="input-field">
+        <option value="Veg">Veg</option>
+        <option value="Non-Veg">Non-Veg</option>
+        <option value="Jain Veg">Jain Veg</option>
+      </select>
+      <input type="number" id="edit-tif-price"    class="input-field" placeholder="Price (₹)">
+      <input type="text"   id="edit-tif-location" class="input-field" placeholder="Location">
+      <input type="text"   id="edit-tif-image"    class="input-field" placeholder="Image URL">
+      <div style="display:flex; gap:10px;">
+        <button class="btn" style="flex:1;" onclick="saveTiffinChanges()">Save</button>
+        <button class="btn" style="background:#E2E8F0; color:var(--dark);" onclick="closeEditModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="global.js"></script>
+  <script>
+    let currentProvider = JSON.parse(sessionStorage.getItem('tiffin_provider_session')) || null;
+    let myTiffins = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('token');
+      if (token) {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('set-password-screen').style.display = 'flex';
+        window._providerResetToken = token;
+        return;
+      }
+      if (currentProvider) showDashboard();
+    });
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.innerText = msg; t.style.display = 'block';
+      setTimeout(() => t.style.display = 'none', 3000);
+    }
+
+    function switchAuth(mode) {
+      const loginBtn = document.getElementById('toggle-login-btn');
+      const regBtn = document.getElementById('toggle-register-btn');
+      const loginFields = document.getElementById('login-fields');
+      const regFields = document.getElementById('register-fields');
+      if (mode === 'login') {
+        loginBtn.classList.add('active'); regBtn.classList.remove('active');
+        loginFields.style.display = 'block'; regFields.style.display = 'none';
+      } else {
+        regBtn.classList.add('active'); loginBtn.classList.remove('active');
+        regFields.style.display = 'block'; loginFields.style.display = 'none';
+      }
+    }
+
+    async function submitSetPassword() {
+      const newPwd = document.getElementById('setpwd-new').value.trim();
+      const conf = document.getElementById('setpwd-confirm').value.trim();
+      const btn = document.getElementById('setpwd-btn');
+      const errEl = document.getElementById('setpwd-error-msg');
+      const okEl = document.getElementById('setpwd-success-msg');
+      errEl.style.display = 'none'; okEl.style.display = 'none';
+
+      if (!newPwd || !conf) { document.getElementById('setpwd-error-text').innerText = "Please fill in both fields."; errEl.style.display = 'block'; return; }
+      if (newPwd.length < 6) { document.getElementById('setpwd-error-text').innerText = "Password should be at least 6 characters."; errEl.style.display = 'block'; return; }
+      if (newPwd !== conf) { document.getElementById('setpwd-error-text').innerText = "Passwords do not match."; errEl.style.display = 'block'; return; }
+
+      btn.disabled = true; btn.innerText = "Saving...";
+      try {
+        const res = await fetch(API_URL, { method:'POST', body: JSON.stringify({ action:'setProviderPassword', token: window._providerResetToken, password: newPwd }) });
+        const result = await res.json();
+        if (result.success) {
+          document.getElementById('setpwd-success-text').innerText = "Password set! Redirecting...";
+          okEl.style.display = 'block';
+          setTimeout(() => { window.location.href = window.location.pathname; }, 1600);
+        } else {
+          document.getElementById('setpwd-error-text').innerText = result.message || "Could not set password.";
+          errEl.style.display = 'block';
+          btn.disabled = false; btn.innerText = "Set Password";
+        }
+      } catch (err) {
+        document.getElementById('setpwd-error-text').innerText = "Server connection error!";
+        errEl.style.display = 'block';
+        btn.disabled = false; btn.innerText = "Set Password";
+      }
+    }
+
+    async function registerProvider() {
+      const businessName = document.getElementById('reg-biz-name').value.trim();
+      const ownerName    = document.getElementById('reg-owner-name').value.trim();
+      const email        = document.getElementById('reg-biz-email').value.trim();
+      const phone        = document.getElementById('reg-biz-phone').value.trim();
+      const address      = document.getElementById('reg-biz-address').value.trim();
+      const aadharId     = document.getElementById('reg-biz-aadhar').value.trim();
+      const msgEl = document.getElementById('register-msg');
+      const btn = document.getElementById('prov-register-btn');
+
+      msgEl.style.display = 'none';
+      msgEl.style.color = 'var(--danger)';
+
+      if (!businessName || !ownerName || !email || !phone || !address || !aadharId) {
+        document.getElementById('register-msg-text').innerText = "Please fill in all fields.";
+        msgEl.style.display = 'block'; return;
+      }
+      if (!/^\d{12}$/.test(aadharId)) {
+        document.getElementById('register-msg-text').innerText = "Aadhar must be a 12-digit number.";
+        msgEl.style.display = 'block'; return;
+      }
+
+      btn.disabled = true; btn.innerText = "Submitting...";
+      try {
+        const res = await fetch(API_URL, { method:'POST', body: JSON.stringify({ action:'registerProvider', businessName, ownerName, email, phone, address, aadharId }) });
+        const result = await res.json();
+        if (result.success) {
+          showToast("Registration submitted! Wait for admin approval.");
+          document.getElementById('register-msg-text').innerText = "Registration submitted! Check email after admin approves.";
+          msgEl.style.color = '#10B981';
+          msgEl.style.display = 'block';
+        } else {
+          document.getElementById('register-msg-text').innerText = result.message || "Registration failed.";
+          msgEl.style.display = 'block';
+        }
+      } catch (err) {
+        document.getElementById('register-msg-text').innerText = "Server connection error!";
+        msgEl.style.display = 'block';
+      }
+      btn.disabled = false; btn.innerText = "Send Registration Request";
+    }
+
+    async function loginProvider() {
+      const email = document.getElementById('prov-email').value.trim();
+      const password = document.getElementById('prov-password').value.trim();
+      const btn = document.getElementById('prov-login-btn');
+      const errEl = document.getElementById('login-error-msg');
+      errEl.style.display = 'none';
+
+      if (!email || !password) {
+        document.getElementById('login-error-text').innerText = "Please enter both email and password.";
+        errEl.style.display = 'block'; return;
+      }
+
+      btn.disabled = true; btn.innerText = "Logging in...";
+      try {
+        const res = await fetch(API_URL, { method:'POST', body: JSON.stringify({ action:'providerLogin', email, password }) });
+        const result = await res.json();
+        if (result.success) {
+          currentProvider = result.provider;
+          sessionStorage.setItem('tiffin_provider_session', JSON.stringify(currentProvider));
+          showDashboard();
+        } else {
+          document.getElementById('login-error-text').innerText = result.message;
+          errEl.style.display = 'block';
+        }
+      } catch (err) {
+        document.getElementById('login-error-text').innerText = "Server connection error!";
+        errEl.style.display = 'block';
+      }
+      btn.disabled = false; btn.innerText = "Login";
+    }
+
+    function logoutProvider() {
+      sessionStorage.removeItem('tiffin_provider_session');
+      currentProvider = null;
+      location.reload();
+    }
+
+    function showDashboard() {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('set-password-screen').style.display = 'none';
+      document.getElementById('dashboard-screen').classList.add('active');
+      document.getElementById('logged-provider-name').innerText = currentProvider.businessName || currentProvider.email;
+      loadData();
+    }
+
+    function switchTab(id, btn) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    async function loadData() {
+      showToast("Loading dashboard...");
+      const res = await fetch(API_URL, {
+        method:'POST',
+        body: JSON.stringify({ action:'getProviderDashboardData', providerId: currentProvider.providerId })
+      });
+      const data = await res.json();
+      if (!data.success) { showToast(data.message || "Failed to load."); return; }
+
+      myTiffins = data.tiffins || [];
+
+      document.getElementById('stat-earnings').innerText = `₹${(data.earnings || 0).toLocaleString()}`;
+      document.getElementById('stat-orders').innerText = (data.orders || []).length;
+      document.getElementById('stat-subs').innerText = (data.subscriptions || []).filter(s => (s.Status||'') === 'Active').length;
+      document.getElementById('stat-tiffins').innerText = myTiffins.length;
+
+      const reviews = data.reviews || [];
+      if (reviews.length > 0) {
+        const avg = reviews.reduce((s, r) => s + Number(r.Rating || 0), 0) / reviews.length;
+        document.getElementById('stat-rating').innerText = avg.toFixed(1) + ' ⭐';
+      } else {
+        document.getElementById('stat-rating').innerText = '—';
+      }
+
+      renderTiffins(myTiffins);
+      renderOrders(data.orders || []);
+      renderSubs(data.subscriptions || []);
+      renderReviews(reviews);
+    }
+
+    function renderTiffins(tiffins) {
+      const tbody = document.getElementById('tiffins-table-body');
+      if (!tiffins.length) { tbody.innerHTML = `<tr><td colspan="7">No tiffins yet. Add one above.</td></tr>`; return; }
+      tbody.innerHTML = tiffins.map(t => `
+        <tr>
+          <td><b>${t.TiffinID}</b></td>
+          <td>${t.ProviderName}</td>
+          <td>${t.MealType}</td>
+          <td>₹${t.Price}</td>
+          <td>${t.Location}</td>
+          <td><span class="status-badge ${t.Available === 'Yes' ? 'badge-yes' : 'badge-no'}">${t.Available === 'Yes' ? 'In Stock' : 'Out of Stock'}</span></td>
+          <td>
+            <button class="action-btn btn-edit" onclick="openEditModal('${t.TiffinID}')"><i class="fa-solid fa-pen"></i></button>
+            <button class="action-btn btn-delete" onclick="deleteTiffin('${t.TiffinID}')"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderOrders(orders) {
+      const tbody = document.getElementById('orders-table-body');
+      if (!orders.length) { tbody.innerHTML = `<tr><td colspan="6">No orders yet.</td></tr>`; return; }
+      tbody.innerHTML = orders.map(o => `
+        <tr>
+          <td><b>${o.OrderID}</b></td>
+          <td>${o.UserID}</td>
+          <td>${o.TiffinID || '—'}</td>
+          <td>₹${o.Amount}</td>
+          <td><b>${o.OrderStatus}</b></td>
+          <td>
+            <select style="padding:4px;" onchange="changeOrderStatus('${o.OrderID}', this.value)">
+              <option value="Order Confirmed" ${o.OrderStatus === 'Order Confirmed' ? 'selected':''}>Order Confirmed</option>
+              <option value="Preparing" ${o.OrderStatus === 'Preparing' ? 'selected':''}>Preparing</option>
+              <option value="Out for Delivery" ${o.OrderStatus === 'Out for Delivery' ? 'selected':''}>Out for Delivery</option>
+              <option value="Delivered" ${o.OrderStatus === 'Delivered' ? 'selected':''}>Delivered</option>
+            </select>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderSubs(subs) {
+      const tbody = document.getElementById('subs-table-body');
+      if (!subs.length) { tbody.innerHTML = `<tr><td colspan="8">No subscriptions yet.</td></tr>`; return; }
+      tbody.innerHTML = subs.map(s => `
+        <tr>
+          <td><b>${s.SubID}</b></td>
+          <td>${s.UserID}</td>
+          <td>${s.TiffinID}</td>
+          <td>${s.PlanType}</td>
+          <td>${s.StartDate || 'N/A'}</td>
+          <td>${s.EndDate || 'N/A'}</td>
+          <td>₹${s.TotalCost}</td>
+          <td><span class="status-badge ${(s.Status||'') === 'Active' ? 'badge-yes' : 'badge-no'}">${s.Status}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function renderReviews(reviews) {
+      const container = document.getElementById('reviews-list');
+      if (!reviews.length) { container.innerHTML = `<p style="color:var(--muted);">No reviews yet.</p>`; return; }
+      container.innerHTML = reviews.map(r => `
+        <div class="review-item">
+          <div class="review-stars">${'★'.repeat(Number(r.Rating))}${'☆'.repeat(5 - Number(r.Rating))}</div>
+          <div style="margin-top:6px; font-size:0.92rem;">${r.Comment ? r.Comment : '<em style="color:#6C757D;">No comment</em>'}</div>
+          <div class="review-meta">Order #${r.OrderID} • User ${r.UserID} • ${r.Timestamp ? new Date(r.Timestamp).toLocaleDateString() : ''}</div>
+        </div>
+      `).join('');
+    }
+
+    async function providerAddTiffin() {
+      const providerName = document.getElementById('tif-name').value.trim();
+      const mealType = document.getElementById('tif-meal').value;
+      const price = document.getElementById('tif-price').value;
+      const location = document.getElementById('tif-location').value.trim();
+      const imageUrl = document.getElementById('tif-image').value.trim();
+
+      if (!providerName || !price || !location) { showToast("Please fill Provider Name, Price and Location."); return; }
+
+      const res = await fetch(API_URL, {
+        method:'POST',
+        body: JSON.stringify({
+          action: 'addTiffin',
+          providerId: currentProvider.providerId,
+          providerName, mealType, price, location, imageUrl
+        })
+      });
+      const result = await res.json();
+      showToast(result.message);
+      if (result.success) {
+        document.getElementById('tif-name').value = '';
+        document.getElementById('tif-price').value = '';
+        document.getElementById('tif-location').value = '';
+        document.getElementById('tif-image').value = '';
+        loadData();
+      }
+    }
+
+    function openEditModal(tiffinId) {
+      const t = myTiffins.find(x => x.TiffinID == tiffinId);
+      if (!t) return;
+      document.getElementById('edit-tif-id').value = t.TiffinID;
+      document.getElementById('edit-tif-name').value = t.ProviderName;
+      document.getElementById('edit-tif-meal').value = t.MealType;
+      document.getElementById('edit-tif-price').value = t.Price;
+      document.getElementById('edit-tif-location').value = t.Location;
+      document.getElementById('edit-tif-image').value = t.ImageURL || '';
+      document.getElementById('edit-tiffin-modal').style.display = 'flex';
+    }
+
+    function closeEditModal() {
+      document.getElementById('edit-tiffin-modal').style.display = 'none';
+    }
+
+    async function saveTiffinChanges() {
+      const tiffinId = document.getElementById('edit-tif-id').value;
+      const providerName = document.getElementById('edit-tif-name').value;
+      const mealType = document.getElementById('edit-tif-meal').value;
+      const price = document.getElementById('edit-tif-price').value;
+      const location = document.getElementById('edit-tif-location').value;
+      const imageUrl = document.getElementById('edit-tif-image').value;
+
+      const res = await fetch(API_URL, {
+        method:'POST',
+        body: JSON.stringify({
+          action: 'updateTiffin',
+          providerId: currentProvider.providerId,
+          tiffinId, providerName, mealType, price, location, imageUrl
+        })
+      });
+      const result = await res.json();
+      showToast(result.message);
+      closeEditModal();
+      loadData();
+    }
+
+    async function deleteTiffin(tiffinId) {
+      if (!confirm("Delete this tiffin?")) return;
+      const res = await fetch(API_URL, {
+        method:'POST',
+        body: JSON.stringify({ action: 'deleteTiffin', providerId: currentProvider.providerId, tiffinId })
+      });
+      const result = await res.json();
+      showToast(result.message);
+      loadData();
+    }
+
+    async function changeOrderStatus(orderId, newStatus) {
+      const res = await fetch(API_URL, {
+        method:'POST',
+        body: JSON.stringify({
+          action: 'updateOrderStatus',
+          providerId: currentProvider.providerId,
+          orderId, newStatus
+        })
+      });
+      const result = await res.json();
+      showToast(result.message);
+      if (result.success) loadData();
+    }
+  </script>
+</body>
+</html>
