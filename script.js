@@ -1,6 +1,5 @@
 // DOM Elements
-
-
+// const API_URL = "https://script.google.com/macros/s/AKfycbywybsOpZzm3zJ3H6C1UDZ1zgRWa7-Nsq8AMIwMxa6zXEZuLKw9ej861SQ1LbCaygd1pw/exec";
 const authModal = document.getElementById('auth-modal');
 
 
@@ -886,16 +885,6 @@ function renderNgoMemberStep(stepNumber) {
     </div>
 
 
-    <div class="input-group">
-
-
-      <label><i class="fa-solid fa-id-card"></i> Member ${stepNumber} Aadhar Card No</label>
-
-
-      <input type="text" id="ngo-member-aadhar-${stepNumber}" placeholder="12-digit Aadhar Number" maxlength="12" inputmode="numeric">
-
-
-    </div>
 
 
     <div class="input-group">
@@ -1189,8 +1178,6 @@ if (registerForm) {
         const address      = document.getElementById('reg-prov-address').value.trim();
 
 
-        const aadharId     = document.getElementById('reg-prov-aadhar').value.trim();
-
 
         const password     = document.getElementById('reg-prov-password').value;
 
@@ -1198,7 +1185,7 @@ if (registerForm) {
  
 
 
-        if (!businessName || !ownerName || !email || !phone || !address || !aadharId || !password) {
+        if (!businessName || !ownerName || !email || !phone || !address || !password) {
 
 
           showToast("Please fill in all required fields.", "error");
@@ -1213,19 +1200,6 @@ if (registerForm) {
         }
 
 
-        if (!/^\d{12}$/.test(aadharId)) {
-
-
-          showToast("Please enter a valid 12-digit Aadhar number.", "error");
-
-
-          toggleBtnLoading(submitBtn, false);
-
-
-          return;
-
-
-        }
 
 
         if (password.length < 6) {
@@ -1258,8 +1232,7 @@ if (registerForm) {
             action: 'registerProviderDirect',
 
 
-            businessName, ownerName, email, phone, address, aadharId, password
-
+businessName, ownerName, email, phone, address, password
 
           })
 
@@ -1312,8 +1285,14 @@ if (registerForm) {
           // Clear all provider fields
 
 
-          ['reg-prov-name','reg-prov-owner','reg-prov-email','reg-prov-phone','reg-prov-address','reg-prov-aadhar','reg-prov-password']
-
+[
+  'reg-prov-name',
+  'reg-prov-owner',
+  'reg-prov-email',
+  'reg-prov-phone',
+  'reg-prov-address',
+  'reg-prov-password'
+]
 
             .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
 
@@ -1393,16 +1372,13 @@ if (registerForm) {
         const address = document.getElementById('reg-address').value.trim();
 
 
-        const aadharNo = document.getElementById('reg-aadhar').value.trim();
-
-
         const password = document.getElementById('reg-password').value;
 
 
  
 
 
-        if (!name || !email || !address || !aadharNo || !password) {
+        if (!name || !email || !address || !password) {
 
 
           showToast("Please fill in all required fields.", "error");
@@ -1420,19 +1396,7 @@ if (registerForm) {
  
 
 
-        if (!/^\d{12}$/.test(aadharNo)) {
-
-
-          showToast("Please enter a valid 12-digit Aadhar number.", "error");
-
-
-          toggleBtnLoading(submitBtn, false);
-
-
-          return;
-
-
-        }
+       
 
 
  
@@ -1456,7 +1420,7 @@ if (registerForm) {
             action: 'register',
 
 
-            name, email, phone, address, aadharNo,
+            name, email, phone, address,
 
 
             password: hashedPassword
@@ -1558,9 +1522,6 @@ if (registerForm) {
         const ownerName = document.getElementById('reg-ngo-owner-name').value.trim();
 
 
-        const aadharId = document.getElementById('reg-ngo-aadhar').value.trim();
-
-
         const password = document.getElementById('reg-ngo-password').value;
 
 
@@ -1576,7 +1537,7 @@ if (registerForm) {
  
 
 
-        if (!ngoName || !email || !phone || !address || !ownerName || !aadharId || !password || !memberCount || memberCount < 1) {
+        if (!ngoName || !email || !phone || !address || !ownerName || !password || !memberCount || memberCount < 1) {
 
 
           showToast('Please fill all NGO details correctly.', 'error');
@@ -1593,20 +1554,6 @@ if (registerForm) {
 
  
 
-
-        if (!/^\d{12}$/.test(aadharId)) {
-
-
-          showToast('Please enter a valid 12-digit Aadhar number.', 'error');
-
-
-          toggleBtnLoading(submitBtn, false);
-
-
-          return;
-
-
-        }
 
 
  
@@ -1673,15 +1620,9 @@ if (registerForm) {
 
 
         ngoBasicData = {
-
-
-          ngoName, email, phone, address, ownerName, aadharId, password,
-
-
-          loginStartHour, loginEndHour
-
-
-        };
+  ngoName, email, phone, address, ownerName, password,
+  loginStartHour, loginEndHour
+};
 
 
         ngoMemberCount = memberCount;
@@ -1735,9 +1676,6 @@ if (registerForm) {
         const addressEl = document.getElementById(`ngo-member-address-${ngoStep}`);
 
 
-        const aadharEl = document.getElementById(`ngo-member-aadhar-${ngoStep}`);
-
-
         const roleEl = document.getElementById(`ngo-member-role-${ngoStep}`);
 
 
@@ -1756,61 +1694,32 @@ if (registerForm) {
         const memberAddress = addressEl ? addressEl.value.trim() : '';
 
 
-        const memberAadhar = aadharEl ? aadharEl.value.trim() : '';
-
-
         const memberRole = roleEl ? roleEl.value.trim() : '';
 
 
  
 
 
-        if (!memberName || !memberEmail || !memberPhone || !memberAddress || !memberAadhar || !memberRole) {
-
-
-          showToast(`Please fill all details for Member ${ngoStep}.`, 'error');
-
-
-          toggleBtnLoading(submitBtn, false);
-
-
-          return;
-
-
-        }
+        if (!memberName || !memberEmail || !memberPhone || !memberAddress || !memberRole) {
+  showToast(`Please fill all details for Member ${ngoStep}.`, 'error');
+  toggleBtnLoading(submitBtn, false);
+  return;
+}
 
 
  
-
-
-        if (!/^\d{12}$/.test(memberAadhar)) {
-
-
-          showToast(`Member ${ngoStep}: Please enter a valid 12-digit Aadhar number.`, 'error');
-
-
-          toggleBtnLoading(submitBtn, false);
-
-
-          return;
-
-
-        }
 
 
  
 
 
         ngoMembersData.push({
-
-
-          name: memberName, email: memberEmail, phone: memberPhone,
-
-
-          address: memberAddress, aadharNo: memberAadhar, role: memberRole
-
-
-        });
+  name: memberName,
+  email: memberEmail,
+  phone: memberPhone,
+  address: memberAddress,
+  role: memberRole
+});
 
 
  
@@ -1843,32 +1752,15 @@ if (registerForm) {
         // Final submit for NGO — sends basic data + members + login hours
 
 
-        const res = await fetch(API_URL, {
-
-
-          method: 'POST',
-
-
-          body: JSON.stringify({
-
-
-            action: 'registerNGO',
-
-
-            ...ngoBasicData,
-
-
-            memberCount: ngoMemberCount,
-
-
-            members: ngoMembersData
-
-
-          })
-
-
-        });
-
+       const res = await fetch(API_URL, {
+  method: 'POST',
+  body: JSON.stringify({
+    action: 'registerNGO',
+    ...ngoBasicData,
+    memberCount: ngoMemberCount,
+    members: ngoMembersData
+  })
+});
 
  
 
@@ -1964,9 +1856,6 @@ function clearUserRegisterFields() {
 
 
   document.getElementById('reg-address').value = '';
-
-
-  document.getElementById('reg-aadhar').value = '';
 
 
   document.getElementById('reg-password').value = '';
@@ -3170,65 +3059,55 @@ function closeMenuModal() {
 
 
 async function fetchExploreTiffins() {
-
-
   const container = document.getElementById('explore-tiffins-container');
 
-
   try {
-
-
     const res = await fetch(API_URL, {
-
-
       method: 'POST',
-
-
-      body: JSON.stringify({ action: 'getAdminData' })
-
-
+      body: JSON.stringify({
+        action: 'getExploreTiffins'
+      })
     });
 
+    const responseText = await res.text();
 
-    const data = await res.json();
+    console.log("RAW BACKEND RESPONSE:", responseText);
 
+    let data;
 
- 
-
+    try {
+      data = JSON.parse(responseText);
+    } catch (jsonError) {
+      console.error("INVALID JSON FROM BACKEND:", responseText);
+      throw new Error("Backend returned invalid JSON.");
+    }
 
     if (data.success && data.tiffins) {
-
-
-      allTiffinsList = data.tiffins.filter(t => t.Available === 'Yes' || t.Available === 'yes');
-
+      allTiffinsList = data.tiffins.filter(
+        t => t.Available === 'Yes' || t.Available === 'yes'
+      );
 
       areaStatusList = data.areaStatus || [];
 
-
       renderExploreTiffins(allTiffinsList);
-
-
     } else {
-
-
-      container.innerHTML = `<p class="text-muted" style="grid-column: 1/-1; text-align: center;">No mess services available right now.</p>`;
-
-
+      container.innerHTML = `
+        <p class="text-muted"
+           style="grid-column:1/-1;text-align:center;">
+          No mess services available right now.
+        </p>
+      `;
     }
 
-
   } catch (err) {
-
-
     console.error("Error fetching tiffins:", err);
 
-
-    container.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--danger);">Failed to load tiffins. Please check your network connection.</p>`;
-
-
+    container.innerHTML = `
+      <p style="grid-column:1/-1;text-align:center;color:var(--danger);">
+        Failed to load tiffins. Please check your network connection.
+      </p>
+    `;
   }
-
-
 }
 
 

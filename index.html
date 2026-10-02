@@ -404,11 +404,6 @@
           </div>
 
           <div class="input-group">
-            <label><i class="fa-solid fa-id-card"></i> Aadhar Number</label>
-            <input type="text" id="reg-aadhar" placeholder="12-digit Aadhar Number" maxlength="12" inputmode="numeric">
-          </div>
-
-          <div class="input-group">
             <label><i class="fa-solid fa-lock"></i> Password</label>
             <input type="password" id="reg-password" placeholder="••••••••">
           </div>
@@ -441,10 +436,6 @@
               <input type="text" id="reg-ngo-owner-name" placeholder="Owner's Full Name">
             </div>
 
-            <div class="input-group">
-              <label><i class="fa-solid fa-id-card"></i> Aadhar ID (NGO Owner)</label>
-              <input type="text" id="reg-ngo-aadhar" placeholder="12-digit Aadhar Number" maxlength="12">
-            </div>
 
             <div class="input-group">
               <label><i class="fa-solid fa-lock"></i> Password</label>
@@ -457,13 +448,63 @@
             </div>
 
             <div class="input-group">
-              <label><i class="fa-solid fa-clock"></i> Preferred Login Start Hour (24-hr format, 0–23)</label>
-              <input type="number" id="reg-ngo-login-start" min="0" max="23" placeholder="e.g. 21" value="21">
+              <label><i class="fa-solid fa-clock"></i> Preferred Login Start Time</label>
+              <select id="reg-ngo-login-start">
+                <option value="0">12 AM</option>
+                <option value="1">1 AM</option>
+                <option value="2">2 AM</option>
+                <option value="3">3 AM</option>
+                <option value="4">4 AM</option>
+                <option value="5">5 AM</option>
+                <option value="6">6 AM</option>
+                <option value="7">7 AM</option>
+                <option value="8">8 AM</option>
+                <option value="9">9 AM</option>
+                <option value="10">10 AM</option>
+                <option value="11">11 AM</option>
+                <option value="12">12 PM</option>
+                <option value="13">1 PM</option>
+                <option value="14">2 PM</option>
+                <option value="15">3 PM</option>
+                <option value="16">4 PM</option>
+                <option value="17">5 PM</option>
+                <option value="18">6 PM</option>
+                <option value="19">7 PM</option>
+                <option value="20">8 PM</option>
+                <option value="21" selected>9 PM</option>
+                <option value="22">10 PM</option>
+                <option value="23">11 PM</option>
+              </select>
             </div>
 
             <div class="input-group">
-              <label><i class="fa-solid fa-clock"></i> Preferred Login End Hour (24-hr format, 0–23)</label>
-              <input type="number" id="reg-ngo-login-end" min="0" max="23" placeholder="e.g. 22" value="22">
+              <label><i class="fa-solid fa-clock"></i> Preferred Login End Time</label>
+              <select id="reg-ngo-login-end">
+                <option value="0">12 AM</option>
+                <option value="1">1 AM</option>
+                <option value="2">2 AM</option>
+                <option value="3">3 AM</option>
+                <option value="4">4 AM</option>
+                <option value="5">5 AM</option>
+                <option value="6">6 AM</option>
+                <option value="7">7 AM</option>
+                <option value="8">8 AM</option>
+                <option value="9">9 AM</option>
+                <option value="10">10 AM</option>
+                <option value="11">11 AM</option>
+                <option value="12">12 PM</option>
+                <option value="13">1 PM</option>
+                <option value="14">2 PM</option>
+                <option value="15">3 PM</option>
+                <option value="16">4 PM</option>
+                <option value="17">5 PM</option>
+                <option value="18">6 PM</option>
+                <option value="19">7 PM</option>
+                <option value="20">8 PM</option>
+                <option value="21">9 PM</option>
+                <option value="22" selected>10 PM</option>
+                <option value="23">11 PM</option>
+              </select>
             </div>
 
             <p
@@ -502,11 +543,7 @@
             <input type="text" id="reg-prov-address" placeholder="Mess Address">
           </div>
 
-          <div class="input-group">
-            <label><i class="fa-solid fa-id-card"></i> Aadhar Number</label>
-            <input type="text" id="reg-prov-aadhar" placeholder="12-digit Aadhar Number" maxlength="12"
-              inputmode="numeric">
-          </div>
+          
 
           <div class="input-group">
             <label><i class="fa-solid fa-lock"></i> Password</label>
