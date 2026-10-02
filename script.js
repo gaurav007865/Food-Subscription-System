@@ -2609,91 +2609,78 @@ function closeDonationModal() {
 
 
 function updateAreaNeedStatus() {
-
-
   const areaSelect = document.getElementById('donate-area');
-
-
   const statusEl = document.getElementById('area-need-status');
+  const typeSelect = document.getElementById('donate-type');
 
-
-  if (!areaSelect || !statusEl) return;
-
-
- 
-
+  if (!areaSelect || !statusEl || !typeSelect) return;
 
   const selectedArea = areaSelect.value;
+  const donationType = typeSelect.value;
 
-
+  // Area select nahi hai
   if (!selectedArea) {
-
-
     statusEl.innerHTML = '';
+    return;
+  }
 
+  // Donation type select nahi hai
+  if (!donationType) {
+    statusEl.innerHTML = '';
+    return;
+  }
+
+  // Food ke liye hi AreaStatus check karo
+  if (donationType.toLowerCase() === 'food') {
+
+    const match = areaStatusList.find(a =>
+      (a.Area || '').toString().trim().toLowerCase() ===
+      selectedArea.trim().toLowerCase()
+    );
+
+    const isNeeded = match
+      ? (match.Status || '').toString().trim().toLowerCase() === 'needed'
+      : true;
+
+    if (isNeeded) {
+      statusEl.innerHTML = `
+        <span class="area-badge area-badge-needed">
+          <i class="fa-solid fa-circle-check"></i>
+          Needed — Food is needed in this area
+        </span>`;
+    } else {
+      statusEl.innerHTML = `
+        <span class="area-badge area-badge-not-needed">
+          <i class="fa-solid fa-circle-xmark"></i>
+          Not Needed — Food is not needed in this area
+        </span>`;
+    }
 
     return;
-
-
   }
 
-
- 
-
-
-  const match = areaStatusList.find(a =>
-
-
-    (a.Area || '').toString().trim().toLowerCase() === selectedArea.trim().toLowerCase()
-
-
-  );
-
-
- 
-
-
-  const isNeeded = match ? (match.Status || '').toString().trim().toLowerCase() === 'needed' : true;
-
-
- 
-
-
-  if (isNeeded) {
-
-
+  // Clothes
+  if (donationType.toLowerCase() === 'clothes') {
     statusEl.innerHTML = `
-
-
       <span class="area-badge area-badge-needed">
-
-
-        <i class="fa-solid fa-circle-check"></i> Needed — Food is needed in this area
-
-
+        <i class="fa-solid fa-shirt"></i>
+        Clothes donation selected
       </span>`;
-
-
-  } else {
-
-
-    statusEl.innerHTML = `
-
-
-      <span class="area-badge area-badge-not-needed">
-
-
-        <i class="fa-solid fa-circle-xmark"></i> Not Needed — Food is not needed in this area
-
-
-      </span>`;
-
-
+    return;
   }
 
+  // Stationery
+  if (donationType.toLowerCase() === 'stationery') {
+    statusEl.innerHTML = `
+      <span class="area-badge area-badge-needed">
+        <i class="fa-solid fa-book"></i>
+        Stationery donation selected
+      </span>`;
+    return;
+  }
 
+  statusEl.innerHTML = '';
 }
-
 
  
 

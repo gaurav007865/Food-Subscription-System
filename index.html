@@ -228,7 +228,7 @@
       <form id="donation-form" onsubmit="submitDonation(event)">
         <div class="input-group">
           <label><i class="fa-solid fa-hand-holding-heart"></i> Donation Type</label>
-          <select id="donate-type" required>
+          <select id="donate-type" onchange="updateAreaNeedStatus()">
             <option value="">-- Select Donation Type --</option>
             <option value="Food">Food</option>
             <option value="Clothes">Clothes</option>
