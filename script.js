@@ -3662,18 +3662,80 @@ async function processQuickOrder() {
 
       handler: async function (paymentResponse) {
 
-        console.log("Razorpay Payment Response:", paymentResponse);
+  console.log("Razorpay Payment Response:", paymentResponse);
 
-        showToast("Payment successful! Verifying...", "info");
+  showToast("Payment successful! Verifying...", "info");
 
-        // Payment verification will be added in next step
-        toggleBtnLoading(btn, false);
+  try {
 
-        showToast(
-          "Payment received. Verification step coming next.",
-          "success"
-        );
-      },
+    const verifyRes = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "verifyRazorpayPayment",
+
+        userId: currentUser.userId,
+
+        tiffinId:
+          selectedTiffinForQuickOrder.TiffinID,
+
+        razorpay_order_id:
+          paymentResponse.razorpay_order_id,
+
+        razorpay_payment_id:
+          paymentResponse.razorpay_payment_id,
+
+        razorpay_signature:
+          paymentResponse.razorpay_signature
+      })
+    });
+
+    const result = await verifyRes.json();
+
+    console.log(
+      "Payment Verification Response:",
+      result
+    );
+
+    toggleBtnLoading(btn, false);
+
+    if (!result.success) {
+      showToast(
+        result.message || "Payment verification failed.",
+        "error"
+      );
+      return;
+    }
+
+    showToast(
+      "🎉 Payment verified & order placed!",
+      "success"
+    );
+
+    // Close quick order modal if your function exists
+    if (typeof closeQuickOrderModal === "function") {
+      closeQuickOrderModal();
+    }
+
+    // Refresh dashboard/orders
+    if (typeof loadUserDashboard === "function") {
+      loadUserDashboard();
+    }
+
+  } catch (err) {
+
+    console.error(
+      "Payment verification error:",
+      err
+    );
+
+    toggleBtnLoading(btn, false);
+
+    showToast(
+      "Payment verification failed.",
+      "error"
+    );
+  }
+},
 
       modal: {
         ondismiss: function () {
