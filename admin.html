@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Enterprise Admin Dashboard v3.0 - TiffinHub</title>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -17,12 +19,22 @@
       --bg: #FAF7F2;
       --card: #FFFFFF;
       --border: #E2E8F0;
-      --muted: #6C757D; 
+      --muted: #6C757D;
       --success: #10B981;
       --danger: #EF4444;
     }
-    * { margin:0; padding:0; box-sizing:border-box; font-family:'Plus Jakarta Sans', sans-serif; }
-    body { background-color: var(--bg); color: var(--dark); }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--dark);
+    }
 
     .admin-login-wrapper {
       min-height: 100vh;
@@ -33,6 +45,7 @@
       overflow: hidden;
       background: #1A1A24;
     }
+
     .login-bg-image {
       position: absolute;
       inset: 0;
@@ -46,13 +59,15 @@
       z-index: 0;
       pointer-events: none;
     }
+
     .admin-login-wrapper::after {
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(135deg, rgba(20,20,30,0.55) 0%, rgba(20,20,30,0.45) 100%);
+      background: linear-gradient(135deg, rgba(20, 20, 30, 0.55) 0%, rgba(20, 20, 30, 0.45) 100%);
       z-index: 0;
     }
+
     .login-box {
       position: relative;
       z-index: 1;
@@ -61,11 +76,20 @@
       border-radius: 20px;
       width: 100%;
       max-width: 420px;
-      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
       text-align: center;
     }
-    .login-box h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
-    .login-box p { color: var(--muted); font-size: 0.85rem; margin-bottom: 1.5rem; }
+
+    .login-box h1 {
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .login-box p {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-bottom: 1.5rem;
+    }
 
     .input-field {
       width: 100%;
@@ -76,7 +100,10 @@
       outline: none;
       font-size: 0.95rem;
     }
-    .input-field:focus { border-color: var(--primary); }
+
+    .input-field:focus {
+      border-color: var(--primary);
+    }
 
     .btn {
       padding: 0.8rem 1.4rem;
@@ -92,13 +119,31 @@
       gap: 0.5rem;
       justify-content: center;
     }
-    .btn:hover { background: var(--primary-hover); }
-    .btn-secondary { background: var(--secondary); }
-    .btn-secondary:hover { background: #26A398; }
-    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    .dashboard { display: none; }
-    .dashboard.active { display: block; }
+    .btn:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background: var(--secondary);
+    }
+
+    .btn-secondary:hover {
+      background: #26A398;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .dashboard {
+      display: none;
+    }
+
+    .dashboard.active {
+      display: block;
+    }
 
     header {
       background: var(--dark);
@@ -111,8 +156,15 @@
       top: 0;
       z-index: 100;
     }
-    .header-brand { font-size: 1.4rem; font-weight: 800; }
-    .header-brand span { color: var(--primary); }
+
+    .header-brand {
+      font-size: 1.4rem;
+      font-weight: 800;
+    }
+
+    .header-brand span {
+      color: var(--primary);
+    }
 
     .admin-tabs {
       background: #252533;
@@ -121,6 +173,7 @@
       gap: 1rem;
       overflow-x: auto;
     }
+
     .admin-tab-btn {
       background: transparent;
       color: #A0AEC0;
@@ -133,14 +186,24 @@
       transition: 0.3s;
       white-space: nowrap;
     }
-    .admin-tab-btn.active, .admin-tab-btn:hover {
+
+    .admin-tab-btn.active,
+    .admin-tab-btn:hover {
       background: var(--primary);
       color: white;
     }
 
-    .container { padding: 2rem 5%; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
+    .container {
+      padding: 2rem 5%;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
 
     .charts-grid {
       display: grid;
@@ -148,14 +211,20 @@
       gap: 1.5rem;
       margin-bottom: 2rem;
     }
+
     .chart-card {
       background: var(--card);
       padding: 1.5rem;
       border-radius: 16px;
       border: 1px solid var(--border);
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
     }
-    .chart-card h3 { font-size: 1.1rem; margin-bottom: 1rem; color: var(--dark); }
+
+    .chart-card h3 {
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      color: var(--dark);
+    }
 
     .stats-grid {
       display: grid;
@@ -163,6 +232,7 @@
       gap: 1.5rem;
       margin-bottom: 2rem;
     }
+
     .stat-card {
       background: var(--card);
       padding: 1.5rem;
@@ -172,8 +242,18 @@
       align-items: center;
       justify-content: space-between;
     }
-    .stat-card p { color: var(--muted); font-weight: 600; font-size: 0.85rem; }
-    .stat-card h3 { font-size: 1.8rem; color: var(--dark); margin-top: 0.3rem; }
+
+    .stat-card p {
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    .stat-card h3 {
+      font-size: 1.8rem;
+      color: var(--dark);
+      margin-top: 0.3rem;
+    }
 
     .section-card {
       background: var(--card);
@@ -199,11 +279,29 @@
       border-radius: 8px;
       outline: none;
     }
-    .search-box:focus { border-color: var(--primary); }
 
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 0.85rem; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
-    th { background: #F8FAFC; color: var(--muted); font-weight: 700; }
+    .search-box:focus {
+      border-color: var(--primary);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 0.85rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+
+    th {
+      background: #F8FAFC;
+      color: var(--muted);
+      font-weight: 700;
+    }
 
     .status-badge {
       padding: 4px 10px;
@@ -212,9 +310,24 @@
       font-weight: 700;
       display: inline-block;
     }
-    .badge-yes, .badge-paid, .badge-active { background: rgba(16, 185, 129, 0.15); color: var(--success); }
-    .badge-no, .badge-cancelled { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
-    .badge-pending { background: rgba(245, 158, 11, 0.15); color: #D97706; }
+
+    .badge-yes,
+    .badge-paid,
+    .badge-active {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+    }
+
+    .badge-no,
+    .badge-cancelled {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
+    }
+
+    .badge-pending {
+      background: rgba(245, 158, 11, 0.15);
+      color: #D97706;
+    }
 
     .action-btn {
       padding: 5px 10px;
@@ -224,18 +337,31 @@
       font-weight: 600;
       font-size: 0.8rem;
     }
-    .btn-edit { background: rgba(46, 196, 182, 0.15); color: var(--secondary); margin-right: 4px; }
-    .btn-delete { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+
+    .btn-edit {
+      background: rgba(46, 196, 182, 0.15);
+      color: var(--secondary);
+      margin-right: 4px;
+    }
+
+    .btn-delete {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
+    }
 
     .modal-overlay {
       position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5);
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
       display: none;
       justify-content: center;
       align-items: center;
       z-index: 1000;
     }
+
     .modal-card {
       background: white;
       padding: 2rem;
@@ -245,13 +371,23 @@
     }
 
     .toast {
-      position: fixed; bottom: 20px; right: 20px;
-      background: var(--dark); color: white;
-      padding: 12px 20px; border-radius: 10px;
-      display: none; z-index: 2000;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--dark);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 10px;
+      display: none;
+      z-index: 2000;
     }
 
-    .ngo-toggle-wrap { display: flex; align-items: center; gap: 8px; }
+    .ngo-toggle-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
     .ngo-toggle-switch {
       position: relative;
       width: 46px;
@@ -262,7 +398,11 @@
       transition: 0.3s;
       border: none;
     }
-    .ngo-toggle-switch.active { background: var(--success); }
+
+    .ngo-toggle-switch.active {
+      background: var(--success);
+    }
+
     .ngo-toggle-switch::before {
       content: '';
       position: absolute;
@@ -273,12 +413,26 @@
       background: white;
       border-radius: 50%;
       transition: 0.3s;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     }
-    .ngo-toggle-switch.active::before { left: 25px; }
-    .ngo-toggle-label { font-size: 0.78rem; font-weight: 700; min-width: 55px; }
-    .ngo-toggle-label.status-accepted { color: var(--success); }
-    .ngo-toggle-label.status-pending { color: #D97706; }
+
+    .ngo-toggle-switch.active::before {
+      left: 25px;
+    }
+
+    .ngo-toggle-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      min-width: 55px;
+    }
+
+    .ngo-toggle-label.status-accepted {
+      color: var(--success);
+    }
+
+    .ngo-toggle-label.status-pending {
+      color: #D97706;
+    }
 
     .login-window-pill {
       background: rgba(46, 196, 182, 0.12);
@@ -294,6 +448,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <div id="toast" class="toast"></div>
@@ -315,14 +470,18 @@
       <div id="login-form-fields">
         <input type="email" id="admin-email" class="input-field" value="admin@tiffinhub.com">
         <div style="position:relative;">
-          <input type="password" id="admin-password" class="input-field" style="padding-right:2.6rem;" value="admin@123">
-          <i class="fa-solid fa-eye" id="toggle-password-icon" onclick="togglePasswordVisibility()" style="position:absolute; right:14px; top:50%; transform:translateY(-70%); cursor:pointer; color:var(--muted);"></i>
+          <input type="password" id="admin-password" class="input-field" style="padding-right:2.6rem;"
+            value="admin@123">
+          <i class="fa-solid fa-eye" id="toggle-password-icon" onclick="togglePasswordVisibility()"
+            style="position:absolute; right:14px; top:50%; transform:translateY(-70%); cursor:pointer; color:var(--muted);"></i>
         </div>
-        <label style="display:flex; align-items:center; gap:8px; margin:-4px 0 14px; font-size:0.85rem; color:var(--muted); cursor:pointer; text-align:left;">
+        <label
+          style="display:flex; align-items:center; gap:8px; margin:-4px 0 14px; font-size:0.85rem; color:var(--muted); cursor:pointer; text-align:left;">
           <input type="checkbox" id="admin-remember-me" style="width:16px; height:16px; cursor:pointer;">
           Remember me
         </label>
-        <p id="login-error-msg" style="color:#EF4444; font-size:0.82rem; font-weight:600; margin:-6px 0 12px; display:none;">
+        <p id="login-error-msg"
+          style="color:#EF4444; font-size:0.82rem; font-weight:600; margin:-6px 0 12px; display:none;">
           <i class="fa-solid fa-circle-exclamation"></i> <span id="login-error-text"></span>
         </p>
         <button class="btn" style="width:100%" onclick="loginAdmin()" id="admin-login-btn">Login</button>
@@ -336,20 +495,30 @@
       <div class="header-brand">🍱 Tiffin<span>Hub</span> Admin Portal v3.0</div>
       <div>
         <span style="margin-right: 15px; color:#A0AEC0;" id="logged-admin-id">admin@tiffinhub.com</span>
-        <button onclick="logoutAdmin()" style="background:#EF4444; color:white; border:none; padding:6px 14px; border-radius:6px; cursor:pointer; font-weight:700;">Logout</button>
+        <button onclick="logoutAdmin()"
+          style="background:#EF4444; color:white; border:none; padding:6px 14px; border-radius:6px; cursor:pointer; font-weight:700;">Logout</button>
       </div>
     </header>
 
     <div class="admin-tabs">
-      <button class="admin-tab-btn active" onclick="switchAdminTab('tab-overview', this)"><i class="fa-solid fa-chart-line"></i> Analytics & KPIs</button>
-      <button class="admin-tab-btn" onclick="switchAdminTab('tab-orders', this)"><i class="fa-solid fa-truck-fast"></i> Live Orders</button>
-      <button class="admin-tab-btn" onclick="switchAdminTab('tab-tiffins', this)"><i class="fa-solid fa-utensils"></i> Tiffin Catalog</button>
-      <button class="admin-tab-btn" onclick="switchAdminTab('tab-subscriptions', this)"><i class="fa-solid fa-calendar-check"></i> Subscriptions</button>
-      <button class="admin-tab-btn" onclick="switchAdminTab('tab-donations', this)"><i class="fa-solid fa-hand-holding-heart"></i> Food Donations</button>
-      <button class="admin-tab-btn" onclick="switchAdminTab('tab-ngo', this)"><i class="fa-solid fa-people-group"></i> NGO Registrations</button>
-      <button class="admin-tab-btn" onclick="switchAdminTab('tab-providers', this)"><i class="fa-solid fa-store"></i> Provider Registrations</button>
-      <button class="admin-tab-btn" onclick="switchAdminTab('tab-users', this)"><i class="fa-solid fa-users"></i> Users</button>
-      <button class="admin-tab-btn" onclick="switchAdminTab('tab-settings', this)"><i class="fa-solid fa-gear"></i> Settings</button>
+      <button class="admin-tab-btn active" onclick="switchAdminTab('tab-overview', this)"><i
+          class="fa-solid fa-chart-line"></i> Analytics & KPIs</button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('tab-orders', this)"><i class="fa-solid fa-truck-fast"></i>
+        Live Orders</button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('tab-tiffins', this)"><i class="fa-solid fa-utensils"></i>
+        Tiffin Catalog</button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('tab-subscriptions', this)"><i
+          class="fa-solid fa-calendar-check"></i> Subscriptions</button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('tab-donations', this)"><i
+          class="fa-solid fa-hand-holding-heart"></i> Food Donations</button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('tab-ngo', this)"><i class="fa-solid fa-people-group"></i>
+        NGO Registrations</button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('tab-providers', this)"><i class="fa-solid fa-store"></i>
+        Provider Registrations</button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('tab-users', this)"><i class="fa-solid fa-users"></i>
+        Users</button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('tab-settings', this)"><i class="fa-solid fa-gear"></i>
+        Settings</button>
     </div>
 
     <div class="container">
@@ -359,7 +528,8 @@
         <div class="section-card">
           <div class="table-header-tools">
             <h2><i class="fa-solid fa-hand-holding-heart" style="color:#2EC4B6;"></i> NGO Registration Requests</h2>
-            <input type="text" class="search-box" placeholder="🔍 Search NGO Name / Email..." onkeyup="filterTable('ngo-table-body', this.value)">
+            <input type="text" class="search-box" placeholder="🔍 Search NGO Name / Email..."
+              onkeyup="filterTable('ngo-table-body', this.value)">
           </div>
           <table>
             <thead>
@@ -379,7 +549,9 @@
               </tr>
             </thead>
             <tbody id="ngo-table-body">
-              <tr><td colspan="12">Loading...</td></tr>
+              <tr>
+                <td colspan="12">Loading...</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -390,7 +562,8 @@
         <div class="section-card">
           <div class="table-header-tools">
             <h2><i class="fa-solid fa-store" style="color:#FF6B35;"></i> Mess Provider Registration Requests</h2>
-            <input type="text" class="search-box" placeholder="🔍 Search Business / Email..." onkeyup="filterTable('providers-table-body', this.value)">
+            <input type="text" class="search-box" placeholder="🔍 Search Business / Email..."
+              onkeyup="filterTable('providers-table-body', this.value)">
           </div>
           <table>
             <thead>
@@ -408,7 +581,9 @@
               </tr>
             </thead>
             <tbody id="providers-table-body">
-              <tr><td colspan="10">Loading...</td></tr>
+              <tr>
+                <td colspan="10">Loading...</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -418,23 +593,38 @@
       <div id="tab-overview" class="tab-content active">
         <div class="stats-grid">
           <div class="stat-card">
-            <div><p>Total Revenue</p><h3 id="stat-revenue">₹0</h3></div>
+            <div>
+              <p>Total Revenue</p>
+              <h3 id="stat-revenue">₹0</h3>
+            </div>
             <i class="fa-solid fa-indian-rupee-sign" style="font-size:2rem; color:var(--success);"></i>
           </div>
           <div class="stat-card">
-            <div><p>Total Orders</p><h3 id="stat-orders">0</h3></div>
+            <div>
+              <p>Total Orders</p>
+              <h3 id="stat-orders">0</h3>
+            </div>
             <i class="fa-solid fa-bag-shopping" style="font-size:2rem; color:var(--primary);"></i>
           </div>
           <div class="stat-card">
-            <div><p>Active Subs</p><h3 id="stat-active-subs">0</h3></div>
+            <div>
+              <p>Active Subs</p>
+              <h3 id="stat-active-subs">0</h3>
+            </div>
             <i class="fa-solid fa-repeat" style="font-size:2rem; color:var(--secondary);"></i>
           </div>
           <div class="stat-card">
-            <div><p>Users</p><h3 id="stat-users">0</h3></div>
+            <div>
+              <p>Users</p>
+              <h3 id="stat-users">0</h3>
+            </div>
             <i class="fa-solid fa-users" style="font-size:2rem; color:#6366F1;"></i>
           </div>
           <div class="stat-card">
-            <div><p>Providers</p><h3 id="stat-providers">0</h3></div>
+            <div>
+              <p>Providers</p>
+              <h3 id="stat-providers">0</h3>
+            </div>
             <i class="fa-solid fa-store" style="font-size:2rem; color:#F59E0B;"></i>
           </div>
         </div>
@@ -457,8 +647,10 @@
           <div class="table-header-tools">
             <h2><i class="fa-solid fa-truck-fast" style="color:var(--primary);"></i> Manage Orders</h2>
             <div style="display:flex; gap:10px;">
-              <input type="text" class="search-box" placeholder="🔍 Search Order ID / User..." onkeyup="filterTable('orders-table-body', this.value)">
-              <button class="btn btn-secondary" onclick="exportTableToCSV('orders-table-body', 'Orders_Report.csv')"><i class="fa-solid fa-download"></i> Export CSV</button>
+              <input type="text" class="search-box" placeholder="🔍 Search Order ID / User..."
+                onkeyup="filterTable('orders-table-body', this.value)">
+              <button class="btn btn-secondary" onclick="exportTableToCSV('orders-table-body', 'Orders_Report.csv')"><i
+                  class="fa-solid fa-download"></i> Export CSV</button>
             </div>
           </div>
           <table>
@@ -473,7 +665,9 @@
               </tr>
             </thead>
             <tbody id="orders-table-body">
-              <tr><td colspan="6">Loading...</td></tr>
+              <tr>
+                <td colspan="6">Loading...</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -483,7 +677,8 @@
       <div id="tab-tiffins" class="tab-content">
         <div class="section-card">
           <h2><i class="fa-solid fa-plus-circle" style="color:var(--secondary);"></i> Add New Tiffin Provider</h2>
-          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:1rem; margin-top:1rem;">
+          <div
+            style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:1rem; margin-top:1rem;">
             <input type="text" id="tif-name" class="input-field" placeholder="Provider Name">
             <select id="tif-meal" class="input-field">
               <option value="Veg">Veg</option>
@@ -492,7 +687,7 @@
             </select>
             <input type="number" id="tif-price" class="input-field" placeholder="Price (₹)">
             <input type="text" id="tif-location" class="input-field" placeholder="Location">
-            <input type="text" id="tif-image" class="input-field" placeholder="Image URL (Optional)">
+            <input type="file" id="tif-image" class="input-field" accept="image/*">
           </div>
           <button class="btn" onclick="addNewTiffin()">+ Publish Tiffin</button>
         </div>
@@ -500,16 +695,25 @@
         <div class="section-card">
           <div class="table-header-tools">
             <h2><i class="fa-solid fa-list-check" style="color:var(--primary);"></i> Existing Tiffins</h2>
-            <input type="text" class="search-box" placeholder="🔍 Search Provider / Location..." onkeyup="filterTable('tiffins-table-body', this.value)">
+            <input type="text" class="search-box" placeholder="🔍 Search Provider / Location..."
+              onkeyup="filterTable('tiffins-table-body', this.value)">
           </div>
           <table>
             <thead>
               <tr>
-                <th>ID</th><th>Provider</th><th>Type</th><th>Price</th><th>Location</th><th>Stock</th><th>Actions</th>
+                <th>ID</th>
+                <th>Provider</th>
+                <th>Type</th>
+                <th>Price</th>
+                <th>Location</th>
+                <th>Stock</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody id="tiffins-table-body">
-              <tr><td colspan="7">Loading...</td></tr>
+              <tr>
+                <td colspan="7">Loading...</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -526,11 +730,14 @@
 
           <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:1.5rem;">
             <div>
-              <label style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:6px;">User Ordering Start Hour</label>
-              <input type="number" id="setting-ordering-start" class="input-field" min="0" max="23" placeholder="e.g. 8">
+              <label style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:6px;">User Ordering Start
+                Hour</label>
+              <input type="number" id="setting-ordering-start" class="input-field" min="0" max="23"
+                placeholder="e.g. 8">
             </div>
             <div>
-              <label style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:6px;">User Ordering End Hour</label>
+              <label style="font-weight:700; font-size:0.85rem; display:block; margin-bottom:6px;">User Ordering End
+                Hour</label>
               <input type="number" id="setting-ordering-end" class="input-field" min="0" max="23" placeholder="e.g. 22">
             </div>
           </div>
@@ -544,13 +751,28 @@
         <div class="section-card">
           <div class="table-header-tools">
             <h2><i class="fa-solid fa-calendar-check" style="color:var(--secondary);"></i> Subscriptions</h2>
-            <button class="btn btn-secondary" onclick="exportTableToCSV('subscriptions-table-body', 'Subscriptions.csv')"><i class="fa-solid fa-download"></i> Export CSV</button>
+            <button class="btn btn-secondary"
+              onclick="exportTableToCSV('subscriptions-table-body', 'Subscriptions.csv')"><i
+                class="fa-solid fa-download"></i> Export CSV</button>
           </div>
           <table>
             <thead>
-              <tr><th>Sub ID</th><th>User ID</th><th>Tiffin ID</th><th>Plan</th><th>Start</th><th>End</th><th>Cost</th><th>Status</th></tr>
+              <tr>
+                <th>Sub ID</th>
+                <th>User ID</th>
+                <th>Tiffin ID</th>
+                <th>Plan</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Cost</th>
+                <th>Status</th>
+              </tr>
             </thead>
-            <tbody id="subscriptions-table-body"><tr><td colspan="8">Loading...</td></tr></tbody>
+            <tbody id="subscriptions-table-body">
+              <tr>
+                <td colspan="8">Loading...</td>
+              </tr>
+            </tbody>
           </table>
         </div>
       </div>
@@ -561,9 +783,20 @@
           <h2><i class="fa-solid fa-hand-holding-heart" style="color:#2EC4B6;"></i> Food Donations Matcher</h2>
           <table>
             <thead>
-              <tr><th>ID</th><th>Donor</th><th>Details</th><th>Expiry</th><th>Assigned NGO</th><th>Action</th></tr>
+              <tr>
+                <th>ID</th>
+                <th>Donor</th>
+                <th>Details</th>
+                <th>Expiry</th>
+                <th>Assigned NGO</th>
+                <th>Action</th>
+              </tr>
             </thead>
-            <tbody id="donations-table-body"><tr><td colspan="6">Loading...</td></tr></tbody>
+            <tbody id="donations-table-body">
+              <tr>
+                <td colspan="6">Loading...</td>
+              </tr>
+            </tbody>
           </table>
         </div>
       </div>
@@ -573,13 +806,24 @@
         <div class="section-card">
           <div class="table-header-tools">
             <h2><i class="fa-solid fa-users" style="color:#6366F1;"></i> Users Database</h2>
-            <input type="text" class="search-box" placeholder="🔍 Search Users..." onkeyup="filterTable('users-table-body', this.value)">
+            <input type="text" class="search-box" placeholder="🔍 Search Users..."
+              onkeyup="filterTable('users-table-body', this.value)">
           </div>
           <table>
             <thead>
-              <tr><th>User ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Joined</th></tr>
+              <tr>
+                <th>User ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Joined</th>
+              </tr>
             </thead>
-            <tbody id="users-table-body"><tr><td colspan="5">Loading...</td></tr></tbody>
+            <tbody id="users-table-body">
+              <tr>
+                <td colspan="5">Loading...</td>
+              </tr>
+            </tbody>
           </table>
         </div>
       </div>
@@ -592,7 +836,8 @@
     <div class="modal-card" style="max-width:700px; max-height:80vh; overflow-y:auto;">
       <h2 style="margin-bottom:1rem;" id="ngo-members-modal-title">👥 NGO Members</h2>
       <div id="ngo-members-list"></div>
-      <button class="btn" style="width:100%; margin-top:1rem; background:#E2E8F0; color:var(--dark);" onclick="closeNGOMembersModal()">Close</button>
+      <button class="btn" style="width:100%; margin-top:1rem; background:#E2E8F0; color:var(--dark);"
+        onclick="closeNGOMembersModal()">Close</button>
     </div>
   </div>
 
@@ -808,10 +1053,10 @@
           <td><b>${ord.OrderStatus}</b></td>
           <td>
             <select style="padding:4px;" onchange="changeOrderStatus('${ord.OrderID}', this.value)">
-              <option value="Order Confirmed" ${ord.OrderStatus === 'Order Confirmed' ? 'selected':''}>Order Confirmed</option>
-              <option value="Preparing" ${ord.OrderStatus === 'Preparing' ? 'selected':''}>Preparing</option>
-              <option value="Out for Delivery" ${ord.OrderStatus === 'Out for Delivery' ? 'selected':''}>Out for Delivery</option>
-              <option value="Delivered" ${ord.OrderStatus === 'Delivered' ? 'selected':''}>Delivered</option>
+              <option value="Order Confirmed" ${ord.OrderStatus === 'Order Confirmed' ? 'selected' : ''}>Order Confirmed</option>
+              <option value="Preparing" ${ord.OrderStatus === 'Preparing' ? 'selected' : ''}>Preparing</option>
+              <option value="Out for Delivery" ${ord.OrderStatus === 'Out for Delivery' ? 'selected' : ''}>Out for Delivery</option>
+              <option value="Delivered" ${ord.OrderStatus === 'Delivered' ? 'selected' : ''}>Delivered</option>
             </select>
           </td>
         </tr>
@@ -908,14 +1153,14 @@
     }
 
     async function deleteTiffinItem(tiffinId) {
-      if(!confirm("Delete this provider?")) return;
+      if (!confirm("Delete this provider?")) return;
       const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteTiffin', tiffinId }) });
       const result = await res.json(); showToast(result.message); loadAdminData();
     }
 
     function renderSubscriptions(subs) {
       document.getElementById('subscriptions-table-body').innerHTML = subs.map(s => `
-        <tr><td><b>${s.SubID}</b></td><td>${s.UserID}</td><td>${s.TiffinID}</td><td>${s.PlanType}</td><td>${s.StartDate||'N/A'}</td><td>${s.EndDate||'N/A'}</td><td>₹${s.TotalCost}</td><td><span class="status-badge badge-active">${s.Status}</span></td></tr>
+        <tr><td><b>${s.SubID}</b></td><td>${s.UserID}</td><td>${s.TiffinID}</td><td>${s.PlanType}</td><td>${s.StartDate || 'N/A'}</td><td>${s.EndDate || 'N/A'}</td><td>₹${s.TotalCost}</td><td><span class="status-badge badge-active">${s.Status}</span></td></tr>
       `).join('');
     }
 
@@ -945,9 +1190,9 @@
         const isAccepted = status.toLowerCase() === 'approved';
 
         const hasHours = ngo.LoginStartHour !== undefined && ngo.LoginStartHour !== "" &&
-                         ngo.LoginEndHour !== undefined && ngo.LoginEndHour !== "";
+          ngo.LoginEndHour !== undefined && ngo.LoginEndHour !== "";
         const windowText = hasHours
-          ? `${String(ngo.LoginStartHour).padStart(2,'0')}:00 – ${String(ngo.LoginEndHour).padStart(2,'0')}:00`
+          ? `${String(ngo.LoginStartHour).padStart(2, '0')}:00 – ${String(ngo.LoginEndHour).padStart(2, '0')}:00`
           : '21:00 – 22:00';
 
         return `
@@ -1090,4 +1335,5 @@
     }
   </script>
 </body>
+
 </html>

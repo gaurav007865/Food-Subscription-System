@@ -79,7 +79,24 @@ let selectedRating = 0;
 
 
  
+function formatDateTime12(value) {
+  if (!value) return '';
 
+  const date = new Date(value);
+
+  if (isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+}
 
 // ==========================================================================
 
@@ -3594,98 +3611,99 @@ function selectPaymentMethod(method, element) {
 
 
 async function processQuickOrder() {
-
-
   if (!currentUser || !selectedTiffinForQuickOrder) return;
 
-
- 
-
-
   const btn = document.getElementById('btn-confirm-quick-order');
-
-
   toggleBtnLoading(btn, true);
 
-
- 
-
+  const amount = Number(selectedTiffinForQuickOrder.Price);
 
   try {
 
-
+    // 1. Create Razorpay Order
     const res = await fetch(API_URL, {
-
-
       method: 'POST',
-
-
       body: JSON.stringify({
-
-
-        action: 'placeOrder',
-
-
+        action: 'createRazorpayOrder',
         userId: currentUser.userId,
-
-
         tiffinId: selectedTiffinForQuickOrder.TiffinID,
-
-
-        amount: selectedTiffinForQuickOrder.Price,
-
-
-        paymentMethod: selectedPaymentMethod
-
-
+        amount: amount
       })
-
-
     });
 
-
     const result = await res.json();
+    console.log("Razorpay Backend Response:", result);
 
-
+    if (!result.success) {
+    console.error("Razorpay Error:", result);
+    showToast(result.message || "Payment connection failed.", "error");
     toggleBtnLoading(btn, false);
+    return;
+}
 
+    // 2. Open Razorpay Checkout
+    const options = {
+      key: result.keyId,
+      amount: result.amount,
+      currency: result.currency,
+      name: "TiffinHub",
+      description: selectedTiffinForQuickOrder.ProviderName,
 
- 
+      order_id: result.orderId,
 
+      prefill: {
+        name: currentUser.name || "",
+        email: currentUser.email || ""
+      },
 
-    if (result.success) {
+      theme: {
+        color: "#FF6B35"
+      },
 
+      handler: async function (paymentResponse) {
 
-      showToast("🎉 Order placed successfully!", "success");
+        console.log("Razorpay Payment Response:", paymentResponse);
 
+        showToast("Payment successful! Verifying...", "info");
 
-      closeQuickOrderModal();
+        // Payment verification will be added in next step
+        toggleBtnLoading(btn, false);
 
+        showToast(
+          "Payment received. Verification step coming next.",
+          "success"
+        );
+      },
 
-      if (currentUser) loadUserDashboard();
+      modal: {
+        ondismiss: function () {
+          toggleBtnLoading(btn, false);
+          showToast("Payment cancelled.", "error");
+        }
+      }
+    };
 
+    const rzp = new Razorpay(options);
 
-    } else {
+    rzp.on('payment.failed', function (response) {
+      console.error("Payment failed:", response.error);
+      toggleBtnLoading(btn, false);
 
+      showToast(
+        response.error.description || "Payment failed.",
+        "error"
+      );
+    });
 
-      showToast(result.message, "error");
-
-
-    }
-
+    rzp.open();
 
   } catch (err) {
 
+    console.error(err);
 
     toggleBtnLoading(btn, false);
-
-
-    showToast("Order failed! Please try again.", "error");
-
-
+    showToast("Payment connection failed.", "error");
   }
-
-
 }
 
 
