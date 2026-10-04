@@ -10,7 +10,9 @@
 
     <!-- Your existing global.js contains API_URL -->
     <script src="global.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AlzaSyCmL9pi8STSs0gHLVesV2zUo0EIW2FMi2k&libraries=geometry" async defer>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCmL9pi8STSs0gHLVesV2zUo0EIW2FMi2k&libraries=geometry" async
+        defer>
+        </script>
     </script>
 
     <style>
@@ -870,11 +872,11 @@
         }
 
         .map-preview {
-    margin-top: 12px;
-    height: 190px;
-    border-radius: 11px;
-    overflow: hidden;
-}
+            margin-top: 12px;
+            height: 190px;
+            border-radius: 11px;
+            overflow: hidden;
+        }
 
         @keyframes spin {
             to {
@@ -1636,30 +1638,30 @@
 
 
             container.innerHTML =
-    orders.map(
-        order => createOrderCard(order)
-    ).join("");
+                orders.map(
+                    order => createOrderCard(order)
+                ).join("");
 
-orders.forEach(order => {
+            orders.forEach(order => {
 
-    if (
-        String(order.DeliveryStatus || "")
-            .toUpperCase() === "OUT FOR DELIVERY"
-    ) {
+                if (
+                    String(order.DeliveryStatus || "")
+                        .toUpperCase() === "OUT FOR DELIVERY"
+                ) {
 
-        setTimeout(() => {
+                    setTimeout(() => {
 
-            initializeOrderMap(
-                order.OrderID
-            );
+                        initializeOrderMap(
+                            order.OrderID
+                        );
 
-        }, 100);
+                    }, 100);
 
-    }
+                }
 
-});
+            });
 
-            
+
 
         }
 
@@ -2348,59 +2350,59 @@ ${deliveryStatus === "Out for Delivery" ? `
 
         function initializeOrderMap(orderId) {
 
-    const order = assignedOrders.find(
-        o => String(o.OrderID) === String(orderId)
-    );
+            const order = assignedOrders.find(
+                o => String(o.OrderID) === String(orderId)
+            );
 
-    if (!order) {
-        return;
-    }
+            if (!order) {
+                return;
+            }
 
-    const latitude =
-        getOrderLatitude(order);
+            const latitude =
+                getOrderLatitude(order);
 
-    const longitude =
-        getOrderLongitude(order);
+            const longitude =
+                getOrderLongitude(order);
 
-    if (
-        latitude === null ||
-        longitude === null
-    ) {
-        return;
-    }
+            if (
+                latitude === null ||
+                longitude === null
+            ) {
+                return;
+            }
 
-    const mapElement =
-        document.getElementById(
-            "map-" + safeId(orderId)
-        );
+            const mapElement =
+                document.getElementById(
+                    "map-" + safeId(orderId)
+                );
 
-    if (!mapElement) {
-        return;
-    }
+            if (!mapElement) {
+                return;
+            }
 
-    const customerLocation = {
-        lat: latitude,
-        lng: longitude
-    };
+            const customerLocation = {
+                lat: latitude,
+                lng: longitude
+            };
 
-    const map = new google.maps.Map(
-        mapElement,
-        {
-            center: customerLocation,
-            zoom: 15,
-            mapTypeControl: false,
-            streetViewControl: false,
-            fullscreenControl: true
+            const map = new google.maps.Map(
+                mapElement,
+                {
+                    center: customerLocation,
+                    zoom: 15,
+                    mapTypeControl: false,
+                    streetViewControl: false,
+                    fullscreenControl: true
+                }
+            );
+
+            new google.maps.Marker({
+                position: customerLocation,
+                map: map,
+                title: "Customer Location"
+            });
+
         }
-    );
-
-    new google.maps.Marker({
-        position: customerLocation,
-        map: map,
-        title: "Customer Location"
-    });
-
-}
 
         /* =========================================================
            GOOGLE MAPS
