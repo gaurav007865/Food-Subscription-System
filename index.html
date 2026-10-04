@@ -354,16 +354,153 @@
           <input type="email" id="login-email" placeholder="example@mail.com" required>
         </div>
 
-        <div class="input-group">
-          <label><i class="fa-solid fa-lock"></i> Password</label>
-          <input type="password" id="login-password" placeholder="••••••••" required>
-        </div>
+       <div class="input-group">
+  <label><i class="fa-solid fa-lock"></i> Password</label>
+  <input type="password" id="login-password" placeholder="••••••••" required>
+</div>
+
+<div style="text-align:right; margin:-5px 0 18px;">
+  <button
+    type="button"
+    id="forgot-password-btn"
+    style="
+      background:none;
+      border:none;
+      padding:0;
+      color:#FF6B35;
+      font-size:14px;
+      font-weight:600;
+      cursor:pointer;
+    "
+  >
+    Forgot Password?
+  </button>
+</div>
+
+<button type="submit" class="btn btn-primary btn-full" id="login-btn">
+  <span class="btn-text">Log In</span>
+  <span class="loader hidden"></span>
+</button>
+
 
         <button type="submit" class="btn btn-primary btn-full" id="login-btn">
           <span class="btn-text">Log In</span>
           <span class="loader hidden"></span>
         </button>
       </form>
+      <!-- Forgot Password Form -->
+<div id="forgot-password-form" class="auth-form">
+
+  <h2>Forgot Password?</h2>
+
+  <p class="subtitle">
+    Enter your registered email and we'll send you a password reset link.
+  </p>
+
+  <div class="input-group">
+    <label>
+      <i class="fa-solid fa-envelope"></i>
+      Email Address
+    </label>
+
+    <input
+      type="email"
+      id="forgot-email"
+      placeholder="example@mail.com"
+      required
+    >
+  </div>
+<!-- Reset Password Form -->
+<form id="reset-password-form" class="auth-form">
+
+  <h2>Reset Password</h2>
+
+  <p class="subtitle">
+    Create a new password for your TiffinHub account.
+  </p>
+
+  <div class="input-group">
+    <label>
+      <i class="fa-solid fa-lock"></i>
+      New Password
+    </label>
+
+    <input
+      type="password"
+      id="reset-password"
+      placeholder="Enter new password"
+      minlength="6"
+      required
+    >
+  </div>
+
+  <div class="input-group">
+    <label>
+      <i class="fa-solid fa-lock"></i>
+      Confirm Password
+    </label>
+
+    <input
+      type="password"
+      id="reset-password-confirm"
+      placeholder="Confirm new password"
+      minlength="6"
+      required
+    >
+  </div>
+
+  <button
+    type="submit"
+    class="btn btn-primary btn-full"
+    id="reset-password-btn"
+  >
+    <span class="btn-text">Reset Password</span>
+    <span class="loader hidden"></span>
+  </button>
+
+  <div style="text-align:center; margin-top:16px;">
+    <button
+      type="button"
+      id="reset-back-login-btn"
+      style="
+        background:none;
+        border:none;
+        color:#FF6B35;
+        font-weight:600;
+        cursor:pointer;
+      "
+    >
+      ← Back to Login
+    </button>
+  </div>
+
+</form>
+  <button
+    type="button"
+    class="btn btn-primary btn-full"
+    id="send-reset-btn"
+  >
+    <span class="btn-text">Send Reset Link</span>
+    <span class="loader hidden"></span>
+  </button>
+
+  <div style="text-align:center; margin-top:16px;">
+    <button
+      type="button"
+      id="back-to-login-btn"
+      style="
+        background:none;
+        border:none;
+        color:#FF6B35;
+        font-weight:600;
+        cursor:pointer;
+      "
+    >
+      ← Back to Login
+    </button>
+  </div>
+
+</div>
 
       <form id="register-form" class="auth-form">
         <h2>Create Account</h2>

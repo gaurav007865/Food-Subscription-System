@@ -23,7 +23,26 @@ const loginForm = document.getElementById('login-form');
 
 const registerForm = document.getElementById('register-form');
 
+const forgotPasswordForm =
+  document.getElementById('forgot-password-form');
 
+  const resetPasswordForm =
+  document.getElementById('reset-password-form');
+
+const resetPasswordBtn =
+  document.getElementById('reset-password-btn');
+
+const resetBackLoginBtn =
+  document.getElementById('reset-back-login-btn');
+
+const forgotPasswordBtn =
+  document.getElementById('forgot-password-btn');
+
+const sendResetBtn =
+  document.getElementById('send-reset-btn');
+
+const backToLoginBtn =
+  document.getElementById('back-to-login-btn');
  
 
 
@@ -107,31 +126,49 @@ function formatDateTime12(value) {
 // ==========================================================================
 
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener(
+  'DOMContentLoaded',
+  () => {
 
+    updateNavUI();
 
-  updateNavUI();
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
 
+    const token =
+      params.get('resetToken');
 
-  fetchExploreTiffins();
+    if (token) {
 
+      resetToken = token;
 
- 
+      /*
+       * Open authentication modal
+       */
+      if (typeof openModal === 'function') {
+        openModal('reset');
+      }
 
-
-  const heroExploreBtn = document.getElementById('hero-explore-btn');
-
-
-  if (heroExploreBtn) {
-
-
-    heroExploreBtn.addEventListener('click', findNearestTiffins);
-
+    }
 
   }
+);
+if (resetBackLoginBtn) {
 
+  resetBackLoginBtn.addEventListener(
+    'click',
+    () => {
 
-});
+      resetToken = "";
+
+      switchTab('login');
+
+    }
+  );
+
+}
 
 
  
@@ -709,49 +746,359 @@ if (tabRegister) tabRegister.addEventListener('click', () => switchTab('register
 
  
 
-
 function switchTab(type) {
-
 
   if (type === 'login') {
 
-
     tabLogin.classList.add('active');
-
-
     tabRegister.classList.remove('active');
 
-
     loginForm.classList.add('active');
-
-
     registerForm.classList.remove('active');
 
+    if (forgotPasswordForm) {
+      forgotPasswordForm.classList.remove('active');
+    }
 
-  } else {
-
-
-    tabRegister.classList.add('active');
-
-
-    tabLogin.classList.remove('active');
-
-
-    registerForm.classList.add('active');
-
-
-    loginForm.classList.remove('active');
-
+    if (resetPasswordForm) {
+      resetPasswordForm.classList.remove('active');
+    }
 
   }
 
+  else if (type === 'register') {
+
+    tabRegister.classList.add('active');
+    tabLogin.classList.remove('active');
+
+    registerForm.classList.add('active');
+    loginForm.classList.remove('active');
+
+    if (forgotPasswordForm) {
+      forgotPasswordForm.classList.remove('active');
+    }
+
+    if (resetPasswordForm) {
+      resetPasswordForm.classList.remove('active');
+    }
+
+  }
+
+  else if (type === 'forgot') {
+
+    tabLogin.classList.remove('active');
+    tabRegister.classList.remove('active');
+
+    loginForm.classList.remove('active');
+    registerForm.classList.remove('active');
+
+    if (forgotPasswordForm) {
+      forgotPasswordForm.classList.add('active');
+    }
+
+    if (resetPasswordForm) {
+      resetPasswordForm.classList.remove('active');
+    }
+
+  }
+
+  else if (type === 'reset') {
+
+    tabLogin.classList.remove('active');
+    tabRegister.classList.remove('active');
+
+    loginForm.classList.remove('active');
+    registerForm.classList.remove('active');
+
+    if (forgotPasswordForm) {
+      forgotPasswordForm.classList.remove('active');
+    }
+
+    if (resetPasswordForm) {
+      resetPasswordForm.classList.add('active');
+    }
+
+  }
+
+}
+// ================================================================
+// FORGOT PASSWORD
+// ================================================================
+
+if (forgotPasswordBtn) {
+
+  forgotPasswordBtn.addEventListener('click', () => {
+
+    const emailInput =
+      document.getElementById('login-email');
+
+    const forgotEmail =
+      document.getElementById('forgot-email');
+
+    if (emailInput && forgotEmail) {
+      forgotEmail.value =
+        emailInput.value.trim();
+    }
+
+    switchTab('forgot');
+
+  });
 
 }
 
 
+if (backToLoginBtn) {
+
+  backToLoginBtn.addEventListener('click', () => {
+
+    switchTab('login');
+
+  });
+
+}
+
  
 
+if (sendResetBtn) {
 
+  sendResetBtn.addEventListener('click', async () => {
+
+    const emailInput =
+      document.getElementById('forgot-email');
+
+    const email =
+      emailInput.value.trim();
+
+    if (!email) {
+
+      showToast(
+        'Please enter your email address.',
+        'error'
+      );
+
+      return;
+    }
+
+    toggleBtnLoading(
+      sendResetBtn,
+      true
+    );
+
+    try {
+
+      const res = await fetch(API_URL, {
+
+        method: 'POST',
+
+        body: JSON.stringify({
+
+          action: 'forgotPassword',
+
+          email: email
+
+        })
+
+      });
+
+      const result =
+        await res.json();
+
+      toggleBtnLoading(
+        sendResetBtn,
+        false
+      );
+
+      if (result.success) {
+
+        showToast(
+          result.message ||
+          'Password reset link sent to your email.',
+          'success'
+        );
+
+        emailInput.value = '';
+
+      } else {
+
+        showToast(
+          result.message ||
+          'Unable to send reset link.',
+          'error'
+        );
+
+      }
+
+    } catch (err) {
+
+      console.error(
+        'Forgot password error:',
+        err
+      );
+
+      toggleBtnLoading(
+        sendResetBtn,
+        false
+      );
+
+      showToast(
+        'Server connection error!',
+        'error'
+      );
+
+    }
+
+  });
+
+}
+// ================================================================
+// RESET PASSWORD
+// ================================================================
+
+let resetToken = "";
+
+
+if (resetPasswordForm) {
+
+  resetPasswordForm.addEventListener(
+    'submit',
+    async (e) => {
+
+      e.preventDefault();
+
+      const newPassword =
+        document
+          .getElementById('reset-password')
+          .value;
+
+      const confirmPassword =
+        document
+          .getElementById('reset-password-confirm')
+          .value;
+
+      if (!resetToken) {
+
+        showToast(
+          'Invalid or missing reset link.',
+          'error'
+        );
+
+        return;
+      }
+
+      if (newPassword.length < 6) {
+
+        showToast(
+          'Password must be at least 6 characters.',
+          'error'
+        );
+
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+
+        showToast(
+          'Passwords do not match.',
+          'error'
+        );
+
+        return;
+      }
+
+      toggleBtnLoading(
+        resetPasswordBtn,
+        true
+      );
+
+      try {
+
+        /*
+         * IMPORTANT:
+         * Existing TiffinHub passwords use SHA-256.
+         */
+
+        const hashedPassword =
+          await hashPassword(newPassword);
+
+        const res = await fetch(
+          API_URL,
+          {
+            method: 'POST',
+
+            body: JSON.stringify({
+
+              action: 'resetPassword',
+
+              token: resetToken,
+
+              password: hashedPassword
+
+            })
+          }
+        );
+
+        const result =
+          await res.json();
+
+        toggleBtnLoading(
+          resetPasswordBtn,
+          false
+        );
+
+        if (result.success) {
+
+          showToast(
+            'Password reset successfully!',
+            'success'
+          );
+
+          document
+            .getElementById(
+              'reset-password-form'
+            )
+            .reset();
+
+          resetToken = "";
+
+          setTimeout(() => {
+
+            switchTab('login');
+
+          }, 1200);
+
+        } else {
+
+          showToast(
+            result.message ||
+            'Unable to reset password.',
+            'error'
+          );
+
+        }
+
+      } catch (err) {
+
+        console.error(
+          'Reset password error:',
+          err
+        );
+
+        toggleBtnLoading(
+          resetPasswordBtn,
+          false
+        );
+
+        showToast(
+          'Server connection error!',
+          'error'
+        );
+
+      }
+
+    }
+  );
+
+}
 // ==========================================================================
 
 
