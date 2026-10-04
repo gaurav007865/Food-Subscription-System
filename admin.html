@@ -661,6 +661,7 @@
                 <th>Amount</th>
                 <th>Payment</th>
                 <th>Status</th>
+                <th>Delivery Boy</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -1044,24 +1045,143 @@
       });
     }
 
-    function renderOrders(orders) {
-      const tbody = document.getElementById('orders-table-body');
-      tbody.innerHTML = orders.map(ord => `
-        <tr>
-          <td><b>${ord.OrderID}</b></td><td>${ord.UserID}</td><td>₹${ord.Amount}</td>
-          <td><span class="status-badge badge-paid">${ord.PaymentStatus}</span></td>
-          <td><b>${ord.OrderStatus}</b></td>
-          <td>
-            <select style="padding:4px;" onchange="changeOrderStatus('${ord.OrderID}', this.value)">
-              <option value="Order Confirmed" ${ord.OrderStatus === 'Order Confirmed' ? 'selected' : ''}>Order Confirmed</option>
-              <option value="Preparing" ${ord.OrderStatus === 'Preparing' ? 'selected' : ''}>Preparing</option>
-              <option value="Out for Delivery" ${ord.OrderStatus === 'Out for Delivery' ? 'selected' : ''}>Out for Delivery</option>
-              <option value="Delivered" ${ord.OrderStatus === 'Delivered' ? 'selected' : ''}>Delivered</option>
-            </select>
-          </td>
-        </tr>
-      `).join('');
+function renderOrders(orders) {
+
+  const tbody = document.getElementById('orders-table-body');
+
+  if (!orders || !orders.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7">No orders yet.</td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = orders.map(ord => {
+
+    // Automatically assigned Delivery Boy
+    const deliveryBoy =
+      ord.DeliveryBoyID ||
+      ord.deliveryBoyId ||
+      "";
+
+    // Delivery assignment display
+    let deliveryDisplay = "";
+
+    if (deliveryBoy) {
+
+      deliveryDisplay = `
+        <span class="status-badge badge-active">
+          ${deliveryBoy}
+        </span>
+      `;
+
+    } else if (
+      ord.OrderStatus === "Out for Delivery" &&
+      ord.PaymentStatus === "Paid"
+    ) {
+
+      deliveryDisplay = `
+        <span style="color:#f59e0b;">
+          Assigning...
+        </span>
+      `;
+
+    } else {
+
+      deliveryDisplay = `
+        <span style="color:var(--muted);">
+          Not available
+        </span>
+      `;
+
     }
+
+    return `
+      <tr>
+
+        <!-- Order ID -->
+        <td>
+          <b>${ord.OrderID}</b>
+        </td>
+
+        <!-- User ID -->
+        <td>
+          ${ord.UserID}
+        </td>
+
+        <!-- Amount -->
+        <td>
+          ₹${ord.Amount}
+        </td>
+
+        <!-- Payment Status -->
+        <td>
+          <span class="status-badge badge-paid">
+            ${ord.PaymentStatus}
+          </span>
+        </td>
+
+        <!-- Order Status -->
+        <td>
+          <b>${ord.OrderStatus}</b>
+        </td>
+
+        <!-- Delivery Boy -->
+        <td>
+          ${deliveryDisplay}
+        </td>
+
+        <!-- Change Order Status -->
+        <td>
+
+          <select
+            style="padding:4px;"
+            onchange="changeOrderStatus(
+              '${ord.OrderID}',
+              this.value
+            )"
+          >
+
+            <option
+              value="Order Confirmed"
+              ${ord.OrderStatus === 'Order Confirmed' ? 'selected' : ''}
+            >
+              Order Confirmed
+            </option>
+
+            <option
+              value="Preparing"
+              ${ord.OrderStatus === 'Preparing' ? 'selected' : ''}
+            >
+              Preparing
+            </option>
+
+            <option
+              value="Out for Delivery"
+              ${ord.OrderStatus === 'Out for Delivery' ? 'selected' : ''}
+            >
+              Out for Delivery
+            </option>
+
+            <option
+              value="Delivered"
+              ${ord.OrderStatus === 'Delivered' ? 'selected' : ''}
+            >
+              Delivered
+            </option>
+
+          </select>
+
+        </td>
+
+      </tr>
+    `;
+
+  }).join('');
+
+}
 
     async function changeOrderStatus(orderId, newStatus) {
       const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'updateOrderStatus', orderId, newStatus }) });
@@ -1332,6 +1452,160 @@
       const result = await res.json();
       showToast(result.message);
       loadAdminData();
+    }
+    // =========================================================================
+    // LOAD DELIVERY BOYS INTO ORDER DROPDOWNS
+    // =========================================================================
+    async function loadDeliveryBoyDropdowns(orders) {
+
+      const needsAssignment = orders.some(order =>
+        order.OrderStatus === "Out for Delivery" &&
+        order.PaymentStatus === "Paid" &&
+        !order.DeliveryBoyID
+      );
+
+      if (!needsAssignment) return;
+
+      try {
+
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'getDeliveryBoys'
+          })
+        });
+
+        const result = await res.json();
+
+        if (!result.success) {
+          console.error(result.message);
+          return;
+        }
+
+        const deliveryBoys = result.deliveryBoys || [];
+
+        orders.forEach(order => {
+
+          if (
+            order.OrderStatus !== "Out for Delivery" ||
+            order.PaymentStatus !== "Paid" ||
+            order.DeliveryBoyID
+          ) {
+            return;
+          }
+
+          const select =
+            document.getElementById(
+              `delivery-boy-${order.OrderID}`
+            );
+
+          if (!select) return;
+
+          select.innerHTML = `
+        <option value="">
+          Select Boy
+        </option>
+      `;
+
+          deliveryBoys.forEach(boy => {
+
+            const option =
+              document.createElement("option");
+
+            option.value = boy.deliveryBoyId;
+
+            option.textContent =
+              `${boy.deliveryBoyId} - ${boy.name}`;
+
+            select.appendChild(option);
+
+          });
+
+        });
+
+      } catch (err) {
+
+        console.error(
+          "Delivery Boy loading error:",
+          err
+        );
+
+      }
+    }
+
+
+    // =========================================================================
+    // ASSIGN DELIVERY BOY FROM ADMIN
+    // =========================================================================
+    async function assignDeliveryBoyFromAdmin(orderId) {
+
+      const select =
+        document.getElementById(
+          `delivery-boy-${orderId}`
+        );
+
+      if (!select) return;
+
+      const deliveryBoyId =
+        select.value;
+
+      if (!deliveryBoyId) {
+
+        showToast(
+          "Please select a Delivery Boy."
+        );
+
+        return;
+      }
+
+      showToast(
+        "Assigning Delivery Boy..."
+      );
+
+      try {
+
+        const res = await fetch(API_URL, {
+
+          method: 'POST',
+
+          body: JSON.stringify({
+
+            action: 'assignDeliveryBoy',
+
+            orderId: orderId,
+
+            deliveryBoyId: deliveryBoyId
+
+          })
+
+        });
+
+        const result =
+          await res.json();
+
+        showToast(
+          result.message
+        );
+
+        if (result.success) {
+
+          // Refresh complete admin data
+          loadAdminData();
+
+        }
+
+      } catch (err) {
+
+        console.error(
+          "Assignment error:",
+          err
+        );
+
+        showToast(
+          "Failed to assign Delivery Boy."
+        );
+
+      }
     }
   </script>
 </body>

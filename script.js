@@ -3620,7 +3620,46 @@ async function processQuickOrder() {
 
   try {
 
-    // 1. Create Razorpay Order
+    // ==========================================
+    // 1. GET CUSTOMER LOCATION
+    // ==========================================
+
+    const position = await new Promise((resolve, reject) => {
+
+      if (!navigator.geolocation) {
+        reject(new Error("Geolocation is not supported by this browser."));
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        resolve,
+        reject,
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        }
+      );
+
+    });
+
+    const customerLatitude =
+      position.coords.latitude;
+
+    const customerLongitude =
+      position.coords.longitude;
+
+    console.log(
+      "Customer Location:",
+      customerLatitude,
+      customerLongitude
+    );
+
+
+    // ==========================================
+    // 2. CREATE RAZORPAY ORDER
+    // ==========================================
+
     const res = await fetch(API_URL, {
       method: 'POST',
       body: JSON.stringify({
@@ -3632,139 +3671,287 @@ async function processQuickOrder() {
     });
 
     const result = await res.json();
-    console.log("Razorpay Backend Response:", result);
+
+    console.log(
+      "Razorpay Backend Response:",
+      result
+    );
+
 
     if (!result.success) {
-    console.error("Razorpay Error:", result);
-    showToast(result.message || "Payment connection failed.", "error");
-    toggleBtnLoading(btn, false);
-    return;
-}
 
-    // 2. Open Razorpay Checkout
+      console.error(
+        "Razorpay Error:",
+        result
+      );
+
+      showToast(
+        result.message || "Payment connection failed.",
+        "error"
+      );
+
+      toggleBtnLoading(btn, false);
+      return;
+    }
+
+
+    // ==========================================
+    // 3. OPEN RAZORPAY CHECKOUT
+    // ==========================================
+
     const options = {
+
       key: result.keyId,
+
       amount: result.amount,
+
       currency: result.currency,
+
       name: "TiffinHub",
-      description: selectedTiffinForQuickOrder.ProviderName,
+
+      description:
+        selectedTiffinForQuickOrder.ProviderName,
 
       order_id: result.orderId,
+
 
       prefill: {
         name: currentUser.name || "",
         email: currentUser.email || ""
       },
 
+
       theme: {
         color: "#FF6B35"
       },
 
+
+      // ========================================
+      // 4. PAYMENT SUCCESS
+      // ========================================
+
       handler: async function (paymentResponse) {
 
-  console.log("Razorpay Payment Response:", paymentResponse);
+        console.log(
+          "Razorpay Payment Response:",
+          paymentResponse
+        );
 
-  showToast("Payment successful! Verifying...", "info");
+        showToast(
+          "Payment successful! Verifying...",
+          "info"
+        );
 
-  try {
 
-    const verifyRes = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        action: "verifyRazorpayPayment",
+        try {
 
-        userId: currentUser.userId,
+          const verifyRes = await fetch(API_URL, {
 
-        tiffinId:
-          selectedTiffinForQuickOrder.TiffinID,
+            method: "POST",
 
-        razorpay_order_id:
-          paymentResponse.razorpay_order_id,
+            body: JSON.stringify({
 
-        razorpay_payment_id:
-          paymentResponse.razorpay_payment_id,
+              action:
+                "verifyRazorpayPayment",
 
-        razorpay_signature:
-          paymentResponse.razorpay_signature
-      })
-    });
+              userId:
+                currentUser.userId,
 
-    const result = await verifyRes.json();
+              tiffinId:
+                selectedTiffinForQuickOrder.TiffinID,
 
-    console.log(
-      "Payment Verification Response:",
-      result
+
+              // Razorpay details
+              razorpay_order_id:
+                paymentResponse.razorpay_order_id,
+
+              razorpay_payment_id:
+                paymentResponse.razorpay_payment_id,
+
+              razorpay_signature:
+                paymentResponse.razorpay_signature,
+
+
+              // CUSTOMER LOCATION
+              customerLatitude:
+                customerLatitude,
+
+              customerLongitude:
+                customerLongitude
+
+            })
+
+          });
+
+
+          const result =
+            await verifyRes.json();
+
+
+          console.log(
+            "Payment Verification Response:",
+            result
+          );
+
+
+          toggleBtnLoading(btn, false);
+
+
+          if (!result.success) {
+
+            showToast(
+              result.message ||
+              "Payment verification failed.",
+              "error"
+            );
+
+            return;
+          }
+
+
+          showToast(
+            "🎉 Payment verified & order placed!",
+            "success"
+          );
+
+
+          // Close modal
+          if (
+            typeof closeQuickOrderModal ===
+            "function"
+          ) {
+            closeQuickOrderModal();
+          }
+
+
+          // Refresh dashboard
+          if (
+            typeof loadUserDashboard ===
+            "function"
+          ) {
+            loadUserDashboard();
+          }
+
+
+        } catch (err) {
+
+          console.error(
+            "Payment verification error:",
+            err
+          );
+
+          toggleBtnLoading(btn, false);
+
+          showToast(
+            "Payment verification failed.",
+            "error"
+          );
+
+        }
+
+      },
+
+
+      // ========================================
+      // 5. PAYMENT CANCEL
+      // ========================================
+
+      modal: {
+
+        ondismiss: function () {
+
+          toggleBtnLoading(btn, false);
+
+          showToast(
+            "Payment cancelled.",
+            "error"
+          );
+
+        }
+
+      }
+
+    };
+
+
+    // Create Razorpay
+    const rzp =
+      new Razorpay(options);
+
+
+    // Payment failed
+    rzp.on(
+      'payment.failed',
+      function (response) {
+
+        console.error(
+          "Payment failed:",
+          response.error
+        );
+
+        toggleBtnLoading(btn, false);
+
+        showToast(
+          response.error.description ||
+          "Payment failed.",
+          "error"
+        );
+
+      }
     );
 
-    toggleBtnLoading(btn, false);
 
-    if (!result.success) {
-      showToast(
-        result.message || "Payment verification failed.",
-        "error"
-      );
-      return;
-    }
+    // Open checkout
+    rzp.open();
 
-    showToast(
-      "🎉 Payment verified & order placed!",
-      "success"
-    );
-
-    // Close quick order modal if your function exists
-    if (typeof closeQuickOrderModal === "function") {
-      closeQuickOrderModal();
-    }
-
-    // Refresh dashboard/orders
-    if (typeof loadUserDashboard === "function") {
-      loadUserDashboard();
-    }
 
   } catch (err) {
 
     console.error(
-      "Payment verification error:",
+      "Location / Payment error:",
       err
     );
 
     toggleBtnLoading(btn, false);
 
-    showToast(
-      "Payment verification failed.",
-      "error"
-    );
-  }
-},
 
-      modal: {
-        ondismiss: function () {
-          toggleBtnLoading(btn, false);
-          showToast("Payment cancelled.", "error");
-        }
-      }
-    };
-
-    const rzp = new Razorpay(options);
-
-    rzp.on('payment.failed', function (response) {
-      console.error("Payment failed:", response.error);
-      toggleBtnLoading(btn, false);
+    if (
+      err.code === 1
+    ) {
 
       showToast(
-        response.error.description || "Payment failed.",
+        "Please allow location permission to place the order.",
         "error"
       );
-    });
 
-    rzp.open();
+    } else if (
+      err.code === 2
+    ) {
 
-  } catch (err) {
+      showToast(
+        "Unable to get your location. Please try again.",
+        "error"
+      );
 
-    console.error(err);
+    } else if (
+      err.code === 3
+    ) {
 
-    toggleBtnLoading(btn, false);
-    showToast("Payment connection failed.", "error");
+      showToast(
+        "Location request timed out. Please try again.",
+        "error"
+      );
+
+    } else {
+
+      showToast(
+        err.message ||
+        "Unable to get your location.",
+        "error"
+      );
+
+    }
+
   }
 }
 
