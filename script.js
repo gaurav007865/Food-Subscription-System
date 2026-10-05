@@ -132,29 +132,21 @@ document.addEventListener(
 
     updateNavUI();
 
-    const params =
-      new URLSearchParams(
-        window.location.search
-      );
+    document.addEventListener(
+  'DOMContentLoaded',
+  () => {
 
-    const token =
-      params.get('resetToken');
+    updateNavUI();
 
-    if (token) {
+    fetchExploreTiffins();
 
-      resetToken = token;
-
-      // Open authentication modal
-      if (authModal) {
-        authModal.classList.add('active');
-      }
-
-      // Show reset password form
-      switchTab('reset');
+    // baaki existing code...
+  }
+);
 
     }
 
-  }
+  
 );
 if (resetBackLoginBtn) {
 
@@ -4767,3 +4759,6 @@ async function submitReview() {
 
 
 }
+document.addEventListener('DOMContentLoaded', function () {
+  fetchExploreTiffins();
+});
