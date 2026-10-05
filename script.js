@@ -1019,25 +1019,14 @@ if (resetPasswordForm) {
          * Existing TiffinHub passwords use SHA-256.
          */
 
-        const hashedPassword =
-          await hashPassword(newPassword);
-
-        const res = await fetch(
-          API_URL,
-          {
-            method: 'POST',
-
-            body: JSON.stringify({
-
-              action: 'resetPassword',
-
-              token: resetToken,
-
-              password: hashedPassword
-
-            })
-          }
-        );
+        const res = await fetch(API_URL, {
+  method: 'POST',
+  body: JSON.stringify({
+    action: 'resetUserPassword',
+    token: resetToken,
+    password: newPassword
+  })
+});
 
         const result =
           await res.json();
@@ -1768,34 +1757,17 @@ businessName, ownerName, email, phone, address, password
  
 
 
-        const hashedPassword = await hashPassword(password);
-
-
- 
-
-
         const res = await fetch(API_URL, {
-
-
-          method: 'POST',
-
-
-          body: JSON.stringify({
-
-
-            action: 'register',
-
-
-            name, email, phone, address,
-
-
-            password: hashedPassword
-
-
-          })
-
-
-        });
+  method: 'POST',
+  body: JSON.stringify({
+    action: 'register',
+    name,
+    email,
+    phone,
+    address,
+    password: password
+  })
+});
 
 
  
@@ -2480,23 +2452,14 @@ if (loginForm) {
 
       // ----------------------------------------------------
 
-      const hashedPassword = await hashPassword(password);
-
       const res = await fetch(API_URL, {
-
-        method: 'POST',
-
-        body: JSON.stringify({
-
-          action: 'login',
-
-          email: email,
-
-          password: hashedPassword
-
-        })
-
-      });
+  method: 'POST',
+  body: JSON.stringify({
+    action: 'login',
+    email: email,
+    password: password
+  })
+});
 
 
       const result = await res.json();
