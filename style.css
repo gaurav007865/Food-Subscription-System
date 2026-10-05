@@ -967,3 +967,22 @@ body {
 .nav-links a[onclick*="handleNavDonateClick"] {
   cursor: pointer;
 }
+/* =========================================================
+   RESET PASSWORD FORM
+   ========================================================= */
+
+#reset-password-form {
+  display: none;
+}
+
+#reset-password-form.active {
+  display: block !important;
+}
+
+#forgot-password-form {
+  display: none;
+}
+
+#forgot-password-form.active {
+  display: block !important;
+}

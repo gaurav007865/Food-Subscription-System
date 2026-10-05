@@ -144,12 +144,13 @@ document.addEventListener(
 
       resetToken = token;
 
-      /*
-       * Open authentication modal
-       */
-      if (typeof openModal === 'function') {
-        openModal('reset');
+      // Open authentication modal
+      if (authModal) {
+        authModal.classList.add('active');
       }
+
+      // Show reset password form
+      switchTab('reset');
 
     }
 
@@ -745,74 +746,75 @@ if (tabRegister) tabRegister.addEventListener('click', () => switchTab('register
 
 
  
-
 function switchTab(type) {
 
+  // Hide everything first
+  if (loginForm) {
+    loginForm.classList.remove('active');
+  }
+
+  if (registerForm) {
+    registerForm.classList.remove('active');
+  }
+
+  if (forgotPasswordForm) {
+    forgotPasswordForm.classList.remove('active');
+  }
+
+  if (resetPasswordForm) {
+    resetPasswordForm.classList.remove('active');
+  }
+
+  // Reset tabs
+  if (tabLogin) {
+    tabLogin.classList.remove('active');
+  }
+
+  if (tabRegister) {
+    tabRegister.classList.remove('active');
+  }
+
+
+  // LOGIN
   if (type === 'login') {
 
-    tabLogin.classList.add('active');
-    tabRegister.classList.remove('active');
-
-    loginForm.classList.add('active');
-    registerForm.classList.remove('active');
-
-    if (forgotPasswordForm) {
-      forgotPasswordForm.classList.remove('active');
+    if (tabLogin) {
+      tabLogin.classList.add('active');
     }
 
-    if (resetPasswordForm) {
-      resetPasswordForm.classList.remove('active');
+    if (loginForm) {
+      loginForm.classList.add('active');
     }
 
   }
 
+
+  // REGISTER
   else if (type === 'register') {
 
-    tabRegister.classList.add('active');
-    tabLogin.classList.remove('active');
-
-    registerForm.classList.add('active');
-    loginForm.classList.remove('active');
-
-    if (forgotPasswordForm) {
-      forgotPasswordForm.classList.remove('active');
+    if (tabRegister) {
+      tabRegister.classList.add('active');
     }
 
-    if (resetPasswordForm) {
-      resetPasswordForm.classList.remove('active');
+    if (registerForm) {
+      registerForm.classList.add('active');
     }
 
   }
 
+
+  // FORGOT PASSWORD
   else if (type === 'forgot') {
-
-    tabLogin.classList.remove('active');
-    tabRegister.classList.remove('active');
-
-    loginForm.classList.remove('active');
-    registerForm.classList.remove('active');
 
     if (forgotPasswordForm) {
       forgotPasswordForm.classList.add('active');
     }
 
-    if (resetPasswordForm) {
-      resetPasswordForm.classList.remove('active');
-    }
-
   }
 
+
+  // RESET PASSWORD
   else if (type === 'reset') {
-
-    tabLogin.classList.remove('active');
-    tabRegister.classList.remove('active');
-
-    loginForm.classList.remove('active');
-    registerForm.classList.remove('active');
-
-    if (forgotPasswordForm) {
-      forgotPasswordForm.classList.remove('active');
-    }
 
     if (resetPasswordForm) {
       resetPasswordForm.classList.add('active');
