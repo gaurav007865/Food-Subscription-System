@@ -446,6 +446,176 @@
       gap: 4px;
       white-space: nowrap;
     }
+    
+/* ===== NGO VERIFICATION TABLE ===== */
+
+#tab-ngo-verification .section-card {
+  padding: 24px;
+  border-radius: 16px;
+  background: var(--card-bg, #ffffff);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e8edf3;
+}
+
+#tab-ngo-verification .table-header-tools {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+#tab-ngo-verification h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text, #1e293b);
+}
+
+#tab-ngo-verification table {
+  width: 100%;
+  min-width: 1100px;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+}
+
+#tab-ngo-verification thead th {
+  background: #f1f5f9;
+  color: #334155;
+  font-weight: 700;
+  text-align: left;
+  padding: 15px 12px;
+  border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+#tab-ngo-verification thead th:first-child {
+  border-radius: 8px 0 0 0;
+}
+
+#tab-ngo-verification thead th:last-child {
+  border-radius: 0 8px 0 0;
+}
+
+#tab-ngo-verification tbody td {
+  padding: 14px 12px;
+  color: #475569;
+  border-bottom: 1px solid #edf0f4;
+  vertical-align: middle;
+}
+
+#tab-ngo-verification tbody tr {
+  transition: background 0.2s ease;
+}
+
+#tab-ngo-verification tbody tr:hover {
+  background: #f8fafc;
+}
+
+#tab-ngo-verification tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Certificate link */
+
+#tab-ngo-verification a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #2563eb;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+#tab-ngo-verification a::before {
+  content: "↗";
+  font-size: 15px;
+}
+
+#tab-ngo-verification a:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+/* Action buttons */
+
+#tab-ngo-verification button {
+  padding: 8px 12px;
+  margin: 3px 3px 3px 0;
+  border: none;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+  white-space: nowrap;
+}
+
+#tab-ngo-verification button:hover {
+  transform: translateY(-1px);
+  opacity: 0.9;
+}
+
+#tab-ngo-verification button:active {
+  transform: scale(0.97);
+}
+
+/* Approve button */
+
+#tab-ngo-verification button[onclick*="Approved"] {
+  color: #166534;
+  background: #dcfce7;
+  border: 1px solid #bbf7d0;
+}
+
+/* Reject button */
+
+#tab-ngo-verification button[onclick*="Rejected"] {
+  color: #b91c1c;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+}
+
+/* Refresh button */
+
+#tab-ngo-verification .btn-secondary {
+  background: #e2e8f0;
+  color: #334155;
+  padding: 10px 15px;
+  border-radius: 8px;
+}
+
+/* Horizontal scroll on smaller screens */
+
+#tab-ngo-verification .section-card > div[style*="overflow-x"] {
+  overflow-x: auto;
+  border: 1px solid #e8edf3;
+  border-radius: 10px;
+}
+
+/* Mobile */
+
+@media (max-width: 768px) {
+  #tab-ngo-verification .section-card {
+    padding: 14px;
+  }
+
+  #tab-ngo-verification h2 {
+    font-size: 18px;
+  }
+
+  #tab-ngo-verification .table-header-tools {
+    align-items: flex-start;
+  }
+
+  #tab-ngo-verification table {
+    min-width: 1000px;
+  }
+}
+
   </style>
 </head>
 
@@ -513,6 +683,12 @@
           class="fa-solid fa-hand-holding-heart"></i> Food Donations</button>
       <button class="admin-tab-btn" onclick="switchAdminTab('tab-ngo', this)"><i class="fa-solid fa-people-group"></i>
         NGO Registrations</button>
+
+      <button class="admin-tab-btn" onclick="switchAdminTab('tab-ngo-verification', this); loadNGOVerifications();">
+        <i class="fa-solid fa-shield-halved"></i>
+        NGO Verification
+      </button>
+
       <button class="admin-tab-btn" onclick="switchAdminTab('tab-providers', this)"><i class="fa-solid fa-store"></i>
         Provider Registrations</button>
       <button class="admin-tab-btn" onclick="switchAdminTab('tab-users', this)"><i class="fa-solid fa-users"></i>
@@ -556,6 +732,54 @@
           </table>
         </div>
       </div>
+      
+<!-- TAB: NGO CERTIFICATE VERIFICATION -->
+<div id="tab-ngo-verification" class="tab-content">
+  <div class="section-card">
+    <div class="table-header-tools">
+      <h2>
+        <i class="fa-solid fa-shield-halved"
+           style="color:var(--primary);"></i>
+        NGO Certificate Verification
+      </h2>
+
+      <button class="btn btn-secondary"
+              onclick="loadNGOVerifications()">
+        <i class="fa-solid fa-rotate"></i>
+        Refresh
+      </button>
+    </div>
+
+    <p style="color:var(--muted); margin-bottom:1rem;">
+      Review NGO registration details and uploaded certificates.
+    </p>
+
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>NGO ID</th>
+            <th>NGO Name</th>
+            <th>Registration No.</th>
+            <th>NGO Type</th>
+            <th>Contact Person</th>
+            <th>Phone</th>
+            <th>PAN</th>
+            <th>Certificate</th>
+            <th>Verification Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody id="ngo-verification-table-body">
+          <tr>
+            <td colspan="10">Click Refresh to load verification requests.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
       <!-- TAB: PROVIDER REGISTRATIONS -->
       <div id="tab-providers" class="tab-content">
@@ -1045,60 +1269,60 @@
       });
     }
 
-function renderOrders(orders) {
+    function renderOrders(orders) {
 
-  const tbody = document.getElementById('orders-table-body');
+      const tbody = document.getElementById('orders-table-body');
 
-  if (!orders || !orders.length) {
-    tbody.innerHTML = `
+      if (!orders || !orders.length) {
+        tbody.innerHTML = `
       <tr>
         <td colspan="7">No orders yet.</td>
       </tr>
     `;
-    return;
-  }
+        return;
+      }
 
-  tbody.innerHTML = orders.map(ord => {
+      tbody.innerHTML = orders.map(ord => {
 
-    // Automatically assigned Delivery Boy
-    const deliveryBoy =
-      ord.DeliveryBoyID ||
-      ord.deliveryBoyId ||
-      "";
+        // Automatically assigned Delivery Boy
+        const deliveryBoy =
+          ord.DeliveryBoyID ||
+          ord.deliveryBoyId ||
+          "";
 
-    // Delivery assignment display
-    let deliveryDisplay = "";
+        // Delivery assignment display
+        let deliveryDisplay = "";
 
-    if (deliveryBoy) {
+        if (deliveryBoy) {
 
-      deliveryDisplay = `
+          deliveryDisplay = `
         <span class="status-badge badge-active">
           ${deliveryBoy}
         </span>
       `;
 
-    } else if (
-      ord.OrderStatus === "Out for Delivery" &&
-      ord.PaymentStatus === "Paid"
-    ) {
+        } else if (
+          ord.OrderStatus === "Out for Delivery" &&
+          ord.PaymentStatus === "Paid"
+        ) {
 
-      deliveryDisplay = `
+          deliveryDisplay = `
         <span style="color:#f59e0b;">
           Assigning...
         </span>
       `;
 
-    } else {
+        } else {
 
-      deliveryDisplay = `
+          deliveryDisplay = `
         <span style="color:var(--muted);">
           Not available
         </span>
       `;
 
-    }
+        }
 
-    return `
+        return `
       <tr>
 
         <!-- Order ID -->
@@ -1179,9 +1403,9 @@ function renderOrders(orders) {
       </tr>
     `;
 
-  }).join('');
+      }).join('');
 
-}
+    }
 
     async function changeOrderStatus(orderId, newStatus) {
       const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'updateOrderStatus', orderId, newStatus }) });
@@ -1607,6 +1831,117 @@ function renderOrders(orders) {
 
       }
     }
+   window.loadNGOVerifications = async function () {
+  const tbody = document.getElementById("ngo-verification-table-body");
+
+  if (!tbody) {
+    alert("NGO verification table not found!");
+    return;
+  }
+
+  tbody.innerHTML = `
+    <tr><td colspan="10">Loading...</td></tr>
+  `;
+
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "getNGOVerifications"
+      })
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      tbody.innerHTML = `
+        <tr><td colspan="10">${data.message || "Failed to load data."}</td></tr>
+      `;
+      return;
+    }
+
+    const ngos = data.ngoList || [];
+
+    if (ngos.length === 0) {
+      tbody.innerHTML = `
+        <tr><td colspan="10">No verification requests found.</td></tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = ngos.map(ngo => `
+      <tr>
+        <td>${ngo.NGOID || ngo.NGOId || ngo.ID || "N/A"}</td>
+        <td>${ngo.NGOName || ngo.Name || "N/A"}</td>
+        <td>${ngo.RegistrationNumber || "N/A"}</td>
+        <td>${ngo.NGOType || "N/A"}</td>
+        <td>${ngo.ContactPerson || "N/A"}</td>
+        <td>${ngo.ContactNumber || "N/A"}</td>
+        <td>${ngo.PAN || "N/A"}</td>
+        <td>
+          ${ngo.CertificateURL
+            ? `<a href="${ngo.CertificateURL}" target="_blank" rel="noopener noreferrer">View Certificate</a>`
+            : "Not uploaded"}
+        </td>
+        <td>${ngo.VerificationStatus || "Pending"}</td>
+        <td>
+          <button onclick="updateNGOVerificationStatus('${ngo.NGOID || ngo.NGOId || ngo.ID}', 'Approved')">
+            Approve
+          </button>
+          <button onclick="updateNGOVerificationStatus('${ngo.NGOID || ngo.NGOId || ngo.ID}', 'Rejected')">
+            Reject
+          </button>
+        </td>
+      </tr>
+    `).join("");
+
+  } catch (error) {
+    console.error("NGO verification error:", error);
+    tbody.innerHTML = `
+      <tr><td colspan="10">Unable to load data. Check Console.</td></tr>
+    `;
+  }
+};
+
+window.updateNGOVerificationStatus = async function (ngoId, newStatus) {
+  if (!ngoId) {
+    alert("NGO ID not found!");
+    return;
+  }
+
+  const confirmed = confirm(
+    `Are you sure you want to ${newStatus} this NGO verification?`
+  );
+
+  if (!confirmed) return;
+
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "updateNGOVerificationStatus",
+        ngoId: ngoId,
+        newStatus: newStatus
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      alert(data.message || "Verification status updated successfully.");
+
+      // Refresh the verification table
+      window.loadNGOVerifications();
+    } else {
+      alert(data.message || "Failed to update verification status.");
+    }
+
+  } catch (error) {
+    console.error("NGO verification update error:", error);
+    alert("Request failed. Check the backend deployment and Console.");
+  }
+};
+
   </script>
 </body>
 
