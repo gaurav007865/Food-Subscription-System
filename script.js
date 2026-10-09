@@ -472,7 +472,58 @@ function findNearestTiffins() {
   );
 }
 
- 
+function openNGOVerificationForm() {
+  if (!currentNGO) {
+    showToast("Please login first.");
+    return;
+  }
+
+  document.getElementById("verify-ngo-name").value =
+    currentNGO.name || "";
+
+  document.getElementById("ngo-verification-form").style.display = "block";
+
+  document.getElementById("ngo-verification-form").scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
+
+function closeNGOVerificationForm() {
+  document.getElementById("ngo-verification-form").style.display = "none";
+}
+
+async function submitNGOVerification(event) {
+  event.preventDefault();
+
+  const certificate =
+    document.getElementById("verify-ngo-certificate").files[0];
+
+  if (!certificate) {
+    showToast("Please upload your NGO certificate.");
+    return;
+  }
+
+  const allowedTypes = [
+    "application/pdf",
+    "image/jpeg",
+    "image/png"
+  ];
+
+  if (!allowedTypes.includes(certificate.type)) {
+    showToast("Only PDF, JPG, JPEG and PNG files are allowed.");
+    return;
+  }
+
+  if (certificate.size > 5 * 1024 * 1024) {
+    showToast("Certificate size must not exceed 5 MB.");
+    return;
+  }
+
+  // Backend and Google Drive upload will be connected in Step 3.
+  showToast("Form validated. Next, connect the Google Drive upload.");
+}
+
 
 
 let nearbyMap = null;

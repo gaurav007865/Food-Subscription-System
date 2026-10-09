@@ -311,6 +311,23 @@
         gap: 0.3rem;
       }
     }
+    #ngo-verification-form .btn-primary {
+  background: var(--primary);
+  color: white;
+}
+
+#ngo-verification-form .btn-primary:hover {
+  background: var(--primary-hover);
+}
+
+#ngo-verification-form .btn:not(.btn-primary) {
+  background: var(--secondary);
+  color: white;
+}
+
+#ngo-verification-form .btn:not(.btn-primary):hover {
+  background: #26A398;
+}
   </style>
 </head>
 
@@ -367,6 +384,140 @@
 
     <div class="container">
 
+      
+<!-- NGO VERIFICATION SECTION -->
+<div class="section-card">
+  <h2>
+    <i class="fa-solid fa-shield-halved" style="color:var(--primary);"></i>
+    NGO Verification
+  </h2>
+
+  <p style="color:var(--muted); margin-bottom:15px;">
+    Submit your NGO registration details and certificate for verification.
+  </p>
+
+  <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+    <div>
+      <strong>Verification Status</strong>
+      <p id="ngo-verification-status" style="margin-top:6px; color:var(--warning);">
+        Not Submitted
+      </p>
+    </div>
+
+    <button class="btn btn-primary" onclick="openNGOVerificationForm()">
+      <i class="fa-solid fa-file-circle-check"></i>
+      Verify NGO
+    </button>
+  </div>
+</div>
+
+<!-- NGO VERIFICATION FORM -->
+<div id="ngo-verification-form" class="section-card" style="display:none;">
+  <h2>
+    <i class="fa-solid fa-file-lines" style="color:var(--primary);"></i>
+    NGO Verification Form
+  </h2>
+
+  <form id="ngo-verify-form" onsubmit="submitNGOVerification(event)">
+
+    <label for="verify-ngo-name">NGO Name *</label>
+    <input
+      type="text"
+      id="verify-ngo-name"
+      class="input-field"
+      required
+    >
+
+    <label for="verify-registration-number">Registration Number *</label>
+    <input
+      type="text"
+      id="verify-registration-number"
+      class="input-field"
+      required
+      placeholder="Enter NGO registration number"
+    >
+
+    <label for="verify-ngo-type">NGO Type *</label>
+    <select id="verify-ngo-type" class="input-field" required>
+      <option value="">Select NGO type</option>
+      <option value="Trust">Trust</option>
+      <option value="Society">Society</option>
+      <option value="Section 8 Company">Section 8 Company</option>
+      <option value="Other">Other</option>
+    </select>
+
+    <label for="verify-contact-person">Contact Person *</label>
+    <input
+      type="text"
+      id="verify-contact-person"
+      class="input-field"
+      required
+      placeholder="Contact person's full name"
+    >
+
+    <label for="verify-contact-number">Contact Number *</label>
+    <input
+      type="tel"
+      id="verify-contact-number"
+      class="input-field"
+      required
+      pattern="[0-9]{10}"
+      maxlength="10"
+      placeholder="10-digit mobile number"
+    >
+
+    <label for="verify-ngo-address">Registered Address *</label>
+    <textarea
+      id="verify-ngo-address"
+      class="input-field"
+      required
+      rows="3"
+      placeholder="Enter registered NGO address"
+    ></textarea>
+
+    <label for="verify-ngo-pan">PAN Number (if applicable)</label>
+    <input
+      type="text"
+      id="verify-ngo-pan"
+      class="input-field"
+      maxlength="10"
+      placeholder="Enter PAN number"
+    >
+
+    <label for="verify-ngo-certificate">
+      NGO Registration Certificate *
+    </label>
+
+    <input
+      type="file"
+      id="verify-ngo-certificate"
+      class="input-field"
+      accept=".pdf,.jpg,.jpeg,.png"
+      required
+    >
+
+    <p style="font-size:0.8rem; color:var(--muted); margin-top:-8px; margin-bottom:16px;">
+      Accepted formats: PDF, JPG, JPEG, PNG. Maximum size: 5 MB.
+    </p>
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <button type="submit" class="btn btn-primary" id="ngo-verification-submit">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+        Submit for Verification
+      </button>
+
+      <button
+        type="button"
+        class="btn"
+        onclick="closeNGOVerificationForm()"
+        style="background:#64748B;"
+      >
+        Cancel
+      </button>
+    </div>
+
+  </form>
+</div>
       <div class="section-card">
         <h2><i class="fa-solid fa-hand-holding-heart" style="color:var(--primary);"></i> Available Donations</h2>
 
@@ -654,6 +805,141 @@
         showToast("Failed to update status!");
       }
     }
+    
+function openNGOVerificationForm() {
+  if (!currentNGO) {
+    showToast("Please login first.");
+    return;
+  }
+
+  document.getElementById("ngo-verification-form").style.display = "block";
+  document.getElementById("verify-ngo-name").value =
+    currentNGO.name || "";
+
+  document.getElementById("ngo-verification-form").scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
+
+function closeNGOVerificationForm() {
+  document.getElementById("ngo-verification-form").style.display = "none";
+}
+
+async function submitNGOVerification(event) {
+  event.preventDefault();
+
+  if (!currentNGO || !currentNGO.ngoId || !currentNGO.email) {
+    showToast("Please login again before submitting verification.");
+    return;
+  }
+
+  const form = document.getElementById("ngo-verify-form");
+  const fileInput = document.getElementById("verify-ngo-certificate");
+  const file = fileInput.files[0];
+  const btn = document.getElementById("ngo-verification-submit");
+
+  if (!form.checkValidity()) {
+    form.reportValidity();
+    return;
+  }
+
+  if (!file) {
+    showToast("Please upload your NGO certificate.");
+    return;
+  }
+
+  const allowedTypes = [
+    "application/pdf",
+    "image/jpeg",
+    "image/png"
+  ];
+
+  if (!allowedTypes.includes(file.type)) {
+    showToast("Only PDF, JPG, JPEG and PNG files are allowed.");
+    return;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    showToast("Certificate size must be 5 MB or less.");
+    return;
+  }
+
+  const contactNumber =
+    document.getElementById("verify-contact-number").value.trim();
+
+  if (!/^[0-9]{10}$/.test(contactNumber)) {
+    showToast("Enter a valid 10-digit contact number.");
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML =
+    '<i class="fa-solid fa-spinner fa-spin"></i> Uploading...';
+
+  try {
+    // Read certificate as Base64 data URL
+    const certificateBase64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error("Could not read certificate."));
+
+      reader.readAsDataURL(file);
+    });
+
+    const payload = {
+      action: "submitNGOVerification",
+
+      // Identity from the logged-in NGO session
+      ngoId: currentNGO.ngoId,
+      email: currentNGO.email,
+
+      ngoName: document.getElementById("verify-ngo-name").value.trim(),
+      registrationNumber:
+        document.getElementById("verify-registration-number").value.trim(),
+      ngoType: document.getElementById("verify-ngo-type").value,
+      contactPerson:
+        document.getElementById("verify-contact-person").value.trim(),
+      contactNumber: contactNumber,
+      address: document.getElementById("verify-ngo-address").value.trim(),
+      pan: document.getElementById("verify-ngo-pan").value.trim(),
+
+      fileName: file.name,
+      mimeType: file.type,
+      certificateBase64: certificateBase64
+    };
+
+    const response = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.message || "Verification submission failed.");
+    }
+
+    document.getElementById("ngo-verification-status").innerText =
+      "Pending";
+
+    document.getElementById("ngo-verification-status").style.color =
+      "var(--warning)";
+
+    showToast(result.message || "Verification submitted successfully.");
+    form.reset();
+    closeNGOVerificationForm();
+
+  } catch (error) {
+    showToast(error.message || "Server connection error.");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML =
+      '<i class="fa-solid fa-cloud-arrow-up"></i> Submit for Verification';
+  }
+}
+
   </script>
 </body>
 
