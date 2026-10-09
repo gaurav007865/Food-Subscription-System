@@ -253,132 +253,224 @@ function haversineDistanceKm(lat1, lng1, lat2, lng2) {
 
  
 
-
 function findNearestTiffins() {
 
-
   const heroExploreBtn = document.getElementById('hero-explore-btn');
-
-
   const tiffinsSection = document.getElementById('tiffins');
 
-
- 
-
-
-  if (!navigator.geolocation) {
-
-
-    showToast("Location not supported by your browser. Showing all tiffins.", "info");
-
-
-    if (tiffinsSection) tiffinsSection.scrollIntoView({ behavior: 'smooth' });
-
-
+  if (!heroExploreBtn) {
+    console.error("Find Tiffins button not found.");
     return;
-
-
   }
 
+  if (!Array.isArray(allTiffinsList) || allTiffinsList.length === 0) {
+    showToast("No tiffin services available right now.", "info");
+    return;
+  }
 
- 
-
+  if (!navigator.geolocation) {
+    showToast(
+      "Your browser does not support location.",
+      "error"
+    );
+    return;
+  }
 
   const originalText = heroExploreBtn.innerText;
 
-
-  heroExploreBtn.innerText = "Locating...";
-
-
+  heroExploreBtn.innerText = "📍 Finding Near You...";
   heroExploreBtn.disabled = true;
-
-
- 
-
 
   navigator.geolocation.getCurrentPosition(
 
-
-    (position) => {
-
+    function(position) {
 
       const userLat = position.coords.latitude;
-
-
       const userLng = position.coords.longitude;
 
+      console.log("USER LOCATION");
+      console.log("Latitude:", userLat);
+      console.log("Longitude:", userLng);
 
- 
+      try {
+
+        const nearestTiffins = allTiffinsList
+          .map(function(tiffin) {
+
+            /*
+             * IMPORTANT:
+             * Your Tiffins sheet should contain
+             * Latitude and Longitude columns.
+             */
+
+            const tiffinLat = parseFloat(
+              tiffin.Latitude ||
+              tiffin.latitude ||
+              tiffin.Lat ||
+              tiffin.lat
+            );
+
+            const tiffinLng = parseFloat(
+              tiffin.Longitude ||
+              tiffin.longitude ||
+              tiffin.Lng ||
+              tiffin.lng
+            );
+
+            // Skip tiffins which don't have GPS coordinates
+            if (
+              isNaN(tiffinLat) ||
+              isNaN(tiffinLng)
+            ) {
+              return null;
+            }
+
+            const distance = haversineDistanceKm(
+              userLat,
+              userLng,
+              tiffinLat,
+              tiffinLng
+            );
+
+            return {
+              ...tiffin,
+
+              distance: distance,
+
+              _coords: {
+                lat: tiffinLat,
+                lng: tiffinLng
+              }
+            };
+
+          })
+          .filter(function(tiffin) {
+            return tiffin !== null;
+          })
+          .sort(function(a, b) {
+            return a.distance - b.distance;
+          });
 
 
-      const sorted = [...allTiffinsList]
+        console.log(
+          "NEAREST TIFFIN SERVICES:",
+          nearestTiffins
+        );
 
 
-        .map(t => {
+        if (nearestTiffins.length === 0) {
+
+          showToast(
+            "No tiffin service with location found nearby.",
+            "info"
+          );
+
+          renderExploreTiffins([]);
+
+          return;
+        }
 
 
-          const coords = DUMMY_AREA_COORDS[t.Location] || DUMMY_AREA_COORDS['Sitabuldi'];
+        // Show nearest tiffins first
+        renderExploreTiffins(nearestTiffins);
 
 
-          const distance = haversineDistanceKm(userLat, userLng, coords.lat, coords.lng);
+        // Reset button
+        heroExploreBtn.innerText = originalText;
+        heroExploreBtn.disabled = false;
 
 
-          return { ...t, distance, _coords: coords };
+        // Scroll to tiffin section
+        if (tiffinsSection) {
+
+          tiffinsSection.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+          });
+
+        }
 
 
-        })
+        // Open map if function exists
+        if (typeof openMapModal === "function") {
+
+          openMapModal(
+            userLat,
+            userLng,
+            nearestTiffins
+          );
+
+        }
+
+      } catch (error) {
+
+        console.error(
+          "Nearest tiffin calculation error:",
+          error
+        );
+
+        heroExploreBtn.innerText = originalText;
+        heroExploreBtn.disabled = false;
+
+        showToast(
+          "Unable to find nearby tiffin services.",
+          "error"
+        );
+      }
+    },
 
 
-        .sort((a, b) => a.distance - b.distance);
+    function(error) {
 
-
- 
-
-
-      renderExploreTiffins(sorted);
-
-
- 
-
+      console.error(
+        "Location Error:",
+        error
+      );
 
       heroExploreBtn.innerText = originalText;
-
-
       heroExploreBtn.disabled = false;
 
 
- 
+      if (error.code === 1) {
 
+        showToast(
+          "Please allow location access to find nearby tiffins.",
+          "error"
+        );
 
-      openMapModal(userLat, userLng, sorted);
+      } else if (error.code === 2) {
 
+        showToast(
+          "Unable to detect your location.",
+          "error"
+        );
+
+      } else if (error.code === 3) {
+
+        showToast(
+          "Location request timed out. Please try again.",
+          "error"
+        );
+
+      } else {
+
+        showToast(
+          "Unable to get your location.",
+          "error"
+        );
+      }
 
     },
 
 
-    (error) => {
-
-
-      heroExploreBtn.innerText = originalText;
-
-
-      heroExploreBtn.disabled = false;
-
-
-      showToast("Location access denied. Showing all tiffins instead.", "info");
-
-
-      if (tiffinsSection) tiffinsSection.scrollIntoView({ behavior: 'smooth' });
-
-
+    {
+      enableHighAccuracy: true,
+      timeout: 15000,
+      maximumAge: 0
     }
 
-
   );
-
-
 }
-
 
  
 
